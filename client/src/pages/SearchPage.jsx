@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Home, ShoppingCart, Menu, Search, Tag, Frown, SlidersHorizontal } from 'lucide-react';
-import btimehome from '../assets/images/btimehome.png';
+import btimehome from '../assets/images/btimehome.webp';
 import Loader from '../components/Loader';
 import HamburgerMenu from '../components/HamburgerMenu';
 import Slider from 'rc-slider';
@@ -133,10 +133,10 @@ export default function SearchPage() {
                     </span>
                   )}
                   <img
-                    src={`https://api.bhatkaltimeluxe.in/uploads/${product.images[0]}`}
+                    src={`https://hz-btl.imgix.net/${product.images[0]}`}
                     alt={product.name}
                     className="mb-2 rounded-xl object-contain w-full h-40"
-                    onError={(e) => (e.target.src = '/fallback-image.png')}
+                    onError={(e) => (e.target.src = '/fallback-image.webp')}
                   />
                 </div>
                 <CardContent>

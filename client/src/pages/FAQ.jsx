@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, Tag, ShoppingCart, ChevronDown,Menu, Search, ChevronUp } from 'lucide-react';
-import btimehome from '../assets/images/btimehome.png';
+import btimehome from '../assets/images/btimehome.webp';
 import { Button } from '../components/ui/button';
 import HamburgerMenu from '../components/HamburgerMenu';
 import { FaWhatsapp } from 'react-icons/fa';

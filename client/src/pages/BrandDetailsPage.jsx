@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Search, Home,Menu, ShoppingCart, Tag } from 'lucide-react';
-import btimehome from '../assets/images/btimehome.png';
+import btimehome from '../assets/images/btimehome.webp';
 import Loader from '../components/Loader';
 import HamburgerMenu from '../components/HamburgerMenu';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -87,10 +87,10 @@ export default function BrandDetailsPage() {
                     </span>
                   )}
                   <img
-                    src={`https://api.bhatkaltimeluxe.in/uploads/${product.images[0]}`}
+                    src={`https://hz-btl.imgix.net/${product.images[0]}`}
                     alt={product.name}
                     className="mb-2 rounded-xl object-contain w-max h-40 mx-auto"
-                    onError={(e) => (e.target.src = '/fallback-image.png')}
+                    onError={(e) => (e.target.src = '/fallback-image.webp')}
                   />
                 </div>
                 <CardContent>

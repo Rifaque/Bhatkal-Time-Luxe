@@ -2,8 +2,8 @@
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react'; // X icon for closing
 import { Button } from '../components/ui/button';
-// import btimehome from '../assets/images/btimehome.png';
-import btime from '../assets/images/btime.png';
+// import btimehome from '../assets/images/btimehome.webp';
+import btime from '../assets/images/btime.webp';
 
 export default function HamburgerMenu({ isOpen, onClose }) {
   const navigate = useNavigate();

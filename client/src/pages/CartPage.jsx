@@ -92,10 +92,10 @@ export default function CartPage() {
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center space-x-4">
                   <img
-                    src={`https://api.bhatkaltimeluxe.in/uploads/${item.product.images[0]}`}
+                    src={`https://hz-btl.imgix.net/${item.product.images[0]}`}
                     alt={item.product.name}
                     className="w-16 h-16 object-cover rounded-lg"
-                    onError={(e) => (e.target.src = '/fallback-image.png')}
+                    onError={(e) => (e.target.src = '/fallback-image.webp')}
                   />
                   <div>
                     <h3 className="text-sm font-semibold">{item.product.name}</h3>

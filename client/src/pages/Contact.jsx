@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import {  Search, Home, Tag,Menu, ShoppingCart, Phone, MessageSquare } from 'lucide-react';
-import btimehome from '../assets/images/btimehome.png';
+import btimehome from '../assets/images/btimehome.webp';
 import { Button } from '../components/ui/button';
 import HamburgerMenu from '../components/HamburgerMenu';
 import { useState } from 'react';

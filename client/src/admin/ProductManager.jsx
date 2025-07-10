@@ -313,7 +313,7 @@ export default function ProductsManager() {
               <div className="flex items-center mb-2">
                 {product.images && product.images.length > 0 && (
                   <img
-                    src={`https://api.bhatkaltimeluxe.in/uploads/${product.images[0]}`}
+                    src={`https://hz-btl.imgix.net/${product.images[0]}`}
                     alt={product.name}
                     className="w-16 h-16 object-contain rounded mr-2"
                     onError={(e) => (e.target.src = '/fallback-image.png')}

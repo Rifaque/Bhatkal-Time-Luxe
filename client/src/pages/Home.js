@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Home, ShoppingCart, Menu, Search, Tag } from 'lucide-react';
-import btimehome from '../assets/images/btimehome.png';
+import btimehome from '../assets/images/btimehome.webp';
 import Loader from '../components/Loader';
 import HamburgerMenu from '../components/HamburgerMenu';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -114,13 +114,13 @@ export default function Homepage() {
 
   // Helper function to render an image with fallback.
   const renderImage = (product) => {
-    const imageSrc = product.images?.[0] || product.image || 'fallback-image.png';
+    const imageSrc = product.images?.[0] || product.image || 'fallback-image.webp';
     return (
       <img
-        src={`https://api.bhatkaltimeluxe.in/uploads/${imageSrc}`}
+        src={`https://hz-btl.imgix.net/${imageSrc}`}
         alt={product.name}
         className="mb-2 rounded-xl object-contain w-full h-40"
-        onError={(e) => (e.target.src = '../assets/images/fallback-image.png')}
+        onError={(e) => (e.target.src = '../assets/images/fallback-image.webp')}
         loading="lazy"
       />
     );
@@ -170,10 +170,10 @@ export default function Homepage() {
               <div className="w-24 h-24 ml-2">
                 {randomProduct1 && (
                   <img
-                    src={`https://api.bhatkaltimeluxe.in/uploads/${randomProduct1.images?.[0] || 'fallback-image.png'}`}
+                    src={`https://hz-btl.imgix.net/${randomProduct1.images?.[0] || 'fallback-image.webp'}`}
                     alt={randomProduct1.name}
                     className="object-contain rounded-xl w-full h-full"
-                    onError={(e) => (e.target.src = '/fallback-image.png')}
+                    onError={(e) => (e.target.src = '/fallback-image.webp')}
                   />
                 )}
               </div>
@@ -196,10 +196,10 @@ export default function Homepage() {
               <div className="w-24 h-24 ml-2">
                 {randomProduct2 && (
                   <img
-                    src={`https://api.bhatkaltimeluxe.in/uploads/${randomProduct2.images?.[0] || 'fallback-image.png'}`}
+                    src={`https://hz-btl.imgix.net/${randomProduct2.images?.[0] || 'fallback-image.webp'}`}
                     alt={randomProduct2.name}
                     className="object-contain rounded-xl w-full h-full"
-                    onError={(e) => (e.target.src = '/fallback-image.png')}
+                    onError={(e) => (e.target.src = '/fallback-image.webp')}
                   />
                 )}
               </div>
@@ -226,7 +226,7 @@ export default function Homepage() {
                 <CardContent className="w-full h-full flex items-center justify-center p-2 rounded-lg bg-[#2A2A2A]">
                   <div className="w-full h-full bg-[#EDEDED] rounded-md flex items-center justify-center">
                     <img
-                      src={`https://api.bhatkaltimeluxe.in/uploads/${item.brand.logo}`}
+                      src={`https://hz-btl.imgix.net/${item.brand.logo}`}
                       alt={item.brand.name}
                       className="max-h-full object-contain mix-blend-multiply"
                       onError={(e) => (e.target.src = '/fallback-brand.png')}

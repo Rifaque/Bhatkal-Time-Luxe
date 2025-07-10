@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Search, Home, Menu, ShoppingCart, Tag } from 'lucide-react';
-import btimehome from '../assets/images/btimehome.png';
+import btimehome from '../assets/images/btimehome.webp';
 import Loader from '../components/Loader';
 import HamburgerMenu from '../components/HamburgerMenu';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -69,7 +69,7 @@ export default function BrandsPage() {
               <Card className="!bg-[#EDEDED] flex flex-col items-center p-2">
                 <div className="w-full h-24 flex items-center justify-center rounded-lg bg-[#EDEDED]">
                   <img
-                    src={`https://api.bhatkaltimeluxe.in/uploads/${brand.logo}`}
+                    src={`https://hz-btl.imgix.net/${brand.logo}`}
                     alt={brand.name}
                     className="max-h-full object-contain mix-blend-multiply"
                     onError={(e) => (e.target.src = '/fallback-brand.png')}

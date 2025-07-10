@@ -109,7 +109,7 @@ export default function BrandsManager() {
         {brands.map((brand) => (
           <div key={brand._id} className="!bg-[#1e1e1e] p-4 rounded-lg shadow flex flex-col items-center">
             <img
-              src={`https://api.bhatkaltimeluxe.in/uploads/${brand.logo}`}
+              src={`https://hz-btl.imgix.net/${brand.logo}`}
               alt={brand.name}
               className="w-24 h-24 object-cover rounded mb-2"
               onError={(e) => (e.target.src = '/fallback-brand.png')}
