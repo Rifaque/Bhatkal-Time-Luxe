@@ -853,7 +853,7 @@ router.post("/upload/brand-logo", authenticateAdmin, upload.single("logo"), (req
   });
 });
 
-// Upload multiple product images
+// Upload multiple product images 
 router.post("/upload/product-image", authenticateAdmin, upload.array("images", 5), (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).json({ error: "No files uploaded" });
 
