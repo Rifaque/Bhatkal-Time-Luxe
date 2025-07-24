@@ -839,6 +839,9 @@ router.post("/upload/brand-logo", authenticateAdmin, upload.single("logo"), (req
   const filename = req.file.filename;
   const commitMessage = `upload: brand logo ${filename}`;
 
+  exec(`git config user.email "rifaque123@gmail.com"`); 
+  exec(`git config user.name "Rifaque"`);
+
   exec(`git add "${filePath}" && git commit -m "${commitMessage}" && git push`, (err, stdout, stderr) => {
     if (err) {
       console.error("❌ Git push failed:", stderr);
@@ -856,6 +859,9 @@ router.post("/upload/product-image", authenticateAdmin, upload.array("images", 5
 
   const uploadedFiles = req.files.map(file => file.path);
   const commitMessage = `upload: product images ${uploadedFiles.map(f => f.split("/").pop()).join(", ")}`;
+
+  exec(`git config user.email "rifaque123@gmail.com"`); 
+  exec(`git config user.name "Rifaque"`);
 
   exec(`git add ${uploadedFiles.map(f => `"${f}"`).join(" ")} && git commit -m "${commitMessage}" && git push`, (err, stdout, stderr) => {
     if (err) {
@@ -900,6 +906,8 @@ router.post("/admin/cleanup-images", authenticateAdmin, async (req, res) => {
 
     // 4. Git commit deleted files
     if (deletedFiles.length > 0) {
+      exec(`git config user.email "rifaque123@gmail.com"`); 
+      exec(`git config user.name "Rifaque"`);
       const deletedPaths = deletedFiles.map(f => `"uploads/${f}"`).join(" ");
       const commitMsg = `cleanup: removed ${deletedFiles.length} unused image(s)`;
       exec(`git rm ${deletedPaths} && git commit -m "${commitMsg}" && git push`, (err, stdout, stderr) => {

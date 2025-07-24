@@ -6,6 +6,7 @@ import ProductsManager from './ProductManager';
 import FeaturedManager from './FeaturedManager';
 import BestSellingManager from './BestSellingManager';
 import TopBrandsManager from './TopBrandsManager';
+import AdminLogs from "./components/AdminLogs";
 
 // Admin Login Component
 function AdminLogin() {
@@ -208,6 +209,7 @@ function AdminDashboard() {
             </button>
           </div>
         </div>
+        <AdminLogs />
       </main>
     </div>
   );
