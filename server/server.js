@@ -951,7 +951,7 @@ app.get("/api/test", (req, res) => {
   res.json({ message: "Backend is running successfully!" });
 });
 
-// Connect to MongoDB
+// Connect to MongoDB Atlas
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
