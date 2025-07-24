@@ -17,6 +17,7 @@ const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const session = require('express-session');
 const fs = require("fs");
+import { exec } from 'child_process';
 
 
 // Load environment variables
@@ -829,65 +830,109 @@ router.get("/product/:productId/checkout", async (req, res) => {
   
 
 // Upload Routes
+
+// Upload single brand logo
 router.post("/upload/brand-logo", authenticateAdmin, upload.single("logo"), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-    res.json({ filePath: `/uploads/${req.file.filename}` });
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+  const filePath = req.file.path;
+  const filename = req.file.filename;
+  const commitMessage = `upload: brand logo ${filename}`;
+
+  exec(`git add "${filePath}" && git commit -m "${commitMessage}" && git push`, (err, stdout, stderr) => {
+    if (err) {
+      console.error("❌ Git push failed:", stderr);
+      return res.status(500).json({ error: "Image uploaded, but Git push failed." });
+    }
+
+    console.log("✅ Git pushed:", stdout);
+    res.json({ filePath: `/uploads/${filename}` });
+  });
 });
 
+// Upload multiple product images
 router.post("/upload/product-image", authenticateAdmin, upload.array("images", 5), (req, res) => {
-    if (!req.files || req.files.length === 0) return res.status(400).json({ error: "No files uploaded" });
-    res.json({ filePaths: req.files.map(file => `/uploads/${file.filename}`) });
+  if (!req.files || req.files.length === 0) return res.status(400).json({ error: "No files uploaded" });
+
+  const uploadedFiles = req.files.map(file => file.path);
+  const commitMessage = `upload: product images ${uploadedFiles.map(f => f.split("/").pop()).join(", ")}`;
+
+  exec(`git add ${uploadedFiles.map(f => `"${f}"`).join(" ")} && git commit -m "${commitMessage}" && git push`, (err, stdout, stderr) => {
+    if (err) {
+      console.error("❌ Git push failed:", stderr);
+      return res.status(500).json({ error: "Images uploaded, but Git push failed." });
+    }
+
+    console.log("✅ Git pushed:", stdout);
+    res.json({
+      filePaths: req.files.map(file => `/uploads/${file.filename}`)
+    });
+  });
 });
+
   
 router.post("/admin/cleanup-images", authenticateAdmin, async (req, res) => {
   try {
-    // 1. Retrieve all valid image references from Brands and Products
+    // 1. Retrieve all valid image references
     const brands = await Brand.find({}, "logo").lean();
     const products = await Product.find({}, "images").lean();
 
-    // Build a set of valid image filenames
     const validImages = new Set();
+    brands.forEach(brand => brand.logo && validImages.add(brand.logo));
+    products.forEach(product => product.images?.forEach(image => validImages.add(image)));
 
-    brands.forEach((brand) => {
-      if (brand.logo) validImages.add(brand.logo);
-    });
-
-    products.forEach((product) => {
-      if (product.images && product.images.length > 0) {
-        product.images.forEach((image) => validImages.add(image));
-      }
-    });
-
-    // 2. Scan the uploads folder
+    // 2. Scan uploads directory
     const uploadsDir = path.join(__dirname, "uploads");
     const files = await fs.promises.readdir(uploadsDir);
 
-    // 3. Delete orphaned images (only files)
-    let deletedFiles = [];
+    // 3. Delete orphaned files
+    const deletedFiles = [];
     for (const file of files) {
       if (!validImages.has(file)) {
         const filePath = path.join(uploadsDir, file);
         const stats = await fs.promises.lstat(filePath);
-        if (stats.isFile()) { // Ensure it's a file before unlinking
+        if (stats.isFile()) {
           await fs.promises.unlink(filePath);
           deletedFiles.push(file);
-        } else {
-          console.log(`Skipping non-file item: ${file}`);
         }
       }
     }
 
-    // Return the result to the admin dashboard
-    res.json({ 
-      message: "Cleanup completed", 
-      deletedFiles, 
-      count: deletedFiles.length 
-    });
+    // 4. Git commit deleted files
+    if (deletedFiles.length > 0) {
+      const deletedPaths = deletedFiles.map(f => `"uploads/${f}"`).join(" ");
+      const commitMsg = `cleanup: removed ${deletedFiles.length} unused image(s)`;
+      exec(`git rm ${deletedPaths} && git commit -m "${commitMsg}" && git push`, (err, stdout, stderr) => {
+        if (err) {
+          console.error("❌ Git cleanup push failed:", stderr);
+          return res.status(500).json({
+            message: "Cleanup done, but Git push failed.",
+            deletedFiles,
+            count: deletedFiles.length
+          });
+        }
+
+        console.log("✅ Git cleanup pushed:", stdout);
+        res.json({
+          message: "Cleanup and Git push completed",
+          deletedFiles,
+          count: deletedFiles.length
+        });
+      });
+    } else {
+      res.json({
+        message: "No orphaned images found",
+        deletedFiles,
+        count: 0
+      });
+    }
+
   } catch (error) {
     console.error("Cleanup error:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Serve static files from the 'public' directory
 app.use("/apk", express.static(path.join(__dirname, "public/apk")));
