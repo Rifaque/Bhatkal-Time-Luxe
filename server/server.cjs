@@ -17,7 +17,7 @@ const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const session = require('express-session');
 const fs = require("fs");
-import { exec } from 'child_process';
+const { exec } = require('child_process');
 
 
 // Load environment variables
