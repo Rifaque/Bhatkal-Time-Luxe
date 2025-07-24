@@ -2,6 +2,7 @@
 
 **An elegant MERN‑stack eCommerce platform for premium watches.**
 
+![Bhatkal Time Luxe Banner](assets/thumbnail.png)
 ---
 
 ## 🔗 Table of Contents
