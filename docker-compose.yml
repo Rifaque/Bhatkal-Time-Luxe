@@ -1,0 +1,8 @@
+services:
+  backend:
+    build: ./server
+    container_name: bhatkaltimeluxe-backend
+    network_mode: "host"
+    restart: unless-stopped
+    env_file:
+      - ./server/.env

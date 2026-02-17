@@ -25,7 +25,7 @@ dotenv.config();
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 const JWT_SECRET = process.env.JWT_SECRET;
 const cache = new NodeCache({ stdTTL: 300 }); // Cache TTL set to 5 minutes
 
