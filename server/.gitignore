@@ -1,7 +1,0 @@
-/node_modules
-
-.env
-
-# Ignore log files
-*.log
-/logs

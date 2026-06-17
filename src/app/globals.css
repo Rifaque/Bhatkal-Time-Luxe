@@ -1,0 +1,216 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sebino: "Sebino Extra Bold", sans-serif;
+  --font-serif: var(--font-serif), serif;
+  --font-sans: var(--font-sans), sans-serif;
+  
+  --color-gold-50: #faf8f0;
+  --color-gold-100: #f4ebcc;
+  --color-gold-200: #e8d79b;
+  --color-gold-300: #dbbf69;
+  --color-gold-400: #cca326;
+  --color-gold-500: #D1B23E;
+  --color-gold-600: #b9972d;
+  --color-gold-700: #8d711f;
+  --color-gold-800: #624e17;
+  --color-gold-900: #382d0e;
+}
+
+:root {
+  --luxury-bg: #1e1e1e;
+  --luxury-surface: #171717;
+  --luxury-surface-soft: #121212;
+  --luxury-border: rgba(255, 255, 255, 0.08);
+  --luxury-header-offset: 5rem;
+}
+
+/* Hide scrollbar for Webkit browsers */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: var(--luxury-bg);
+  color: #ffffff;
+}
+
+body {
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  transition:
+    color 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease,
+    opacity 200ms ease;
+}
+
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #141414;
+  color: #ffffff;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 1.5px solid rgba(209, 178, 62, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px rgba(209, 178, 62, 0.07);
+}
+
+.main-content {
+  min-height: calc(100vh - env(safe-area-inset-bottom)); /* Accounts for the bottom nav */
+}
+
+nav {
+  /* Mobile bottom nav uses !bg-[#1E1E1E] for explicit background.
+     Do not set background here — it breaks desktop navbar glassmorphism. */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #1E1E1E; /* Dark background */
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #D1B23E; /* Gold accent */
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #b9972d; /* Darker gold */
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #D1B23E #1E1E1E;
+}
+
+/* Thinner scrollbar on mobile */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  * {
+    scrollbar-width: thin;
+  }
+}
+/* Custom Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.97); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Ambient glow */
+.bg-ambient-glow {
+  background: radial-gradient(circle at center, rgba(209,178,62,0.08) 0%, transparent 70%);
+}
+
+.luxury-text-spacing {
+  letter-spacing: 0.15em;
+}
+
+.luxury-card-shadow {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.luxury-gold-glow {
+  box-shadow: 0 0 20px rgba(209, 178, 62, 0.15);
+}
+
+.luxury-page-hero {
+  padding-top: clamp(7.5rem, 10vw, 10.5rem);
+  padding-bottom: clamp(5rem, 7vw, 7.5rem);
+}
+
+.luxury-page-section {
+  padding-block: clamp(4rem, 7vw, 6rem);
+}
+
+.luxury-logo-panel {
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.luxury-logo-image {
+  /* no drop-shadow — let the image speak cleanly */
+}
+
+/* Premium glass navbar — 90% opaque so it owns its appearance at all scroll depths */
+.luxury-glass-header {
+  background: rgba(18, 18, 18, 0.92);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Search modal focus-within form row */
+.search-form-row:focus-within {
+  background-color: rgba(255, 255, 255, 0.018);
+  border-bottom-color: rgba(209, 178, 62, 0.18);
+}
+
+/* Skeleton shimmer — luxury dark-mode palette */
+@keyframes sk-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.sk {
+  background: linear-gradient(90deg, #242424 25%, #2d2d2d 50%, #242424 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.75rem;
+}

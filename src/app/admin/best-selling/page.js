@@ -1,0 +1,253 @@
+'use client';
+
+import React, { useEffect, useState, useMemo } from 'react';
+import axios from 'axios';
+import Select from 'react-select';
+import { Plus, Trash2 } from 'lucide-react';
+import { getImageUrl } from '@/lib/image';
+import {
+  AdminShell,
+  AdminPanel,
+  AdminEmptyState,
+  adminPrimaryButtonClasses,
+  adminDangerButtonClasses,
+  adminSelectStyles,
+} from '../components/AdminShell';
+
+const fmt = (n) => new Intl.NumberFormat('en-IN').format(n);
+
+export default function BestSellingManager() {
+  const [bestSelling, setBestSelling] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
+  const fetchBestSelling = async () => {
+    try {
+      const res = await axios.get('/api/best-selling');
+      setBestSelling(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load best-selling items');
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get('/api/products');
+      setProducts(res.data.sort((a, b) => a.name.localeCompare(b.name)));
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load products');
+    }
+  };
+
+  const fetchBrands = async () => {
+    try {
+      const res = await axios.get('/api/brands');
+      setBrands(res.data);
+    } catch { /* non-critical */ }
+  };
+
+  useEffect(() => {
+    fetchBestSelling();
+    fetchProducts();
+    fetchBrands();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const brandMap = useMemo(() => {
+    const map = {};
+    brands.forEach((b) => { map[b._id] = b.name; });
+    return map;
+  }, [brands]);
+
+  const handleAddBestSelling = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!selectedProduct) {
+      setError('Please select a product');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.post(
+        '/api/admin/best-selling',
+        { productId: selectedProduct.value },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSuccess('Best-selling product added!');
+      setSelectedProduct(null);
+      fetchBestSelling();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to add best-selling product');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteBestSelling = async (id) => {
+    if (pendingDeleteId !== id) {
+      setPendingDeleteId(id);
+      setTimeout(() => setPendingDeleteId((p) => (p === id ? null : p)), 3000);
+      return;
+    }
+    setPendingDeleteId(null);
+    setError('');
+    setSuccess('');
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.delete(`/api/admin/best-selling/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSuccess('Best-selling product removed!');
+      fetchBestSelling();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to remove best-selling product');
+    }
+  };
+
+  const productOptions = useMemo(() => products.map((p) => ({
+    value: p._id,
+    label: p.name,
+    brand: brandMap[p.brand] || '',
+    price: p.price,
+    MRP: p.MRP,
+    image: p.images?.[0] || '',
+  })), [products, brandMap]);
+
+  const formatOptionLabel = (option) => (
+    <div className="flex items-center gap-3 py-0.5">
+      <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center p-1 shrink-0 overflow-hidden">
+        <img
+          src={getImageUrl(option.image)}
+          alt={option.label}
+          className="max-h-full object-contain"
+          onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
+        />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] text-[#D1B23E] uppercase tracking-wider font-bold leading-none">{option.brand}</p>
+        <p className="text-sm text-white font-medium truncate leading-snug">{option.label}</p>
+        <div className="flex items-baseline gap-1.5">
+          <p className="text-xs text-gray-400">₹{fmt(option.price)}</p>
+          {option.MRP > option.price && (
+            <p className="text-[10px] text-gray-600 line-through">₹{fmt(option.MRP)}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const validItems = bestSelling.filter((i) => i.productId);
+
+  return (
+    <AdminShell
+      eyebrow="Merchandising"
+      title="Best Selling"
+      description="Curate the Best Selling Timepieces section shown on the homepage."
+    >
+      <div className="space-y-6">
+
+        {(error || success) && (
+          <div className={`rounded-2xl border px-5 py-4 text-sm font-medium ${
+            error
+              ? 'border-red-500/20 bg-red-500/8 text-red-200'
+              : 'border-emerald-500/20 bg-emerald-500/8 text-emerald-200'
+          }`}>
+            {error || success}
+          </div>
+        )}
+
+        <AdminPanel title="Add Best-Selling Product" description="Select a product to include in the Best Selling section.">
+          <form onSubmit={handleAddBestSelling} className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1 space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                Select Product <span className="text-[#D1B23E]">*</span>
+              </label>
+              <Select
+                options={productOptions}
+                value={selectedProduct}
+                onChange={setSelectedProduct}
+                placeholder="Search and select a product..."
+                isSearchable
+                styles={adminSelectStyles}
+                formatOptionLabel={formatOptionLabel}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={submitting || !selectedProduct}
+              className={adminPrimaryButtonClasses}
+            >
+              <Plus size={16} />
+              {submitting ? 'Adding...' : 'Add to Best Selling'}
+            </button>
+          </form>
+        </AdminPanel>
+
+        <AdminPanel
+          title="Current Best Selling"
+          description={`${validItems.length} product${validItems.length !== 1 ? 's' : ''} in the Best Selling section`}
+        >
+          {validItems.length === 0 ? (
+            <AdminEmptyState
+              title="No best-selling products"
+              description="Add products above to populate the Best Selling Timepieces section."
+            />
+          ) : (
+            <div className="space-y-2">
+              {bestSelling.map((item) => {
+                if (!item.productId) return null;
+                const isPending = pendingDeleteId === item._id;
+                const p = item.productId;
+                const brand = brandMap[p.brand] || '';
+                return (
+                  <div
+                    key={item._id}
+                    className="flex items-center gap-4 rounded-2xl border border-white/8 bg-white/3 p-4 transition hover:border-white/15"
+                  >
+                    <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
+                      <img
+                        src={getImageUrl(p.images?.[0] || '')}
+                        alt={p.name}
+                        className="max-h-full object-contain"
+                        onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      {brand && (
+                        <p className="text-[10px] uppercase tracking-wider text-[#D1B23E] font-bold">{brand}</p>
+                      )}
+                      <p className="text-sm font-semibold text-white leading-snug mt-0.5 line-clamp-1">{p.name}</p>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-sm font-bold text-white">₹{fmt(p.price)}</span>
+                        {p.MRP > p.price && (
+                          <span className="text-xs text-gray-500 line-through">₹{fmt(p.MRP)}</span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteBestSelling(item._id)}
+                      className={isPending
+                        ? 'inline-flex items-center gap-2 rounded-2xl border border-red-500/60 bg-red-600 px-4 py-3 text-sm font-bold text-white transition shrink-0'
+                        : `${adminDangerButtonClasses} shrink-0`
+                      }
+                    >
+                      <Trash2 size={14} />
+                      {isPending ? 'Confirm?' : 'Remove'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </AdminPanel>
+
+      </div>
+    </AdminShell>
+  );
+}
