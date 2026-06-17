@@ -3,7 +3,7 @@ import { Button } from '../components/ui/button';
 import useProductPageLogic from '../hooks/useProductPageLogic';
 import btimehome from '../assets/images/btimehome.png';
 import Loader from '../components/Loader';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HamburgerMenu from '../components/HamburgerMenu';
 

@@ -12,7 +12,6 @@ export default function Contact() {
 
   // Replace these values with your actual contact details
   const mobileNumber = '+916364282251';
-  const emailAddress = 'info@bhatkaltimeluxe.in';
 
   // WhatsApp link requires the number without the plus sign
   const whatsappLink = `https://wa.me/${mobileNumber.replace('+', '')}`;

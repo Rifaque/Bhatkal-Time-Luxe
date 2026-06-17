@@ -10,7 +10,6 @@ export default function MobileProductView() {
     loading,
     error,
     notification,
-    setNotification,
     currentImage,
     setCurrentImage,
     swipeHandlers,
