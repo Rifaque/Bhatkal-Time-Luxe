@@ -62,7 +62,7 @@ export default function DesktopProductView() {
           <div className="bg-[#2A2A2A] flex items-center justify-center rounded-lg p-6 pl-0">
             <div className="bg-white p-4 rounded-xl w-full h-full flex items-center justify-center">
               <img
-                src={`https://hz-btl.imgix.net/${product.images[0]}`}
+                src={`https://apibtl.hubzero.in/uploads/${product.images[0]}`}
                 alt={product.name}
                 className="mt-14 h-[65vh] object-contain mx-auto rounded-2xl"
                 onError={(e) => (e.currentTarget.src = '/fallback-image.webp')}

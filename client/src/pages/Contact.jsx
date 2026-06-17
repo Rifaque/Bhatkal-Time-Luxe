@@ -11,7 +11,7 @@ export default function Contact() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Replace these values with your actual contact details
-  const mobileNumber = '+918050858500';
+  const mobileNumber = '+916364282251';
   const emailAddress = 'info@bhatkaltimeluxe.in';
 
   // WhatsApp link requires the number without the plus sign
@@ -40,7 +40,7 @@ export default function Contact() {
       <h1 className="text-2xl font-bold mt-8 text-center">Contact Us</h1>
 
       <section className="flex-1 flex flex-col space-y-6 items-center justify-center mt-32">
-        <a href={`tel:+918050858500`} className="flex items-center space-x-2 text-lg text-[#D1B23E]">
+        <a href={`tel:+916364282251`} className="flex items-center space-x-2 text-lg text-[#D1B23E]">
           <Phone size={24} />
           <span>{mobileNumber}</span>
         </a>
@@ -53,13 +53,9 @@ export default function Contact() {
           <MessageSquare size={24} />
           <span>WhatsApp Us</span>
         </a>
-        <a href={`mailto:${emailAddress}`} className="flex items-center space-x-2 text-lg text-[#D1B23E]">
-          <MessageSquare size={24} />
-          <span>{emailAddress}</span>
-        </a>
 
         <a 
-  href="https://api.bhatkaltimeluxe.in/download-apk" 
+  href="https://apibtl.hubzero.in/download-apk" 
   className="px-4 py-2 bg-[#D1B23E] text-white rounded"
 >
   📥 Download APK
@@ -86,7 +82,7 @@ export default function Contact() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/918050858500"  // Replace with your actual WhatsApp number
+        href="https://wa.me/916364282251"  // Replace with your actual WhatsApp number
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-16 right-3 z-50 bg-[#1e1e1e] p-4 rounded-full shadow-lg"

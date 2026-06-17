@@ -16,7 +16,7 @@ export default function BrandsManager() {
 
   const fetchBrands = async () => {
     try {
-      const res = await axios.get('https://api.bhatkaltimeluxe.in/api/brands');
+      const res = await axios.get('https://apibtl.hubzero.in/api/brands');
       setBrands(res.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load brands');
@@ -36,7 +36,7 @@ export default function BrandsManager() {
 
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.post('https://api.bhatkaltimeluxe.in/api/brands', formData, {
+      await axios.post('https://apibtl.hubzero.in/api/brands', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ export default function BrandsManager() {
     if (!window.confirm('Are you sure you want to delete this brand?')) return;
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`https://api.bhatkaltimeluxe.in/api/brands/${id}`, {
+      await axios.delete(`https://apibtl.hubzero.in/api/brands/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Brand deleted successfully!');
@@ -109,7 +109,7 @@ export default function BrandsManager() {
         {brands.map((brand) => (
           <div key={brand._id} className="!bg-[#1e1e1e] p-4 rounded-lg shadow flex flex-col items-center">
             <img
-              src={`https://hz-btl.imgix.net/${brand.logo}`}
+              src={`https://apibtl.hubzero.in/uploads/${brand.logo}`}
               alt={brand.name}
               className="w-24 h-24 object-cover rounded mb-2"
               onError={(e) => (e.target.src = '/fallback-brand.png')}

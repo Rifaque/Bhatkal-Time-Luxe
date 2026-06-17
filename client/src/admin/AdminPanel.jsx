@@ -18,7 +18,7 @@ function AdminLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('https://api.bhatkaltimeluxe.in/api/admin/login', { username, password });
+      const res = await axios.post('https://apibtl.hubzero.in/api/admin/login', { username, password });
       const token = res.data.token;
       localStorage.setItem('adminToken', token);
       navigate('/admin/dashboard');
@@ -92,19 +92,19 @@ function AdminDashboard() {
   useEffect(() => {
     async function fetchCounts() {
       try {
-        const resBrands = await axios.get('https://api.bhatkaltimeluxe.in/api/brands');
+        const resBrands = await axios.get('https://apibhatkaltimeluxe.hubzero.in/api/brands');
         setBrandCount(resBrands.data.length);
 
-        const resProducts = await axios.get('https://api.bhatkaltimeluxe.in/api/products');
+        const resProducts = await axios.get('https://apibtl.hubzero.in/api/products');
         setProductCount(resProducts.data.length);
 
-        const resFeatured = await axios.get('https://api.bhatkaltimeluxe.in/api/featured');
+        const resFeatured = await axios.get('https://apibtl.hubzero.in/api/featured');
         setFeaturedCount(resFeatured.data.length);
 
-        const resBestSelling = await axios.get('https://api.bhatkaltimeluxe.in/api/best-selling');
+        const resBestSelling = await axios.get('https://apibtl.hubzero.in/api/best-selling');
         setBestSellingCount(resBestSelling.data.length);
 
-        const resTopBrands = await axios.get('https://api.bhatkaltimeluxe.in/api/top-brands');
+        const resTopBrands = await axios.get('https://apibtl.hubzero.in/api/top-brands');
         setTopBrandsCount(resTopBrands.data.length);
       } catch (err) {
         console.error('Failed to fetch counts', err);
@@ -129,7 +129,7 @@ function AdminDashboard() {
 
     try {
       const res = await axios.post(
-        'https://api.bhatkaltimeluxe.in/api/admin/cleanup-images',
+        'https://apibtl.hubzero.in/api/admin/cleanup-images',
         {},
         {
           headers: {

@@ -26,22 +26,22 @@ export default function Homepage() {
     const fetchData = async () => {
       try {
         // Fetch top categories (from top-brands)
-        const topCatRes = await fetch('https://api.bhatkaltimeluxe.in/api/top-brands');
+        const topCatRes = await fetch('https://apibtl.hubzero.in/api/top-brands');
         const topCatData = await topCatRes.json();
         setTopCategories(topCatData);
 
         // Fetch all products
-        const productsRes = await fetch('https://api.bhatkaltimeluxe.in/api/products');
+        const productsRes = await fetch('https://apibtl.hubzero.in/api/products');
         const productsData = await productsRes.json();
         setAllProducts(productsData);
 
         // Fetch featured items (populated with product details)
-        const featuredRes = await fetch('https://api.bhatkaltimeluxe.in/api/featured');
+        const featuredRes = await fetch('https://apibtl.hubzero.in/api/featured');
         const featuredData = await featuredRes.json();
         setFeatured(featuredData);
 
         // Fetch best-selling items (populated with product details)
-        const bestSellingRes = await fetch('https://api.bhatkaltimeluxe.in/api/best-selling');
+        const bestSellingRes = await fetch('https://apibtl.hubzero.in/api/best-selling');
         const bestSellingData = await bestSellingRes.json();
         setBestSelling(bestSellingData);
 
@@ -117,7 +117,7 @@ export default function Homepage() {
     const imageSrc = product.images?.[0] || product.image || 'fallback-image.webp';
     return (
       <img
-        src={`https://hz-btl.imgix.net/${imageSrc}`}
+        src={`https://apibtl.hubzero.in/uploads/${imageSrc}`}
         alt={product.name}
         className="mb-2 rounded-xl object-contain w-full h-40"
         onError={(e) => (e.target.src = '../assets/images/fallback-image.webp')}
@@ -170,7 +170,7 @@ export default function Homepage() {
               <div className="w-24 h-24 ml-2">
                 {randomProduct1 && (
                   <img
-                    src={`https://hz-btl.imgix.net/${randomProduct1.images?.[0] || 'fallback-image.webp'}`}
+                    src={`https://apibtl.hubzero.in/uploads/${randomProduct1.images?.[0] || 'fallback-image.webp'}`}
                     alt={randomProduct1.name}
                     className="object-contain rounded-xl w-full h-full"
                     onError={(e) => (e.target.src = '/fallback-image.webp')}
@@ -196,7 +196,7 @@ export default function Homepage() {
               <div className="w-24 h-24 ml-2">
                 {randomProduct2 && (
                   <img
-                    src={`https://hz-btl.imgix.net/${randomProduct2.images?.[0] || 'fallback-image.webp'}`}
+                    src={`https://apibtl.hubzero.in/uploads/${randomProduct2.images?.[0] || 'fallback-image.webp'}`}
                     alt={randomProduct2.name}
                     className="object-contain rounded-xl w-full h-full"
                     onError={(e) => (e.target.src = '/fallback-image.webp')}
@@ -226,7 +226,7 @@ export default function Homepage() {
                 <CardContent className="w-full h-full flex items-center justify-center p-2 rounded-lg bg-[#2A2A2A]">
                   <div className="w-full h-full bg-[#EDEDED] rounded-md flex items-center justify-center">
                     <img
-                      src={`https://hz-btl.imgix.net/${item.brand.logo}`}
+                      src={`https://apibtl.hubzero.in/uploads/${item.brand.logo}`}
                       alt={item.brand.name}
                       className="max-h-full object-contain mix-blend-multiply"
                       onError={(e) => (e.target.src = '/fallback-brand.png')}
@@ -375,7 +375,7 @@ export default function Homepage() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/918050858500"
+        href="https://wa.me/916364282251"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-16 right-3 z-50 bg-[#1e1e1e] p-4 rounded-full shadow-lg"

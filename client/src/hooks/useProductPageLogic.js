@@ -17,7 +17,7 @@ export default function useProductPageLogic() {
   useEffect(() => {
     if (productId) {
       axios
-        .get(`https://api.bhatkaltimeluxe.in/api/products/${productId}`)
+        .get(`https://apibtl.hubzero.in/api/products/${productId}`)
         .then((response) => {
           setProduct(response.data);
           setLoading(false);
@@ -52,7 +52,7 @@ export default function useProductPageLogic() {
 
     // const addToCart = async () => {
   //   try {
-  //     await axios.post('https://api.bhatkaltimeluxe.in/api/cart', {
+  //     await axios.post('https://apibtl.hubzero.in/api/cart', {
   //       product: productId,
   //     });
       
@@ -66,7 +66,7 @@ export default function useProductPageLogic() {
   const buyNow = async () => {
     try {
       const response = await axios.get(
-        `https://api.bhatkaltimeluxe.in/api/product/${productId}/checkout`
+        `https://apibtl.hubzero.in/api/product/${productId}/checkout`
       );
 
       if (response.data.whatsappUrl) {

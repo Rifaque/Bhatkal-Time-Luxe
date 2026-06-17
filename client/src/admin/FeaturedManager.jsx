@@ -19,7 +19,7 @@ export default function FeaturedManager() {
   // Load featured items
   const fetchFeatured = async () => {
     try {
-      const res = await axios.get('https://api.bhatkaltimeluxe.in/api/featured');
+      const res = await axios.get('https://apibtl.hubzero.in/api/featured');
       setFeatured(res.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load featured items');
@@ -29,7 +29,7 @@ export default function FeaturedManager() {
   // Load all products and sort alphabetically by name
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('https://api.bhatkaltimeluxe.in/api/products');
+      const res = await axios.get('https://apibtl.hubzero.in/api/products');
       const sortedProducts = res.data.sort((a, b) => a.name.localeCompare(b.name));
       setProducts(sortedProducts);
     } catch (err) {
@@ -46,7 +46,7 @@ export default function FeaturedManager() {
     try {
       const token = localStorage.getItem('adminToken');
       await axios.post(
-        'https://api.bhatkaltimeluxe.in/api/admin/featured',
+        'https://apibtl.hubzero.in/api/admin/featured',
         { productId: selectedProduct.value },
         {
           headers: {
@@ -66,7 +66,7 @@ export default function FeaturedManager() {
     if (!window.confirm('Are you sure you want to remove this featured product?')) return;
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`https://api.bhatkaltimeluxe.in/api/admin/featured/${id}`, {
+      await axios.delete(`https://apibtl.hubzero.in/api/admin/featured/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Featured product removed successfully!');

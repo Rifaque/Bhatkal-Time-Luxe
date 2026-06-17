@@ -20,7 +20,7 @@ export default function SearchPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('https://api.bhatkaltimeluxe.in/api/products')
+    fetch('https://apibtl.hubzero.in/api/products')
       .then(res => res.json())
       .then(data => {
         setProducts(data);
@@ -133,7 +133,7 @@ export default function SearchPage() {
                     </span>
                   )}
                   <img
-                    src={`https://hz-btl.imgix.net/${product.images[0]}`}
+                    src={`https://apibtl.hubzero.in/uploads/${product.images[0]}`}
                     alt={product.name}
                     className="mb-2 rounded-xl object-contain w-full h-40"
                     onError={(e) => (e.target.src = '/fallback-image.webp')}
@@ -175,7 +175,7 @@ export default function SearchPage() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/918050858500"  // Replace with your actual WhatsApp number
+        href="https://wa.me/916364282251"  // Replace with your actual WhatsApp number
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-16 right-3 z-50 bg-[#1e1e1e] p-4 rounded-full shadow-lg"

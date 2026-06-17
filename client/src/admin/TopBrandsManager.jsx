@@ -19,7 +19,7 @@ export default function TopBrandsManager() {
   // Load top brands
   const fetchTopBrands = async () => {
     try {
-      const res = await axios.get('https://api.bhatkaltimeluxe.in/api/top-brands');
+      const res = await axios.get('https://apibtl.hubzero.in/api/top-brands');
       setTopBrands(res.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load top brands');
@@ -29,7 +29,7 @@ export default function TopBrandsManager() {
   // Load all brands and sort alphabetically by name
   const fetchBrands = async () => {
     try {
-      const res = await axios.get('https://api.bhatkaltimeluxe.in/api/brands');
+      const res = await axios.get('https://apibtl.hubzero.in/api/brands');
       const sortedBrands = res.data.sort((a, b) => a.name.localeCompare(b.name));
       setBrands(sortedBrands);
     } catch (err) {
@@ -46,7 +46,7 @@ export default function TopBrandsManager() {
     try {
       const token = localStorage.getItem('adminToken');
       await axios.post(
-        'https://api.bhatkaltimeluxe.in/api/admin/top-brands',
+        'https://apibtl.hubzero.in/api/admin/top-brands',
         { brandId: selectedBrand.value },
         {
           headers: {
@@ -66,7 +66,7 @@ export default function TopBrandsManager() {
     if (!window.confirm('Are you sure you want to remove this top brand?')) return;
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`https://api.bhatkaltimeluxe.in/api/admin/top-brands/${brandId}`, {
+      await axios.delete(`https://apibtl.hubzero.in/api/admin/top-brands/${brandId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Top brand removed successfully!');

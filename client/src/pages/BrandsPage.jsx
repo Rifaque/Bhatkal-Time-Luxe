@@ -16,7 +16,7 @@ export default function BrandsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    fetch('https://api.bhatkaltimeluxe.in/api/brands')
+    fetch('https://apibtl.hubzero.in/api/brands')
       .then(res => res.json())
       .then(data => {
         // Sort brands alphabetically by name
@@ -69,7 +69,7 @@ export default function BrandsPage() {
               <Card className="!bg-[#EDEDED] flex flex-col items-center p-2">
                 <div className="w-full h-24 flex items-center justify-center rounded-lg bg-[#EDEDED]">
                   <img
-                    src={`https://hz-btl.imgix.net/${brand.logo}`}
+                    src={`https://apibtl.hubzero.in/uploads/${brand.logo}`}
                     alt={brand.name}
                     className="max-h-full object-contain mix-blend-multiply"
                     onError={(e) => (e.target.src = '/fallback-brand.png')}
@@ -106,7 +106,7 @@ export default function BrandsPage() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/918050858500"  // Replace with your actual WhatsApp number
+        href="https://wa.me/916364282251"  // Replace with your actual WhatsApp number
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-16 right-3 z-50 bg-[#1e1e1e] p-4 rounded-full shadow-lg"

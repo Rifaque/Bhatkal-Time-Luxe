@@ -52,7 +52,7 @@ export default function MobileProductView() {
                 </span>
               )}
               <img
-                src={`https://hz-btl.imgix.net/${product.images[currentImage]}`}
+                src={`https://apibtl.hubzero.in/uploads/${product.images[currentImage]}`}
                 alt={product.name}
                 className="mt-14 h-[36vh] object-contain mx-auto rounded-2xl"
                 onError={(e) => (e.currentTarget.src = '/fallback-image.webp')}

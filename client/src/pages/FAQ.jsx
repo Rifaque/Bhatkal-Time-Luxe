@@ -92,7 +92,7 @@ export default function FAQ() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/918050858500"  // Replace with your actual WhatsApp number
+        href="https://wa.me/916364282251"  // Replace with your actual WhatsApp number
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-16 right-3 z-50 bg-[#1e1e1e] p-4 rounded-full shadow-lg"

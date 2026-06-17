@@ -16,10 +16,10 @@ export default function CartPage() {
     // Fetch cart items
     const fetchCart = async () => {
       try {
-        const cartResponse = await axios.get('https://api.bhatkaltimeluxe.in/api/cart');
+        const cartResponse = await axios.get('https://apibtl.hubzero.in/api/cart');
         setCartItems(cartResponse.data.items || []);
 
-        const totalResponse = await axios.get('https://api.bhatkaltimeluxe.in/api/cart/total');
+        const totalResponse = await axios.get('https://apibtl.hubzero.in/api/cart/total');
         setTotal(totalResponse.data.total);
         setLoading(false); 
       } catch (error) {
@@ -41,13 +41,13 @@ export default function CartPage() {
 
   const updateQuantity = async (productId, newQuantity) => {
     try {
-      await axios.put(`https://api.bhatkaltimeluxe.in/api/cart/${productId}`, { quantity: newQuantity });
+      await axios.put(`https://apibtl.hubzero.in/api/cart/${productId}`, { quantity: newQuantity });
       
       // Refetch cart to update
-      const cartResponse = await axios.get('https://api.bhatkaltimeluxe.in/api/cart');
+      const cartResponse = await axios.get('https://apibtl.hubzero.in/api/cart');
       setCartItems(cartResponse.data.items || []);
 
-      const totalResponse = await axios.get('https://api.bhatkaltimeluxe.in/api/cart/total');
+      const totalResponse = await axios.get('https://apibtl.hubzero.in/api/cart/total');
       setTotal(totalResponse.data.total);
     } catch (error) {
       console.error('Failed to update cart', error);
@@ -56,7 +56,7 @@ export default function CartPage() {
 
   const checkout = async () => {
     try {
-      const response = await axios.get('https://api.bhatkaltimeluxe.in/api/cart/checkout');
+      const response = await axios.get('https://apibtl.hubzero.in/api/cart/checkout');
       
       // Optional: Open WhatsApp if URL is available
       if (response.data.whatsappUrl) {
@@ -92,7 +92,7 @@ export default function CartPage() {
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center space-x-4">
                   <img
-                    src={`https://hz-btl.imgix.net/${item.product.images[0]}`}
+                    src={`https://apibtl.hubzero.in/uploads/${item.product.images[0]}`}
                     alt={item.product.name}
                     className="w-16 h-16 object-cover rounded-lg"
                     onError={(e) => (e.target.src = '/fallback-image.webp')}

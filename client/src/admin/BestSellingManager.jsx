@@ -19,7 +19,7 @@ export default function BestSellingManager() {
   // Load best-selling items
   const fetchBestSelling = async () => {
     try {
-      const res = await axios.get('https://api.bhatkaltimeluxe.in/api/best-selling');
+      const res = await axios.get('https://apibtl.hubzero.in/api/best-selling');
       setBestSelling(res.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load best-selling items');
@@ -29,7 +29,7 @@ export default function BestSellingManager() {
   // Load all products sorted alphabetically by name
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('https://api.bhatkaltimeluxe.in/api/products');
+      const res = await axios.get('https://apibtl.hubzero.in/api/products');
       const sortedProducts = res.data.sort((a, b) => a.name.localeCompare(b.name));
       setProducts(sortedProducts);
     } catch (err) {
@@ -46,7 +46,7 @@ export default function BestSellingManager() {
     try {
       const token = localStorage.getItem('adminToken');
       await axios.post(
-        'https://api.bhatkaltimeluxe.in/api/admin/best-selling',
+        'https://apibtl.hubzero.in/api/admin/best-selling',
         { productId: selectedProduct.value },
         {
           headers: {
@@ -66,7 +66,7 @@ export default function BestSellingManager() {
     if (!window.confirm('Are you sure you want to remove this best-selling product?')) return;
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`https://api.bhatkaltimeluxe.in/api/admin/best-selling/${id}`, {
+      await axios.delete(`https://apibtl.hubzero.in/api/admin/best-selling/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Best-selling product removed successfully!');

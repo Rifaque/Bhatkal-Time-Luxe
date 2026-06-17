@@ -39,7 +39,7 @@ export default function ProductsManager() {
   // Memoized fetchProducts function
   const fetchProducts = useCallback(async () => {
     try {
-      const { data } = await axios.get('https://api.bhatkaltimeluxe.in/api/products');
+      const { data } = await axios.get('https://apibtl.hubzero.in/api/products');
       setProducts(data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load products');
@@ -49,7 +49,7 @@ export default function ProductsManager() {
   // Memoized fetchBrands function (without brand dependency)
   const fetchBrands = useCallback(async () => {
     try {
-      const { data } = await axios.get('https://api.bhatkaltimeluxe.in/api/brands');
+      const { data } = await axios.get('https://apibtl.hubzero.in/api/brands');
       setBrands(data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load brands');
@@ -96,7 +96,7 @@ export default function ProductsManager() {
 
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.post('https://api.bhatkaltimeluxe.in/api/products', formData, {
+      await axios.post('https://apibtl.hubzero.in/api/products', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
@@ -122,7 +122,7 @@ export default function ProductsManager() {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`https://api.bhatkaltimeluxe.in/api/products/${id}`, {
+      await axios.delete(`https://apibtl.hubzero.in/api/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Product deleted successfully!');
@@ -176,7 +176,7 @@ export default function ProductsManager() {
         Array.from(updateImages).forEach((file) => {
           formData.append('images', file);
         });
-        await axios.put(`https://api.bhatkaltimeluxe.in/api/products/${productToUpdate._id}`, formData, {
+        await axios.put(`https://apibtl.hubzero.in/api/products/${productToUpdate._id}`, formData, {
           headers: { 
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${token}`
@@ -184,7 +184,7 @@ export default function ProductsManager() {
         });
       } else {
         // Otherwise, update without changing images
-        await axios.put(`https://api.bhatkaltimeluxe.in/api/products/${productToUpdate._id}`, updateData, {
+        await axios.put(`https://apibtl.hubzero.in/api/products/${productToUpdate._id}`, updateData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -313,7 +313,7 @@ export default function ProductsManager() {
               <div className="flex items-center mb-2">
                 {product.images && product.images.length > 0 && (
                   <img
-                    src={`https://hz-btl.imgix.net/${product.images[0]}`}
+                    src={`https://apibtl.hubzero.in/uploads/${product.images[0]}`}
                     alt={product.name}
                     className="w-16 h-16 object-contain rounded mr-2"
                     onError={(e) => (e.target.src = '/fallback-image.png')}
