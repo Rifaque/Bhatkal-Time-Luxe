@@ -92,7 +92,7 @@ function AdminDashboard() {
   useEffect(() => {
     async function fetchCounts() {
       try {
-        const resBrands = await axios.get('https://apibhatkaltimeluxe.hubzero.in/api/brands');
+        const resBrands = await axios.get('https://apibtl.hubzero.in/api/brands');
         setBrandCount(resBrands.data.length);
 
         const resProducts = await axios.get('https://apibtl.hubzero.in/api/products');
