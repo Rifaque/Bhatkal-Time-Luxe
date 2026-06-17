@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/card';
 import { ShieldCheck, Truck, RefreshCw } from 'lucide-react';
 import DesktopNavbar from './DesktopNavbar';
 import DesktopFooter from './DesktopFooter';
-import Loader from '@/components/Loader';
+import { BrandCardSk, HeroSk } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/image';
 
 export default function DesktopBrandsView() {
@@ -30,8 +29,19 @@ export default function DesktopBrandsView() {
 
   if (loading) {
     return (
-      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
+      <div className="bg-[#1e1e1e] text-white min-h-screen font-sans antialiased flex flex-col">
+        <DesktopNavbar />
+        {/* Page hero placeholder */}
+        <div className="bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] border-b border-white/5">
+          <HeroSk />
+        </div>
+        {/* Brand grid placeholder */}
+        <div className="py-20 mx-auto max-w-7xl px-6 w-full flex-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8">
+            {Array.from({ length: 8 }).map((_, i) => <BrandCardSk key={i} />)}
+          </div>
+        </div>
+        <DesktopFooter />
       </div>
     );
   }
@@ -42,7 +52,7 @@ export default function DesktopBrandsView() {
       <DesktopNavbar />
 
       {/* Main Banner */}
-      <section className="luxury-page-hero bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] text-center relative overflow-hidden min-h-[480px] flex flex-col justify-center">
+      <section className="luxury-page-hero bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] text-center relative overflow-x-hidden min-h-[620px] flex flex-col justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(209,178,62,0.06),transparent_60%)]" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#D1B23E]/20 to-transparent" />
         <div className="relative mx-auto max-w-4xl px-6 space-y-6">
@@ -68,11 +78,11 @@ export default function DesktopBrandsView() {
               onClick={() => router.push(`/brands/${brand._id}`)}
               className="cursor-pointer group flex flex-col items-center bg-[#171717] border border-white/5 p-8 rounded-2xl hover:border-[#D1B23E] hover:shadow-[0_0_20px_rgba(209,178,62,0.1)] transition-all duration-300"
             >
-              <div className="luxury-logo-panel w-full h-32 rounded-xl flex items-center justify-center p-4 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+              <div className="luxury-logo-panel w-full h-36 rounded-xl flex items-center justify-center p-5 overflow-hidden group-hover:scale-105 transition-transform duration-300">
                 <img
                   src={getImageUrl(brand.logo, 'brand')}
                   alt={brand.name}
-                  className="luxury-logo-image max-h-full object-contain"
+                  className="luxury-logo-image max-h-full max-w-full object-contain"
                   onError={(e) => (e.target.src = '/assets/images/fallback-brand.png')}
                 />
               </div>

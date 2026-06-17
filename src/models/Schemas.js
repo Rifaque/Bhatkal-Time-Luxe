@@ -52,18 +52,48 @@ const statsSchema = new mongoose.Schema({
 });
 
 const orderSchema = new mongoose.Schema({
+  orderId: { type: String, sparse: true },
   cartId: { type: String, required: true },
   items: [
     {
-      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
       name: { type: String, required: true },
+      brand: { type: String, default: '' },
       price: { type: Number, required: true },
       quantity: { type: Number, required: true },
+      image: { type: String, default: '' },
     },
   ],
   total: { type: Number, required: true },
   message: { type: String },
+  customer: {
+    name: { type: String, default: '' },
+    phone: { type: String, default: '' },
+    email: { type: String, default: '' },
+    address: { type: String, default: '' },
+    city: { type: String, default: '' },
+    state: { type: String, default: '' },
+    country: { type: String, default: '' },
+  },
+  orderStatus: {
+    type: String,
+    enum: ['pending', 'awaiting_payment', 'paid', 'processing', 'packed', 'shipped', 'delivered', 'cancelled', 'refunded'],
+    default: 'pending',
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'partially_paid', 'paid', 'failed', 'refunded'],
+    default: 'pending',
+  },
+  paymentMethod: { type: String, default: '' },
+  trackingNumber: { type: String, default: '' },
+  internalNotes: { type: String, default: '' },
+  adminApproved: { type: Boolean, default: false },
+  viewCount: { type: Number, default: 0 },
+  firstViewedAt: { type: Date },
+  lastViewedAt: { type: Date },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 const adminSchema = new mongoose.Schema({

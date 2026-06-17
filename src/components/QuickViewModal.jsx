@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, ShoppingBag, Eye, Loader2 } from 'lucide-react';
+import { X, ShoppingBag, Eye } from 'lucide-react';
+import { ModalContentSk } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/image';
 import { Button } from '@/components/ui/button';
+import { useCurrency } from '@/context/CurrencyContext';
 import axios from 'axios';
 
 export default function QuickViewModal({ productId, onClose }) {
@@ -11,6 +13,7 @@ export default function QuickViewModal({ productId, onClose }) {
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState(false);
   const [addedMessage, setAddedMessage] = useState('');
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     if (!productId) return;
@@ -29,12 +32,14 @@ export default function QuickViewModal({ productId, onClose }) {
         setLoading(false);
       });
 
-    // Prevent body scrolling while modal is open
     document.body.style.overflow = 'hidden';
+    const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handleEsc);
     return () => {
       document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleEsc);
     };
-  }, [productId]);
+  }, [productId, onClose]);
 
   const addToCart = async () => {
     if (!product) return;
@@ -72,23 +77,21 @@ export default function QuickViewModal({ productId, onClose }) {
   if (!productId) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-      <div 
-        className="relative w-full max-w-4xl bg-[#2A2A2A] text-white rounded-2xl border border-white/10 shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh]"
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in" onClick={onClose}>
+      <div
+        className="relative w-full max-w-4xl bg-[#171717] text-white rounded-2xl border border-white/[0.07] shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col md:flex-row overflow-hidden max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
-        <button 
+        <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-20 p-2 bg-black/40 hover:bg-black/75 rounded-full text-gray-400 hover:text-white transition-colors"
+          className="absolute right-4 top-4 z-20 p-2 bg-black/30 border border-white/[0.08] hover:bg-black/60 hover:border-white/15 rounded-full text-gray-500 hover:text-white transition-all duration-200"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {loading ? (
-          <div className="w-full h-96 flex items-center justify-center">
-            <Loader2 className="animate-spin text-[#D1B23E]" size={36} />
-          </div>
+          <ModalContentSk />
         ) : product ? (
           <>
             {/* Left: Product Image */}
@@ -112,10 +115,10 @@ export default function QuickViewModal({ productId, onClose }) {
                 {/* Price Tag */}
                 <div className="flex items-center gap-3">
                   <span className="text-2xl font-bold">
-                    ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                    {formatPrice(product.price)}
                   </span>
                   <span className="text-sm text-gray-400 line-through opacity-70">
-                    ₹{new Intl.NumberFormat('en-IN').format(product.MRP)}
+                    {formatPrice(product.MRP)}
                   </span>
                   {product.MRP > product.price && (
                     <span className="bg-[#D1B23E] text-black px-2 py-0.5 text-xs rounded font-bold">

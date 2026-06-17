@@ -1,36 +1,22 @@
-// src/admin/components/AdminLogs.jsx
+'use client';
 
-import React from "react";
-import { adminLogs } from "../constants/adminLogs";
+import { adminLogs } from '../constants/adminLogs';
 
-const AdminLogs = () => {
+export default function AdminLogs() {
+  if (adminLogs.length === 0) {
+    return (
+      <p className="text-sm text-gray-500">No activity logged yet.</p>
+    );
+  }
+
   return (
-    <div style={{ marginTop: "2rem" }}>
-      <h2 style={{ fontSize: "1.2rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
-        📘 Admin Logs
-      </h2>
-      <div style={{
-        background: "#1a1a1a",
-        color: "#eee",
-        padding: "1rem",
-        borderRadius: "0.5rem",
-        maxHeight: "250px",
-        overflowY: "auto",
-        border: "1px solid #333"
-      }}>
-        {adminLogs.length === 0 ? (
-          <p style={{ color: "#aaa" }}>No logs yet.</p>
-        ) : (
-          adminLogs.map((log, index) => (
-            <div key={index} style={{ marginBottom: "1rem" }}>
-              <p>{log.message}</p>
-              <small style={{ color: "#888" }}>{log.date}</small>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
+    <ul className="space-y-3">
+      {adminLogs.map((log, index) => (
+        <li key={index} className="flex items-start justify-between gap-4 rounded-2xl border border-white/6 bg-white/[0.025] px-4 py-3">
+          <p className="text-sm text-gray-300 leading-relaxed">{log.message}</p>
+          <time className="shrink-0 text-[11px] text-gray-600 font-mono mt-0.5">{log.date}</time>
+        </li>
+      ))}
+    </ul>
   );
-};
-
-export default AdminLogs;
+}

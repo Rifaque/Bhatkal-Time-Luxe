@@ -34,7 +34,7 @@ export default function DesktopContactView() {
       <DesktopNavbar />
 
       {/* Hero */}
-      <section className="luxury-page-hero bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] text-center relative overflow-hidden min-h-[440px] flex flex-col justify-center">
+      <section className="luxury-page-hero bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] text-center relative overflow-x-hidden min-h-[580px] flex flex-col justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(209,178,62,0.06),transparent_60%)]" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#D1B23E]/20 to-transparent" />
         <div className="relative mx-auto max-w-3xl px-6 space-y-5">

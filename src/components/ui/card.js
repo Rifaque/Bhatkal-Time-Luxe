@@ -1,12 +1,12 @@
-export function Card({ children, className }) {
+export function Card({ children, className = '' }) {
     return (
-      <div className={`bg-gray-800 rounded-2xl shadow-md p-4 ${className}`}>
+      <div className={`rounded-2xl ${className}`}>
         {children}
       </div>
     );
   }
-  
-  export function CardContent({ children }) {
-    return <div className="text-white">{children}</div>;
+
+  export function CardContent({ children, className = '' }) {
+    return <div className={className}>{children}</div>;
   }
   

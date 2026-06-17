@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { Search, ShoppingCart, Shield } from 'lucide-react';
+import { Search, ShoppingCart } from 'lucide-react';
 import btimehome from '@/assets/images/btimehome.webp';
 import SearchOverlay from './SearchOverlay';
+import CurrencyPicker from './CurrencyPicker';
 
 export default function DesktopNavbar() {
   const [cartCount, setCartCount] = useState(0);
@@ -68,11 +69,11 @@ export default function DesktopNavbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-[#1e1e1e]/85 backdrop-blur-md">
+      <header className="luxury-glass-header sticky top-0 z-50 w-full">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
           {/* Left: Logo and Links */}
           <div className="flex items-center space-x-12">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center opacity-90 hover:opacity-100 transition-opacity duration-200">
               <Image
                 src={btimehome}
                 alt="Bhatkal Time Luxe Logo"
@@ -80,14 +81,14 @@ export default function DesktopNavbar() {
                 priority
               />
             </Link>
-            <nav className="hidden lg:flex items-center space-x-8">
+            <nav className="hidden lg:flex items-center space-x-8 bg-transparent">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`text-sm font-medium tracking-wide transition-colors hover:text-[#D1B23E] ${
+                    className={`text-sm font-medium tracking-wide transition-colors duration-200 hover:text-[#D1B23E] ${
                       isActive ? 'text-[#D1B23E]' : 'text-gray-400'
                     }`}
                   >
@@ -99,38 +100,32 @@ export default function DesktopNavbar() {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-5">
             {/* Search Trigger Command Pill */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center justify-between rounded-full bg-white/5 border border-white/5 px-4 py-2 text-xs text-gray-400 hover:bg-white/10 transition-all w-48 xl:w-56 group cursor-pointer"
+              className="flex items-center justify-between rounded-full bg-white/[0.04] border border-white/[0.08] px-4 py-2 text-xs text-gray-500 hover:bg-white/[0.07] hover:border-white/15 hover:text-gray-300 transition-all duration-200 w-48 xl:w-56 group cursor-pointer"
             >
               <span className="flex items-center space-x-2">
-                <Search size={14} className="text-gray-400 group-hover:text-white transition-colors" />
-                <span className="group-hover:text-white transition-colors">Search catalog...</span>
+                <Search size={13} className="shrink-0" />
+                <span>Search catalog...</span>
               </span>
-              <kbd className="hidden sm:inline-block text-[9px] bg-white/5 border border-white/10 text-gray-500 px-1.5 py-0.5 rounded font-mono font-normal">
+              <kbd className="hidden sm:inline-block text-[9px] bg-white/[0.06] border border-white/10 text-gray-600 px-1.5 py-0.5 rounded font-mono font-normal">
                 ⌘K
               </kbd>
             </button>
 
-            {/* Admin Dashboard */}
-            <Link
-              href="/admin/dashboard"
-              className="text-gray-400 hover:text-[#D1B23E] p-2 transition-colors"
-              title="Admin Portal"
-            >
-              <Shield size={18} />
-            </Link>
+            {/* Currency Switcher */}
+            <CurrencyPicker />
 
             {/* Shopping Cart */}
             <Link
               href="/cart"
-              className="relative text-gray-400 hover:text-[#D1B23E] p-2 transition-colors"
+              className="relative text-gray-500 hover:text-[#D1B23E] p-2 transition-colors duration-200"
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={19} />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#D1B23E] text-[9px] font-bold text-black ring-2 ring-[#1e1e1e]">
+                <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#D1B23E] text-[9px] font-bold text-black ring-2 ring-[#0a0a0a]">
                   {cartCount}
                 </span>
               )}

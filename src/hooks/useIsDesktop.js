@@ -1,18 +1,15 @@
 import { useState, useEffect } from 'react';
 
 export default function useIsDesktop(breakpoint = 1024) {
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(null);
 
   useEffect(() => {
-    setIsDesktop(window.innerWidth >= breakpoint);
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= breakpoint);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const mq = window.matchMedia(`(min-width: ${breakpoint}px)`);
+    setIsDesktop(mq.matches);
+    const handler = (e) => setIsDesktop(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
   }, [breakpoint]);
 
   return isDesktop;
 }
-

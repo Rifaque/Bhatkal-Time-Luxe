@@ -6,6 +6,6 @@ import MobileProductView from './MobileProductView';
 
 export default function ProductPage() {
   const isDesktop = useIsDesktop();
-
+  if (isDesktop === null) return null;
   return isDesktop ? <DesktopProductView /> : <MobileProductView />;
 }

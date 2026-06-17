@@ -25,7 +25,11 @@ export async function PUT(req, { params }) {
       return NextResponse.json({ error: 'Product not found in cart' }, { status: 404 });
     }
 
-    cart.items[itemIndex].quantity = quantity;
+    if (quantity <= 0) {
+      cart.items.splice(itemIndex, 1);
+    } else {
+      cart.items[itemIndex].quantity = quantity;
+    }
     cart.updatedAt = new Date();
     await cart.save();
 

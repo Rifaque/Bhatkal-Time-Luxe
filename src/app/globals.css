@@ -54,11 +54,21 @@ input,
 select,
 textarea {
   transition:
-    color 160ms ease,
-    background-color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
+    color 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease,
+    opacity 200ms ease;
+}
+
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #141414;
+  color: #ffffff;
 }
 
 a:focus-visible,
@@ -66,8 +76,10 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #D1B23E;
-  outline-offset: 3px;
+  outline: 1.5px solid rgba(209, 178, 62, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px rgba(209, 178, 62, 0.07);
 }
 
 .main-content {
@@ -75,8 +87,9 @@ textarea:focus-visible {
 }
 
 nav {
-  background-color: #1E1E1E; /* Ensure nav background color matches */
-  padding-bottom: env(safe-area-inset-bottom); /* Adjust padding on iOS */
+  /* Mobile bottom nav uses !bg-[#1E1E1E] for explicit background.
+     Do not set background here — it breaks desktop navbar glassmorphism. */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Custom Scrollbar */
@@ -156,8 +169,8 @@ nav {
 }
 
 .luxury-page-hero {
-  padding-top: clamp(6rem, 8vw, 8.5rem);
-  padding-bottom: clamp(4rem, 6vw, 5.75rem);
+  padding-top: clamp(7.5rem, 10vw, 10.5rem);
+  padding-bottom: clamp(5rem, 7vw, 7.5rem);
 }
 
 .luxury-page-section {
@@ -165,14 +178,39 @@ nav {
 }
 
 .luxury-logo-panel {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), rgba(244, 236, 205, 0.96)),
-    linear-gradient(145deg, #faf7ee, #e7dcc0);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 20px 45px rgba(0, 0, 0, 0.18);
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .luxury-logo-image {
-  filter: contrast(1.15) brightness(1.08) drop-shadow(0 12px 20px rgba(0, 0, 0, 0.12));
+  /* no drop-shadow — let the image speak cleanly */
+}
+
+/* Premium glass navbar — 90% opaque so it owns its appearance at all scroll depths */
+.luxury-glass-header {
+  background: rgba(18, 18, 18, 0.92);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Search modal focus-within form row */
+.search-form-row:focus-within {
+  background-color: rgba(255, 255, 255, 0.018);
+  border-bottom-color: rgba(209, 178, 62, 0.18);
+}
+
+/* Skeleton shimmer — luxury dark-mode palette */
+@keyframes sk-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.sk {
+  background: linear-gradient(90deg, #242424 25%, #2d2d2d 50%, #242424 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.75rem;
 }

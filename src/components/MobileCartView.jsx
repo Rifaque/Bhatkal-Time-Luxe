@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Home, Tag, ShoppingCart } from 'lucide-react';
+import { Home, Tag, ShoppingCart, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import Loader from '@/components/Loader';
 import { getImageUrl } from '@/lib/image';
@@ -107,10 +107,11 @@ export default function MobileCartView() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="!bg-[#333] text-white hover:bg-[#444] border-none"
-                        onClick={() => updateQuantity(item.product._id, Math.max(1, item.quantity - 1))}
+                        className="!bg-[#333] text-white hover:bg-red-500/80 border-none"
+                        onClick={() => item.quantity === 1 ? updateQuantity(item.product._id, 0) : updateQuantity(item.product._id, item.quantity - 1)}
+                        aria-label={item.quantity === 1 ? 'Remove item' : 'Decrease quantity'}
                       >
-                        -
+                        {item.quantity === 1 ? <Trash2 size={13} /> : '-'}
                       </Button>
                       <span className="px-2">{item.quantity}</span>
                       <Button

@@ -10,8 +10,10 @@ import QuickViewModal from '@/components/QuickViewModal';
 import Loader from '@/components/Loader';
 import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export default function DesktopProductView() {
+  const { formatPrice } = useCurrency();
   const {
     product,
     loading,
@@ -149,12 +151,12 @@ export default function DesktopProductView() {
             <div className="p-6 bg-white/5 border border-white/5 rounded-2xl space-y-3">
               <div className="flex items-end gap-3.5">
                 <span className="text-3xl font-bold text-white">
-                  ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                  {formatPrice(product.price)}
                 </span>
                 {product.MRP > product.price && (
                   <>
                     <span className="text-lg text-gray-500 line-through opacity-75">
-                      ₹{new Intl.NumberFormat('en-IN').format(product.MRP)}
+                      {formatPrice(product.MRP)}
                     </span>
                     <span className="bg-[#D1B23E] text-black px-2.5 py-0.5 text-xs rounded font-bold uppercase tracking-wider">
                       {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
@@ -282,7 +284,7 @@ export default function DesktopProductView() {
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <div className="text-sm font-bold text-white">
-                        ₹{new Intl.NumberFormat('en-IN').format(p.price)}
+                        {formatPrice(p.price)}
                       </div>
                       <Button
                         onClick={(e) => {

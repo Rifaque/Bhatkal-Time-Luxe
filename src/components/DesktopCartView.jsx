@@ -2,16 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Trash2, ArrowLeft, ShieldCheck, Truck, MessageCircle } from 'lucide-react';
 import axios from 'axios';
 import DesktopNavbar from './DesktopNavbar';
 import DesktopFooter from './DesktopFooter';
-import Loader from '@/components/Loader';
+import { Sk, CartItemSk } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/image';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export default function DesktopCartView() {
+  const { formatPrice } = useCurrency();
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
   const router = useRouter();
@@ -73,8 +74,30 @@ export default function DesktopCartView() {
 
   if (loading) {
     return (
-      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
+      <div className="bg-[#1e1e1e] text-white min-h-screen font-sans antialiased flex flex-col">
+        <DesktopNavbar />
+        <main className="mx-auto max-w-7xl px-6 py-16 w-full flex-1">
+          {/* Title area */}
+          <Sk className="h-8 w-64 mb-10" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Cart items column */}
+            <div className="lg:col-span-2">
+              {Array.from({ length: 3 }).map((_, i) => <CartItemSk key={i} />)}
+            </div>
+            {/* Order summary column */}
+            <div className="space-y-4 lg:pt-2">
+              <Sk className="h-5 w-36 mb-4" />
+              <Sk className="h-3.5 w-full" />
+              <Sk className="h-3.5 w-full" />
+              <Sk className="h-3.5 w-4/5" />
+              <div className="pt-4 border-t border-white/5">
+                <Sk className="h-5 w-full mb-4" />
+                <Sk className="h-12 w-full !rounded-2xl" />
+              </div>
+            </div>
+          </div>
+        </main>
+        <DesktopFooter />
       </div>
     );
   }
@@ -104,7 +127,7 @@ export default function DesktopCartView() {
             <ShoppingCart size={64} className="mx-auto text-gray-500 opacity-60" />
             <h2 className="text-2xl font-serif">Your Cart is Empty</h2>
             <p className="text-gray-400 max-w-md mx-auto text-sm font-serif">
-              You haven't added any luxury watches to your collection yet. Browse our catalog to discover elite references.
+              You haven&apos;t added any luxury watches to your collection yet. Browse our catalog to discover elite references.
             </p>
             <Button
               onClick={() => router.push('/')}
@@ -120,15 +143,15 @@ export default function DesktopCartView() {
               {cartItems.map((item) => {
                 if (!item.product) return null;
                 return (
-                  <Card
+                  <div
                     key={item.product._id}
-                    className="!bg-[#171717] border border-white/5 text-white rounded-2xl overflow-hidden shadow-lg hover:border-white/10 transition-colors"
+                    className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden hover:border-[#D1B23E]/20 transition-all duration-200 shadow-sm"
                   >
-                    <CardContent className="p-4 flex items-center gap-4">
+                    <div className="p-4 flex items-center gap-5">
                       {/* Product Thumbnail */}
                       <div
                         onClick={() => router.push(`/product/${item.product._id}`)}
-                        className="w-20 h-20 bg-white rounded-xl flex items-center justify-center p-2 shrink-0 overflow-hidden cursor-pointer"
+                        className="w-20 h-20 bg-white rounded-xl flex items-center justify-center p-2 shrink-0 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                       >
                         <img
                           src={getImageUrl(item.product.images?.[0] || item.product.image)}
@@ -150,41 +173,44 @@ export default function DesktopCartView() {
                           {item.product.name}
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">{item.product.color || 'Classic'}</p>
-                        <div className="text-sm font-bold text-white mt-1">
-                          ₹{new Intl.NumberFormat('en-IN').format(item.product.price)}
+                        <div className="text-sm font-bold text-white mt-1.5">
+                          {formatPrice(item.product.price)}
                         </div>
                       </div>
 
                       {/* Controls and Actions */}
                       <div className="flex items-center gap-4 shrink-0">
-                        {/* Quantity adjusts */}
-                        <div className="flex items-center space-x-2 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl text-sm">
+                        {/* Quantity controls */}
+                        <div className="flex items-center space-x-2 bg-white/5 border border-white/15 px-3 py-1.5 rounded-xl">
                           <button
-                            onClick={() => updateQuantity(item.product._id, Math.max(1, item.quantity - 1))}
-                            className="text-gray-400 hover:text-white transition-colors w-5 text-center"
+                            onClick={() => item.quantity === 1 ? removeItem(item.product._id) : updateQuantity(item.product._id, item.quantity - 1)}
+                            className="text-gray-400 hover:text-red-400 transition-colors w-5 flex items-center justify-center"
+                            aria-label={item.quantity === 1 ? 'Remove item' : 'Decrease quantity'}
                           >
-                            −
+                            {item.quantity === 1 ? <Trash2 size={13} /> : <span className="font-semibold leading-none">−</span>}
                           </button>
-                          <span className="font-semibold min-w-4 text-center text-sm">{item.quantity}</span>
+                          <span className="font-semibold min-w-5 text-center text-sm text-white">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
-                            className="text-gray-400 hover:text-white transition-colors w-5 text-center"
+                            className="text-gray-400 hover:text-white transition-colors w-5 text-center font-semibold leading-none"
+                            aria-label="Increase quantity"
                           >
                             +
                           </button>
                         </div>
 
-                        {/* Trash trigger */}
+                        {/* Remove button */}
                         <button
                           onClick={() => removeItem(item.product._id)}
-                          className="text-gray-600 hover:text-red-400 p-1.5 transition-colors"
+                          className="text-gray-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-400/10 transition-all duration-200"
                           title="Remove item"
+                          aria-label={`Remove ${item.product.name} from cart`}
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -197,7 +223,7 @@ export default function DesktopCartView() {
                 <div className="flex justify-between">
                   <span className="text-gray-400">Cart Subtotal</span>
                   <span className="font-semibold text-white">
-                    ₹{new Intl.NumberFormat('en-IN').format(total)}
+                    {formatPrice(total)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -216,7 +242,7 @@ export default function DesktopCartView() {
               <div className="flex justify-between items-end">
                 <span className="text-base font-serif text-white">Order Total</span>
                 <span className="text-2xl font-bold text-[#D1B23E]">
-                  ₹{new Intl.NumberFormat('en-IN').format(total)}
+                  {formatPrice(total)}
                 </span>
               </div>
 

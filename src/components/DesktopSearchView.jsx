@@ -2,15 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, SlidersHorizontal, Frown, X } from 'lucide-react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useToast } from '@/context/ToastContext';
 import DesktopNavbar from './DesktopNavbar';
 import DesktopFooter from './DesktopFooter';
 import QuickViewModal from './QuickViewModal';
-import Loader from '@/components/Loader';
+import { Sk, ProductCardSk } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
 
@@ -18,6 +19,8 @@ export default function DesktopSearchView() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
+  const { formatPrice } = useCurrency();
+  const { toast } = useToast();
 
   const [query, setQuery] = useState(initialQuery);
   const [products, setProducts] = useState([]);
@@ -92,16 +95,44 @@ export default function DesktopSearchView() {
     try {
       await axios.post('/api/cart', { product: productId, quantity: 1 });
       window.dispatchEvent(new Event('cart-updated'));
-      alert('Watch added to cart!');
+      toast({ message: 'Watch added to your cart.', type: 'success' });
     } catch (err) {
       console.error('Failed to add to cart', err);
+      toast({ message: 'Failed to add to cart.', type: 'error' });
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
+      <div className="bg-[#1e1e1e] text-white min-h-screen font-sans antialiased flex flex-col">
+        <DesktopNavbar />
+        <main className="mx-auto max-w-7xl px-6 py-12 w-full flex-1">
+          <Sk className="h-8 w-80 mb-10" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            {/* Sidebar placeholder */}
+            <div className="lg:col-span-3 bg-[#171717] border border-white/5 rounded-3xl p-6 space-y-6">
+              <Sk className="h-5 w-24" />
+              <div className="border-t border-white/5 pt-6 space-y-3">
+                <Sk className="h-2.5 w-16" />
+                <Sk className="h-10 w-full !rounded-xl" />
+              </div>
+              <div className="space-y-3">
+                <Sk className="h-2.5 w-14" />
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <Sk className="h-4 w-4 !rounded" />
+                    <Sk className="h-3 w-24" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Product grid placeholder */}
+            <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => <ProductCardSk key={i} />)}
+            </div>
+          </div>
+        </main>
+        <DesktopFooter />
       </div>
     );
   }
@@ -244,18 +275,20 @@ export default function DesktopSearchView() {
                       <div className="flex items-center justify-between pt-2">
                         <div>
                           <div className="text-base font-bold text-white">
-                            ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                            {formatPrice(product.price)}
                           </div>
                           {product.MRP > product.price && (
                             <div className="text-xs text-gray-500 line-through opacity-60">
-                              ₹{new Intl.NumberFormat('en-IN').format(product.MRP)}
+                              {formatPrice(product.MRP)}
                             </div>
                           )}
                         </div>
                         <Button
+                          variant="secondary"
                           onClick={(e) => addToCart(product._id, e)}
                           disabled={!product.inStock}
-                          className="!bg-white/5 border border-white/10 hover:border-[#D1B23E] hover:bg-[#D1B23E] hover:text-black font-semibold text-xs py-1.5 px-3 rounded-lg transition-all"
+                          className="font-semibold text-xs py-1.5 px-3.5 rounded-lg"
+                          aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                         >
                           {product.inStock ? '+ Add' : 'OOS'}
                         </Button>

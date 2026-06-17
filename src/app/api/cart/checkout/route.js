@@ -3,6 +3,14 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { Cart, Product, Stats, Order } from '@/models/Schemas';
 import { getOrCreateCartId } from '../route';
 
+const fmt = (n) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(n);
+
+function generateOrderId(count) {
+  const year = new Date().getFullYear();
+  return `BTL-${year}-${String(count).padStart(6, '0')}`;
+}
+
 export async function GET() {
   try {
     const cartId = await getOrCreateCartId();
@@ -13,40 +21,44 @@ export async function GET() {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
-    let message = 'Order Details:\n';
     let total = 0;
     const orderItems = [];
 
-    // Process each item
     for (const item of cart.items) {
       if (item.product) {
         const itemTotal = item.product.price * item.quantity;
         total += itemTotal;
-        message += `${item.product.name} - Quantity: ${item.quantity}, Price: ${item.product.price}, Subtotal: ${itemTotal}\n`;
-        
-        // Increment product order count
         await Product.findByIdAndUpdate(item.product._id, { $inc: { orderCount: item.quantity } });
-
-        // Prepare order snapshot
         orderItems.push({
           product: item.product._id,
           name: item.product.name,
+          brand: item.product.brand?.name || '',
           price: item.product.price,
           quantity: item.quantity,
+          image: item.product.images?.[0] || '',
         });
       }
     }
-    message += `Total: ${total}`;
 
-    // Increment global order counter
+    // Increment global order counter and get new count
     const globalStats = await Stats.findOneAndUpdate(
       {},
       { $inc: { globalOrderCount: 1 } },
       { new: true, upsert: true }
     );
 
-    // Save order history record
+    const orderId = generateOrderId(globalStats.globalOrderCount);
+
+    // Build WhatsApp message
+    let message = `BHATKAL TIME LUXE — ORDER CONFIRMATION\n\nOrder ID: ${orderId}\n\nORDER DETAILS:\n`;
+    for (const item of orderItems) {
+      message += `• ${item.name} — Qty: ${item.quantity} — ${fmt(item.price * item.quantity)}\n`;
+    }
+    message += `\nORDER TOTAL: ${fmt(total)}\n\nPlease quote Order ID ${orderId} in all communications.\nOur team will reach out to confirm your order.`;
+
+    // Save order with orderId
     const order = new Order({
+      orderId,
       cartId,
       items: orderItems,
       total,
@@ -66,7 +78,7 @@ export async function GET() {
       total,
       globalOrderCount: globalStats.globalOrderCount,
       whatsappUrl,
-      orderId: order._id,
+      orderId,
     });
   } catch (err) {
     console.error('❌ Cart Checkout Error:', err);

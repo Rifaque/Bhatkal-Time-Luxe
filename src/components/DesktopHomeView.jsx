@@ -2,17 +2,22 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Eye, ShieldCheck, Truck, RefreshCw, Send, Check, Award, Compass, Star } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, ArrowUp, Eye, ShieldCheck, Truck, RefreshCw, MessageCircle } from 'lucide-react';
 import DesktopNavbar from './DesktopNavbar';
 import DesktopFooter from './DesktopFooter';
 import QuickViewModal from './QuickViewModal';
-import Loader from '@/components/Loader';
+import { Sk, ProductCardSk, BrandCardSk } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useToast } from '@/context/ToastContext';
 
 export default function DesktopHomeView() {
+  const { formatPrice } = useCurrency();
+  const { toast } = useToast();
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const [topCategories, setTopCategories] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [featured, setFeatured] = useState([]);
@@ -20,10 +25,6 @@ export default function DesktopHomeView() {
   const [loading, setLoading] = useState(true);
   const [quickViewId, setQuickViewId] = useState(null);
   const [hoveredCardId, setHoveredCardId] = useState(null);
-  
-  // Newsletter states
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
   
   const catalogRef = useRef(null);
   const router = useRouter();
@@ -98,24 +99,64 @@ export default function DesktopHomeView() {
     try {
       await axios.post('/api/cart', { product: productId, quantity: 1 });
       window.dispatchEvent(new Event('cart-updated'));
-      alert('Watch added to cart!');
+      toast({ message: 'Watch added to your cart.', type: 'success' });
     } catch (err) {
       console.error('Failed to add to cart', err);
+      toast({ message: 'Failed to add to cart.', type: 'error' });
     }
   };
 
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setSubscribed(true);
-    setEmail('');
-    setTimeout(() => setSubscribed(false), 5000);
-  };
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 500);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   if (loading) {
     return (
-      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
+      <div className="bg-[#1e1e1e] text-white min-h-screen font-sans antialiased flex flex-col">
+        <DesktopNavbar />
+        {/* Hero placeholder */}
+        <div className="min-h-[55vh] flex items-center border-b border-white/5 bg-gradient-to-b from-[#222] to-[#1e1e1e]">
+          <div className="mx-auto max-w-7xl px-6 w-full grid grid-cols-12 gap-12 items-center py-16">
+            <div className="col-span-5 space-y-5">
+              <Sk className="h-2.5 w-24" />
+              <Sk className="h-12 w-full" />
+              <Sk className="h-12 w-4/5" />
+              <Sk className="h-3.5 w-full" />
+              <Sk className="h-3.5 w-3/4" />
+              <div className="flex gap-4 pt-3">
+                <Sk className="h-13 w-44 !rounded-2xl" />
+                <Sk className="h-13 w-40 !rounded-2xl" />
+              </div>
+            </div>
+            <div className="col-span-7">
+              <Sk className="aspect-[4/3] w-full !rounded-3xl" />
+            </div>
+          </div>
+        </div>
+        {/* Product grid placeholder */}
+        <div className="py-20 mx-auto max-w-7xl px-6 w-full">
+          <div className="text-center mb-12 space-y-3">
+            <Sk className="h-2.5 w-24 mx-auto" />
+            <Sk className="h-8 w-64 mx-auto" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => <ProductCardSk key={i} />)}
+          </div>
+        </div>
+        {/* Brand strip placeholder */}
+        <div className="py-12 mx-auto max-w-7xl px-6 w-full">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-3">
+                <Sk className="w-14 h-14 !rounded-xl" />
+                <Sk className="h-2.5 w-14" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <DesktopFooter />
       </div>
     );
   }
@@ -183,7 +224,7 @@ export default function DesktopHomeView() {
                       <h3 className="text-base font-bold text-white truncate max-w-[200px] mt-1 group-hover:text-[#D1B23E] transition-colors">{heroWatch.name}</h3>
                     </div>
                     <div className="text-right">
-                      <span className="text-base font-bold text-[#D1B23E]">₹{new Intl.NumberFormat('en-IN').format(heroWatch.price)}</span>
+                      <span className="text-base font-bold text-[#D1B23E]">{formatPrice(heroWatch.price)}</span>
                     </div>
                   </div>
                 </div>
@@ -314,11 +355,11 @@ export default function DesktopHomeView() {
                   <div className="flex items-center justify-between pt-2">
                     <div>
                       <div className="text-base font-bold text-white">
-                        ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                        {formatPrice(product.price)}
                       </div>
                       {product.MRP > product.price && (
                         <div className="text-xs text-gray-500 line-through opacity-60">
-                          ₹{new Intl.NumberFormat('en-IN').format(product.MRP)}
+                          {formatPrice(product.MRP)}
                         </div>
                       )}
                     </div>
@@ -327,6 +368,7 @@ export default function DesktopHomeView() {
                       onClick={(e) => addToCart(product._id, e)}
                       disabled={!product.inStock}
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
+                      aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
                       {product.inStock ? '+ Add' : 'OOS'}
                     </Button>
@@ -420,7 +462,7 @@ export default function DesktopHomeView() {
                     <span className="text-gray-500 uppercase font-bold tracking-wider">{executiveWatch.brand?.name}</span>
                     <h4 className="text-sm font-bold text-white truncate max-w-[150px] mt-0.5">{executiveWatch.name}</h4>
                   </div>
-                  <span className="text-sm font-bold text-[#D1B23E]">₹{new Intl.NumberFormat('en-IN').format(executiveWatch.price)}</span>
+                  <span className="text-sm font-bold text-[#D1B23E]">{formatPrice(executiveWatch.price)}</span>
                 </div>
               </div>
             </div>
@@ -488,11 +530,11 @@ export default function DesktopHomeView() {
                   <div className="flex items-center justify-between pt-2">
                     <div>
                       <div className="text-base font-bold text-white">
-                        ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                        {formatPrice(product.price)}
                       </div>
                       {product.MRP > product.price && (
                         <div className="text-xs text-gray-500 line-through opacity-60">
-                          ₹{new Intl.NumberFormat('en-IN').format(product.MRP)}
+                          {formatPrice(product.MRP)}
                         </div>
                       )}
                     </div>
@@ -501,6 +543,7 @@ export default function DesktopHomeView() {
                       onClick={(e) => addToCart(product._id, e)}
                       disabled={!product.inStock}
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
+                      aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
                       {product.inStock ? '+ Add' : 'OOS'}
                     </Button>
@@ -535,7 +578,7 @@ export default function DesktopHomeView() {
                     <span className="text-gray-500 uppercase font-bold tracking-wider">{sportWatch.brand?.name}</span>
                     <h4 className="text-sm font-bold text-white truncate max-w-[150px] mt-0.5">{sportWatch.name}</h4>
                   </div>
-                  <span className="text-sm font-bold text-[#D1B23E]">₹{new Intl.NumberFormat('en-IN').format(sportWatch.price)}</span>
+                  <span className="text-sm font-bold text-[#D1B23E]">{formatPrice(sportWatch.price)}</span>
                 </div>
               </div>
             </div>
@@ -627,11 +670,11 @@ export default function DesktopHomeView() {
                   <div className="flex items-center justify-between pt-2">
                     <div>
                       <div className="text-base font-bold text-white">
-                        ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                        {formatPrice(product.price)}
                       </div>
                       {product.MRP > product.price && (
                         <div className="text-xs text-gray-500 line-through opacity-60">
-                          ₹{new Intl.NumberFormat('en-IN').format(product.MRP)}
+                          {formatPrice(product.MRP)}
                         </div>
                       )}
                     </div>
@@ -640,6 +683,7 @@ export default function DesktopHomeView() {
                       onClick={(e) => addToCart(product._id, e)}
                       disabled={!product.inStock}
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
+                      aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
                       {product.inStock ? '+ Add' : 'OOS'}
                     </Button>
@@ -651,109 +695,71 @@ export default function DesktopHomeView() {
         </div>
       </section>
 
-      {/* Chapter 8: Collector's Club (Aspirational Redesign) */}
-      <section className="pt-32 pb-48 bg-gradient-to-b from-[#121212] via-[#0e0e0e] to-[#0a0a0a] border-t border-white/5 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#D1B23E]/5 blur-[120px] pointer-events-none" />
-        
-        <div className="relative mx-auto max-w-6xl px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          {/* Left Side: Membership Perks (Aspirational details) */}
-          <div className="lg:col-span-7 space-y-8 text-left">
-            <div className="space-y-3">
-              <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing font-sans">
-                Exclusive Invitation
-              </span>
-              <h2 className="text-4xl font-serif font-bold text-white tracking-tight leading-tight">
-                Join The Connoisseur’s Vault
-              </h2>
-              <p className="text-base text-gray-400 font-serif leading-relaxed max-w-lg">
-                Enter an exclusive membership experience crafted for premium watch collectors. Request an invitation to unlock privileged access and personalized horological services.
-              </p>
-            </div>
-
-            {/* Perks list */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-              <div className="flex gap-3">
-                <ShieldCheck size={20} className="text-[#D1B23E] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-white font-serif">Priority Vault Access</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed font-sans mt-0.5">Receive immediate notifications on newly arrived luxury references before public release.</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Award size={20} className="text-[#D1B23E] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-white font-serif">Bespoke Private Imports</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed font-sans mt-0.5">Acquisition consulting for rare, bespoke historical watch designs and unlisted collections.</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Compass size={20} className="text-[#D1B23E] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-white font-serif">Collector Pre-Launch</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed font-sans mt-0.5">Secure exclusive allocations for limited-edition drops and premium reference additions.</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Star size={20} className="text-[#D1B23E] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-white font-serif">Private Concierge Line</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed font-sans mt-0.5">Direct direct line support to certified watch specialists for appraisal and dial advice.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side: Aspirational Invite Input form */}
-          <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md relative">
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <h3 className="text-xl font-serif font-bold text-white">Request Invitation</h3>
-                <p className="text-xs text-gray-500 font-serif">Submit your credentials to apply for membership.</p>
-              </div>
-
-              {subscribed ? (
-                <div className="flex flex-col items-center justify-center gap-2 text-green-400 text-sm font-semibold py-8 animate-fade-in text-center font-serif">
-                  <Check size={28} className="mx-auto mb-2 text-[#D1B23E]" />
-                  <span>Your invitation request has been logged. Our concierge team will review and connect shortly.</span>
-                </div>
-              ) : (
-                <form onSubmit={handleSubscribe} className="space-y-4">
-                  <div>
-                    <input
-                      type="email"
-                      required
-                      placeholder="Enter your email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-[#1e1e1e] border border-white/10 rounded-xl px-5 py-3.5 text-xs text-white focus:outline-none focus:border-[#D1B23E] transition-all placeholder-gray-500 font-sans"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full !bg-[#D1B23E] hover:bg-[#c1a22e] text-black font-semibold py-3.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all duration-300 font-serif"
-                  >
-                    <Send size={12} /> Request Membership Invite
-                  </Button>
-                  <p className="text-[10px] text-center text-gray-600 font-sans leading-normal">
-                    * Membership is complimentary but restricted to verified collectors. We values privacy and secure access protocols.
-                  </p>
-                </form>
-              )}
-            </div>
-          </div>
-
+      {/* Concierge Support */}
+      <section className="pt-32 pb-40 bg-gradient-to-b from-[#121212] via-[#0e0e0e] to-[#080808] border-t border-white/5 relative">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#D1B23E]/5 blur-[120px]" />
         </div>
 
-        {/* Closing decorative element */}
-        <div className="relative mx-auto max-w-6xl px-6 mt-20 flex flex-col items-center gap-4">
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#D1B23E]/40 to-transparent" />
-          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-sans">
+        <div className="relative mx-auto max-w-6xl px-6 text-center space-y-10">
+          <div className="space-y-4">
+            <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold font-sans">
+              Personal Concierge
+            </span>
+            <h2 className="text-4xl font-serif font-bold text-white tracking-tight leading-tight">
+              Need Assistance Finding The Perfect Timepiece?
+            </h2>
+            <p className="text-base text-gray-400 font-serif leading-relaxed max-w-2xl mx-auto">
+              Our concierge team is available to help with product recommendations, availability checks, pricing inquiries, and order support.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="/api/whatsapp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 bg-[#D1B23E] hover:bg-[#e0c45b] text-black font-semibold px-8 py-4 rounded-2xl transition-all duration-300 text-sm shadow-lg"
+            >
+              <MessageCircle size={16} />
+              Chat on WhatsApp
+            </a>
+            <Link
+              href="/contact"
+              className="flex items-center gap-2.5 border border-white/15 hover:border-[#D1B23E]/40 text-white hover:text-[#D1B23E] font-semibold px-8 py-4 rounded-2xl transition-all duration-300 text-sm"
+            >
+              <ArrowRight size={16} />
+              Contact Page
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-4">
+            <div className="space-y-2 p-4">
+              <ShieldCheck size={22} className="text-[#D1B23E] mx-auto" />
+              <p className="text-xs text-gray-400 font-sans">Certified Authenticity</p>
+            </div>
+            <div className="space-y-2 p-4">
+              <Truck size={22} className="text-[#D1B23E] mx-auto" />
+              <p className="text-xs text-gray-400 font-sans">Insured Shipping</p>
+            </div>
+            <div className="space-y-2 p-4">
+              <RefreshCw size={22} className="text-[#D1B23E] mx-auto" />
+              <p className="text-xs text-gray-400 font-sans">Easy Returns</p>
+            </div>
+            <div className="space-y-2 p-4">
+              <MessageCircle size={22} className="text-[#D1B23E] mx-auto" />
+              <p className="text-xs text-gray-400 font-sans">24/7 Support</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-6 mt-24 flex flex-col items-center gap-5">
+          <div className="h-px w-48 bg-gradient-to-r from-transparent via-[#D1B23E]/50 to-transparent" />
+          <p className="text-[11px] uppercase tracking-[0.35em] text-gray-500 font-sans">
             Bhatkal Time Luxe · Est. 2020 · Certified Horological Excellence
           </p>
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#D1B23E]/40 to-transparent" />
+          <div className="h-px w-48 bg-gradient-to-r from-transparent via-[#D1B23E]/50 to-transparent" />
         </div>
-
       </section>
 
       {/* Chapter 9: Premium Footer */}
@@ -761,11 +767,22 @@ export default function DesktopHomeView() {
 
       {/* Quick View Modal Overlay */}
       {quickViewId && (
-        <QuickViewModal 
-          productId={quickViewId} 
-          onClose={() => setQuickViewId(null)} 
+        <QuickViewModal
+          productId={quickViewId}
+          onClose={() => setQuickViewId(null)}
         />
       )}
+
+      {/* Back to Top */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Back to top"
+        className={`fixed bottom-8 right-8 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-[#D1B23E]/30 bg-[#1a1a1a]/90 text-[#D1B23E] shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-sm transition-all duration-300 hover:border-[#D1B23E]/60 hover:bg-[#D1B23E] hover:text-black hover:shadow-[0_4px_20px_rgba(209,178,62,0.25)] ${
+          showBackToTop ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-3 pointer-events-none'
+        }`}
+      >
+        <ArrowUp size={16} strokeWidth={2.5} />
+      </button>
     </div>
   );
 }

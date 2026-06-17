@@ -2,53 +2,140 @@
 
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { CheckCircle2, ShieldCheck, Truck, MessageCircle, ArrowLeft, Home, ShoppingCart } from 'lucide-react';
+import DesktopNavbar from '@/components/DesktopNavbar';
+import DesktopFooter from '@/components/DesktopFooter';
+import useIsDesktop from '@/hooks/useIsDesktop';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
 
-function OrderConfirmationContent() {
-  const searchParams = useSearchParams();
+function ConfirmationCard({ orderId, total }) {
   const router = useRouter();
-  const orderId = searchParams.get('orderId');
-  const total = searchParams.get('total');
+  const formattedTotal = total
+    ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(total)
+    : null;
 
   return (
-    <div className="!bg-[#2A2A2A] text-white min-h-screen flex flex-col justify-center items-center p-4">
-      <CheckCircle size={100} className="text-[#D1B23E] mb-6" />
-      
-      <h1 className="text-2xl font-bold mb-4">Order Confirmed!</h1>
-      
-      {orderId && (
-        <p className="text-gray-300 mb-2">
-          Order ID: <span className="font-semibold">{orderId}</span>
-        </p>
-      )}
-      
-      {total && (
-        <p className="text-xl font-semibold mb-6">
-          Total: &#8377; {new Intl.NumberFormat('en-IN').format(total)}
-        </p>
-      )}
-      
-      <p className="text-center text-gray-400 mb-6">
-        Thank you for your purchase. 
-        We'll send you a confirmation message shortly.
-      </p>
-      
-      <div className="flex space-x-4">
-        <Button 
-          onClick={() => router.push('/')}
-          className="!bg-[#D1B23E] text-black font-semibold hover:bg-[#c1a22e] transition"
-        >
-          Continue Shopping
-        </Button>
+    <div className="w-full max-w-lg mx-auto">
+      {/* Icon */}
+      <div className="flex justify-center mb-8">
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full bg-[#D1B23E]/15 blur-2xl scale-150" />
+          <div className="relative h-24 w-24 rounded-full bg-[#D1B23E]/12 border border-[#D1B23E]/25 flex items-center justify-center">
+            <CheckCircle2 size={48} className="text-[#D1B23E]" />
+          </div>
+        </div>
       </div>
+
+      {/* Heading */}
+      <div className="text-center mb-8">
+        <p className="text-xs uppercase tracking-[0.3em] text-[#D1B23E] font-semibold mb-3">Order Placed</p>
+        <h1 className="text-3xl font-serif font-bold text-white mb-3">Thank You for Your Order</h1>
+        <p className="text-gray-400 text-sm leading-relaxed max-w-sm mx-auto">
+          Your order has been received. Our team will reach out via WhatsApp to confirm and arrange delivery.
+        </p>
+      </div>
+
+      {/* Order details card */}
+      <div className="rounded-2xl border border-white/8 bg-white/3 p-6 mb-6 space-y-4">
+        {orderId && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-400">Order Reference</span>
+            <span className="font-mono font-semibold text-white tracking-wide">{orderId}</span>
+          </div>
+        )}
+        {formattedTotal && (
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-400">Order Total</span>
+            <span className="text-xl font-bold text-[#D1B23E]">{formattedTotal}</span>
+          </div>
+        )}
+        <div className="pt-3 border-t border-white/6 flex items-center gap-2 text-xs text-emerald-400">
+          <MessageCircle size={14} />
+          <span>WhatsApp confirmation will arrive shortly</span>
+        </div>
+      </div>
+
+      {/* Trust strip */}
+      <div className="rounded-2xl border border-white/6 bg-white/2 px-5 py-4 mb-8 space-y-3">
+        <div className="flex items-center gap-3 text-xs text-gray-400">
+          <ShieldCheck size={15} className="text-[#D1B23E] shrink-0" />
+          <span>Certified authenticity guarantee on every timepiece</span>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-gray-400">
+          <Truck size={15} className="text-[#D1B23E] shrink-0" />
+          <span>Complimentary fully insured shipping included</span>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <button
+        onClick={() => router.push('/')}
+        className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#D1B23E] px-6 py-3.5 text-sm font-semibold text-black transition hover:bg-[#e0c45b] active:scale-[0.98]"
+      >
+        Continue Shopping
+      </button>
     </div>
   );
 }
 
+function DesktopConfirmation({ orderId, total }) {
+  return (
+    <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col">
+      <DesktopNavbar />
+      <main className="flex-1 flex items-center justify-center px-6 py-20">
+        <ConfirmationCard orderId={orderId} total={total} />
+      </main>
+      <DesktopFooter />
+    </div>
+  );
+}
+
+function MobileConfirmation({ orderId, total }) {
+  const router = useRouter();
+  return (
+    <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col pb-20">
+      <main className="flex-1 flex items-center justify-center px-5 py-16">
+        <ConfirmationCard orderId={orderId} total={total} />
+      </main>
+      <nav className="fixed bottom-0 w-full bg-[#1E1E1E] flex justify-around py-3 z-40 border-t border-white/8">
+        <button
+          onClick={() => router.push('/')}
+          className="flex flex-col items-center gap-1 text-[#D1B23E]"
+        >
+          <Home size={20} />
+          <span className="text-[10px]">Home</span>
+        </button>
+        <button
+          onClick={() => router.push('/cart')}
+          className="flex flex-col items-center gap-1 text-gray-400"
+        >
+          <ShoppingCart size={20} />
+          <span className="text-[10px]">Cart</span>
+        </button>
+      </nav>
+    </div>
+  );
+}
+
+function OrderConfirmationContent() {
+  const searchParams = useSearchParams();
+  const isDesktop = useIsDesktop();
+  const orderId = searchParams.get('orderId');
+  const total = searchParams.get('total');
+
+  if (isDesktop === null) return null;
+  return isDesktop
+    ? <DesktopConfirmation orderId={orderId} total={total} />
+    : <MobileConfirmation orderId={orderId} total={total} />;
+}
+
 export default function OrderConfirmation() {
   return (
-    <Suspense fallback={<div className="!bg-[#2A2A2A] text-white min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#1e1e1e] text-white flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-2 border-[#D1B23E]/30 border-t-[#D1B23E] animate-spin" />
+      </div>
+    }>
       <OrderConfirmationContent />
     </Suspense>
   );

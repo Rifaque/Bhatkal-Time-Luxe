@@ -8,7 +8,7 @@ import Loader from '@/components/Loader';
 
 function SearchPageContent() {
   const isDesktop = useIsDesktop();
-
+  if (isDesktop === null) return null;
   return isDesktop ? <DesktopSearchView /> : <MobileSearchView />;
 }
 

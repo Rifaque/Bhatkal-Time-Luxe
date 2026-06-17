@@ -1,5 +1,6 @@
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/Providers";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-serif",
@@ -22,7 +23,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${playfairDisplay.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans"><Providers>{children}</Providers></body>
     </html>
   );
 }

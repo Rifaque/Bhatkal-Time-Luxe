@@ -134,6 +134,7 @@ export default function MobileHomeView() {
           alt="Bhatkal Timeluxe Logo"
           className="h-16 w-auto cursor-pointer"
           onClick={() => router.push('/')}
+          priority
         />
         <Button variant="ghost" className="mt-2" onClick={() => router.push('/search')}>
           <Search size={24} className="text-[#D1B23E]" />
@@ -354,17 +355,6 @@ export default function MobileHomeView() {
       {/* Footer */}
       <footer className="mt-8 text-center text-gray-400 text-sm mb-6">
         <p>BHATKAL TIME LUXE</p>
-        <p>
-          Powered by{' '}
-          <a
-            href="https://www.hubzero.in"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-[#D1B23E] opacity-80 hover:underline"
-          >
-            Hubzero
-          </a>
-        </p>
         <p>&copy; {new Date().getFullYear()} All rights reserved.</p>
       </footer>
 

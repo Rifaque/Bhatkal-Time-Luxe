@@ -2,17 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 import DesktopNavbar from './DesktopNavbar';
 import DesktopFooter from './DesktopFooter';
 import QuickViewModal from './QuickViewModal';
-import Loader from '@/components/Loader';
+import { Sk, ProductCardSk } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useToast } from '@/context/ToastContext';
 
 export default function DesktopNewArrivalsView() {
+  const { formatPrice } = useCurrency();
+  const { toast } = useToast();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quickViewId, setQuickViewId] = useState(null);
@@ -38,16 +41,31 @@ export default function DesktopNewArrivalsView() {
     try {
       await axios.post('/api/cart', { product: productId, quantity: 1 });
       window.dispatchEvent(new Event('cart-updated'));
-      alert('Watch added to cart!');
+      toast({ message: 'Watch added to your cart.', type: 'success' });
     } catch (err) {
       console.error('Failed to add to cart', err);
+      toast({ message: 'Failed to add to cart.', type: 'error' });
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
+      <div className="bg-[#1e1e1e] text-white min-h-screen font-sans antialiased flex flex-col">
+        <DesktopNavbar />
+        {/* Page title placeholder */}
+        <div className="mx-auto max-w-7xl px-6 pt-16 pb-6 w-full">
+          <Sk className="h-2.5 w-28 mb-4" />
+          <Sk className="h-10 w-72 mb-3" />
+          <Sk className="h-3.5 w-96" />
+          <div className="h-px bg-white/5 mt-8" />
+        </div>
+        {/* Product grid placeholder */}
+        <div className="pb-20 mx-auto max-w-7xl px-6 w-full flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 9 }).map((_, i) => <ProductCardSk key={i} />)}
+          </div>
+        </div>
+        <DesktopFooter />
       </div>
     );
   }
@@ -58,7 +76,7 @@ export default function DesktopNewArrivalsView() {
       <DesktopNavbar />
 
       {/* Hero Banner */}
-      <section className="luxury-page-hero bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] text-center relative overflow-hidden min-h-[480px] flex flex-col justify-center">
+      <section className="luxury-page-hero bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] text-center relative overflow-x-hidden min-h-[620px] flex flex-col justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(209,178,62,0.06),transparent_60%)]" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#D1B23E]/20 to-transparent" />
         <div className="relative mx-auto max-w-4xl px-6 space-y-6">
@@ -126,11 +144,11 @@ export default function DesktopNewArrivalsView() {
                 <div className="flex items-center justify-between pt-2">
                   <div>
                     <div className="text-lg font-bold text-white">
-                      ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                      {formatPrice(product.price)}
                     </div>
                     {product.MRP > product.price && (
                       <div className="text-xs text-gray-500 line-through opacity-60">
-                        ₹{new Intl.NumberFormat('en-IN').format(product.MRP)}
+                        {formatPrice(product.MRP)}
                       </div>
                     )}
                   </div>
@@ -138,7 +156,8 @@ export default function DesktopNewArrivalsView() {
                     variant="secondary"
                     onClick={(e) => addToCart(product._id, e)}
                     disabled={!product.inStock}
-                    className="font-semibold text-xs py-1.5 px-3 rounded-lg"
+                    className="font-semibold text-xs py-1.5 px-3.5 rounded-lg"
+                    aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                   >
                     {product.inStock ? '+ Add' : 'OOS'}
                   </Button>

@@ -2,17 +2,20 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, ShieldCheck, Award, Hourglass } from 'lucide-react';
 import DesktopNavbar from './DesktopNavbar';
 import DesktopFooter from './DesktopFooter';
 import QuickViewModal from './QuickViewModal';
-import Loader from '@/components/Loader';
+import { Sk, ProductCardSk } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useToast } from '@/context/ToastContext';
 
 export default function DesktopBrandDetailView() {
+  const { formatPrice } = useCurrency();
+  const { toast } = useToast();
   const params = useParams();
   const brandId = params?.id;
   const [brand, setBrand] = useState(null);
@@ -68,16 +71,36 @@ export default function DesktopBrandDetailView() {
     try {
       await axios.post('/api/cart', { product: productId, quantity: 1 });
       window.dispatchEvent(new Event('cart-updated'));
-      alert('Watch added to cart!');
+      toast({ message: 'Watch added to your cart.', type: 'success' });
     } catch (err) {
       console.error('Failed to add to cart', err);
+      toast({ message: 'Failed to add to cart.', type: 'error' });
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
+      <div className="bg-[#1e1e1e] text-white min-h-screen font-sans antialiased flex flex-col">
+        <DesktopNavbar />
+        {/* Brand header placeholder */}
+        <div className="bg-gradient-to-b from-[#242424] to-[#1e1e1e] border-b border-white/5 py-16">
+          <div className="mx-auto max-w-7xl px-6 flex items-center gap-8">
+            <Sk className="w-24 h-24 !rounded-2xl shrink-0" />
+            <div className="space-y-3">
+              <Sk className="h-2.5 w-20" />
+              <Sk className="h-10 w-64" />
+              <Sk className="h-3.5 w-96" />
+              <Sk className="h-3.5 w-80" />
+            </div>
+          </div>
+        </div>
+        {/* Product grid placeholder */}
+        <div className="py-16 mx-auto max-w-7xl px-6 w-full flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => <ProductCardSk key={i} />)}
+          </div>
+        </div>
+        <DesktopFooter />
       </div>
     );
   }
@@ -100,17 +123,17 @@ export default function DesktopBrandDetailView() {
       <DesktopNavbar />
 
       {/* Brand Hero & Story Header */}
-      <section className="luxury-page-hero bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] relative overflow-hidden border-b border-white/5 min-h-[420px] flex flex-col justify-center">
+      <section className="luxury-page-hero bg-gradient-to-b from-[#2A2A2A] to-[#1e1e1e] relative overflow-x-hidden border-b border-white/5 min-h-[560px] flex flex-col justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(209,178,62,0.06),transparent_60%)]" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#D1B23E]/20 to-transparent" />
         <div className="relative mx-auto max-w-7xl px-6 grid grid-cols-1 md:grid-cols-12 gap-10 items-center w-full">
           {/* Logo container */}
           <div className="md:col-span-3 flex justify-center">
-            <div className="w-44 h-44 bg-white rounded-3xl p-6 flex items-center justify-center border-2 border-[#D1B23E]/20 shadow-xl overflow-hidden mix-blend-normal">
+            <div className="luxury-logo-panel w-44 h-44 rounded-3xl p-6 flex items-center justify-center border-2 border-[#D1B23E]/20 shadow-xl overflow-hidden">
               <img
                 src={getImageUrl(brand.logo, 'brand')}
                 alt={brand.name}
-                className="max-h-full object-contain mix-blend-multiply"
+                className="luxury-logo-image max-h-full max-w-full object-contain"
                 onError={(e) => (e.target.src = '/assets/images/fallback-brand.png')}
               />
             </div>
@@ -191,11 +214,11 @@ export default function DesktopBrandDetailView() {
                   <div className="flex items-center justify-between pt-2">
                     <div>
                       <div className="text-lg font-bold text-white">
-                        ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                        {formatPrice(product.price)}
                       </div>
                       {product.MRP > product.price && (
                         <div className="text-xs text-gray-500 line-through opacity-60">
-                          ₹{new Intl.NumberFormat('en-IN').format(product.MRP)}
+                          {formatPrice(product.MRP)}
                         </div>
                       )}
                     </div>
@@ -203,7 +226,8 @@ export default function DesktopBrandDetailView() {
                       variant="secondary"
                       onClick={(e) => addToCart(product._id, e)}
                       disabled={!product.inStock}
-                      className="font-semibold text-xs py-1.5 px-3 rounded-lg"
+                      className="font-semibold text-xs py-1.5 px-3.5 rounded-lg"
+                      aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
                       {product.inStock ? '+ Add' : 'OOS'}
                     </Button>

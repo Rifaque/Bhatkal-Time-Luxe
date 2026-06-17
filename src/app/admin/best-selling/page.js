@@ -1,22 +1,30 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
+import { Plus, Trash2 } from 'lucide-react';
+import { getImageUrl } from '@/lib/image';
+import {
+  AdminShell,
+  AdminPanel,
+  AdminEmptyState,
+  adminPrimaryButtonClasses,
+  adminDangerButtonClasses,
+  adminSelectStyles,
+} from '../components/AdminShell';
+
+const fmt = (n) => new Intl.NumberFormat('en-IN').format(n);
 
 export default function BestSellingManager() {
-  const router = useRouter();
   const [bestSelling, setBestSelling] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [products, setProducts] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  useEffect(() => {
-    fetchBestSelling();
-    fetchProducts();
-  }, []);
+  const [submitting, setSubmitting] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
 
   const fetchBestSelling = async () => {
     try {
@@ -30,12 +38,30 @@ export default function BestSellingManager() {
   const fetchProducts = async () => {
     try {
       const res = await axios.get('/api/products');
-      const sortedProducts = res.data.sort((a, b) => a.name.localeCompare(b.name));
-      setProducts(sortedProducts);
+      setProducts(res.data.sort((a, b) => a.name.localeCompare(b.name)));
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load products');
     }
   };
+
+  const fetchBrands = async () => {
+    try {
+      const res = await axios.get('/api/brands');
+      setBrands(res.data);
+    } catch { /* non-critical */ }
+  };
+
+  useEffect(() => {
+    fetchBestSelling();
+    fetchProducts();
+    fetchBrands();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const brandMap = useMemo(() => {
+    const map = {};
+    brands.forEach((b) => { map[b._id] = b.name; });
+    return map;
+  }, [brands]);
 
   const handleAddBestSelling = async (e) => {
     e.preventDefault();
@@ -45,27 +71,31 @@ export default function BestSellingManager() {
       setError('Please select a product');
       return;
     }
+    setSubmitting(true);
     try {
       const token = localStorage.getItem('adminToken');
       await axios.post(
         '/api/admin/best-selling',
         { productId: selectedProduct.value },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSuccess('Best-selling product added successfully!');
+      setSuccess('Best-selling product added!');
       setSelectedProduct(null);
       fetchBestSelling();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to add best-selling product');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleDeleteBestSelling = async (id) => {
-    if (!window.confirm('Are you sure you want to remove this best-selling product?')) return;
+    if (pendingDeleteId !== id) {
+      setPendingDeleteId(id);
+      setTimeout(() => setPendingDeleteId((p) => (p === id ? null : p)), 3000);
+      return;
+    }
+    setPendingDeleteId(null);
     setError('');
     setSuccess('');
     try {
@@ -73,95 +103,151 @@ export default function BestSellingManager() {
       await axios.delete(`/api/admin/best-selling/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setSuccess('Best-selling product removed successfully!');
+      setSuccess('Best-selling product removed!');
       fetchBestSelling();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to remove best-selling product');
     }
   };
 
-  const productOptions = products.map((product) => ({
-    value: product._id,
-    label: product.name,
-  }));
+  const productOptions = useMemo(() => products.map((p) => ({
+    value: p._id,
+    label: p.name,
+    brand: brandMap[p.brand] || '',
+    price: p.price,
+    MRP: p.MRP,
+    image: p.images?.[0] || '',
+  })), [products, brandMap]);
 
-  return (
-    <div className="p-4 !bg-[#2A2A2A] text-white min-h-screen relative pb-16">
-      <h2 className="text-2xl font-bold mb-4">Manage Best-Selling Products</h2>
-      {error && <p className="mb-2 text-red-500">{error}</p>}
-      {success && <p className="mb-2 text-green-500">{success}</p>}
-      
-      <form onSubmit={handleAddBestSelling} className="mb-6 !bg-[#1e1e1e] p-4 rounded-lg shadow max-w-lg">
-        <h3 className="text-xl font-semibold mb-2">Add New Best-Selling Product</h3>
-        <div className="mb-4">
-          <label className="block text-gray-300 text-sm mb-1">Select Product</label>
-          <Select 
-            options={productOptions} 
-            value={selectedProduct} 
-            onChange={setSelectedProduct} 
-            placeholder="Select a product..."
-            isSearchable
-            className="text-black"
-            styles={{
-              control: (provided) => ({
-                ...provided,
-                backgroundColor: '#494949',
-                borderColor: '#494949',
-                color: 'white',
-              }),
-              singleValue: (provided) => ({
-                ...provided,
-                color: 'white',
-              }),
-              menu: (provided) => ({
-                ...provided,
-                backgroundColor: '#494949',
-              }),
-              option: (provided, state) => ({
-                ...provided,
-                backgroundColor: state.isSelected ? '#333333' : '#494949',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: '#5a5a5a',
-                },
-              }),
-            }}
-          />
-        </div>
-        <button 
-          type="submit"
-          className="w-full py-2 bg-[#D1B23E] text-black rounded-full font-bold hover:bg-[#c1a22e] transition"
-        >
-          Add Best-Selling
-        </button>
-      </form>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {bestSelling.map((item) => {
-          if (!item.productId) return null;
-
-          return (
-            <div key={item._id} className="!bg-[#1e1e1e] p-4 rounded-lg shadow flex flex-col items-center">
-              <p className="text-lg font-semibold text-center">{item.productId.name}</p>
-              <button
-                onClick={() => handleDeleteBestSelling(typeof item.productId === 'object' ? item.productId._id : item.productId)}
-                className="mt-2 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition font-semibold"
-              >
-                Remove
-              </button>
-            </div>
-          );
-        })}
+  const formatOptionLabel = (option) => (
+    <div className="flex items-center gap-3 py-0.5">
+      <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center p-1 shrink-0 overflow-hidden">
+        <img
+          src={getImageUrl(option.image)}
+          alt={option.label}
+          className="max-h-full object-contain"
+          onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
+        />
       </div>
-
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => router.push('/admin/dashboard')}
-          className="px-4 py-2 bg-[#D1B23E] text-black rounded-full shadow-lg hover:bg-[#c1a22e] transition font-bold"
-        >
-          Back to Dashboard
-        </button>
+      <div className="min-w-0">
+        <p className="text-[10px] text-[#D1B23E] uppercase tracking-wider font-bold leading-none">{option.brand}</p>
+        <p className="text-sm text-white font-medium truncate leading-snug">{option.label}</p>
+        <div className="flex items-baseline gap-1.5">
+          <p className="text-xs text-gray-400">₹{fmt(option.price)}</p>
+          {option.MRP > option.price && (
+            <p className="text-[10px] text-gray-600 line-through">₹{fmt(option.MRP)}</p>
+          )}
+        </div>
       </div>
     </div>
+  );
+
+  const validItems = bestSelling.filter((i) => i.productId);
+
+  return (
+    <AdminShell
+      eyebrow="Merchandising"
+      title="Best Selling"
+      description="Curate the Best Selling Timepieces section shown on the homepage."
+    >
+      <div className="space-y-6">
+
+        {(error || success) && (
+          <div className={`rounded-2xl border px-5 py-4 text-sm font-medium ${
+            error
+              ? 'border-red-500/20 bg-red-500/8 text-red-200'
+              : 'border-emerald-500/20 bg-emerald-500/8 text-emerald-200'
+          }`}>
+            {error || success}
+          </div>
+        )}
+
+        <AdminPanel title="Add Best-Selling Product" description="Select a product to include in the Best Selling section.">
+          <form onSubmit={handleAddBestSelling} className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1 space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                Select Product <span className="text-[#D1B23E]">*</span>
+              </label>
+              <Select
+                options={productOptions}
+                value={selectedProduct}
+                onChange={setSelectedProduct}
+                placeholder="Search and select a product..."
+                isSearchable
+                styles={adminSelectStyles}
+                formatOptionLabel={formatOptionLabel}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={submitting || !selectedProduct}
+              className={adminPrimaryButtonClasses}
+            >
+              <Plus size={16} />
+              {submitting ? 'Adding...' : 'Add to Best Selling'}
+            </button>
+          </form>
+        </AdminPanel>
+
+        <AdminPanel
+          title="Current Best Selling"
+          description={`${validItems.length} product${validItems.length !== 1 ? 's' : ''} in the Best Selling section`}
+        >
+          {validItems.length === 0 ? (
+            <AdminEmptyState
+              title="No best-selling products"
+              description="Add products above to populate the Best Selling Timepieces section."
+            />
+          ) : (
+            <div className="space-y-2">
+              {bestSelling.map((item) => {
+                if (!item.productId) return null;
+                const isPending = pendingDeleteId === item._id;
+                const p = item.productId;
+                const brand = brandMap[p.brand] || '';
+                return (
+                  <div
+                    key={item._id}
+                    className="flex items-center gap-4 rounded-2xl border border-white/8 bg-white/3 p-4 transition hover:border-white/15"
+                  >
+                    <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
+                      <img
+                        src={getImageUrl(p.images?.[0] || '')}
+                        alt={p.name}
+                        className="max-h-full object-contain"
+                        onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      {brand && (
+                        <p className="text-[10px] uppercase tracking-wider text-[#D1B23E] font-bold">{brand}</p>
+                      )}
+                      <p className="text-sm font-semibold text-white leading-snug mt-0.5 line-clamp-1">{p.name}</p>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-sm font-bold text-white">₹{fmt(p.price)}</span>
+                        {p.MRP > p.price && (
+                          <span className="text-xs text-gray-500 line-through">₹{fmt(p.MRP)}</span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteBestSelling(item._id)}
+                      className={isPending
+                        ? 'inline-flex items-center gap-2 rounded-2xl border border-red-500/60 bg-red-600 px-4 py-3 text-sm font-bold text-white transition shrink-0'
+                        : `${adminDangerButtonClasses} shrink-0`
+                      }
+                    >
+                      <Trash2 size={14} />
+                      {isPending ? 'Confirm?' : 'Remove'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </AdminPanel>
+
+      </div>
+    </AdminShell>
   );
 }

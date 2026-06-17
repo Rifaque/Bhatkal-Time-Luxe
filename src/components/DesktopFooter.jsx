@@ -118,17 +118,7 @@ export default function DesktopFooter() {
         {/* Bottom Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between pt-8 text-xs text-gray-500 space-y-4 sm:space-y-0">
           <p>&copy; {currentYear} Bhatkal Time Luxe. All rights reserved.</p>
-          <p>
-            Powered by{' '}
-            <a
-              href="https://www.hubzero.in"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-[#D1B23E] hover:underline"
-            >
-              Hubzero
-            </a>
-          </p>
+          <p>Crafted for watch connoisseurs.</p>
         </div>
       </div>
     </footer>

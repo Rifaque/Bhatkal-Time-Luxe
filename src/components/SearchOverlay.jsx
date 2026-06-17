@@ -4,12 +4,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, History, TrendingUp, Tag, Command, Keyboard } from 'lucide-react';
 import { getImageUrl } from '@/lib/image';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export default function SearchOverlay({ onClose }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const inputRef = useRef(null);
   const paletteRef = useRef(null);
@@ -113,32 +115,32 @@ export default function SearchOverlay({ onClose }) {
       onClick={onClose}
     >
       {/* Command Palette Dialog Box */}
-      <div 
+      <div
         ref={paletteRef}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl bg-[#171717] border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[70vh] animate-scale-up"
+        className="w-full max-w-2xl bg-[#131313] border border-white/[0.07] rounded-2xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.03)] flex flex-col max-h-[70vh] animate-scale-up"
       >
         {/* Search Header Input */}
-        <form onSubmit={handleSearchSubmit} className="flex items-center px-5 py-4 border-b border-white/5 relative">
-          <Search size={20} className="text-gray-400 mr-3 shrink-0" />
+        <form onSubmit={handleSearchSubmit} className="search-form-row flex items-center px-5 py-4 border-b border-white/[0.06] relative transition-colors duration-200">
+          <Search size={18} className="text-gray-500 mr-3 shrink-0" />
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search catalog... (e.g. Rolex, Chronograph)"
+            placeholder="Search catalog... e.g. Rolex, Chronograph"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent text-white text-base font-sans border-none outline-none focus:ring-0 placeholder-gray-500 pr-16"
+            className="w-full bg-transparent text-white text-sm font-sans border-none outline-none focus:ring-0 focus:outline-none placeholder-gray-600 pr-16 tracking-wide"
           />
           <div className="absolute right-4 flex items-center space-x-2">
-            <span className="text-[10px] bg-white/5 border border-white/10 text-gray-400 px-1.5 py-0.5 rounded font-mono">
+            <span className="text-[10px] bg-white/[0.05] border border-white/[0.08] text-gray-600 px-1.5 py-0.5 rounded-md font-mono tracking-wider">
               ESC
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-500 hover:text-white p-1 transition-colors"
+              className="text-gray-600 hover:text-gray-300 p-1 rounded-md hover:bg-white/5 transition-all duration-200"
             >
-              <X size={16} />
+              <X size={15} />
             </button>
           </div>
         </form>
@@ -160,7 +162,7 @@ export default function SearchOverlay({ onClose }) {
                         onClose();
                         router.push(`/product/${product._id}`);
                       }}
-                      className="flex items-center gap-4 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-[#D1B23E]/50 cursor-pointer transition-all hover:bg-white/10 group"
+                      className="flex items-center gap-4 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-[#D1B23E]/35 hover:bg-white/[0.07] cursor-pointer transition-all duration-150 group"
                     >
                       <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shrink-0 overflow-hidden p-1">
                         <img
@@ -180,7 +182,7 @@ export default function SearchOverlay({ onClose }) {
                       </div>
                       <div className="text-right shrink-0">
                         <div className="text-sm font-bold text-white">
-                          ₹{new Intl.NumberFormat('en-IN').format(product.price)}
+                          {formatPrice(product.price)}
                         </div>
                       </div>
                     </div>
@@ -188,15 +190,15 @@ export default function SearchOverlay({ onClose }) {
                   <button
                     type="submit"
                     onClick={handleSearchSubmit}
-                    className="w-full text-center py-2.5 bg-[#D1B23E] text-black font-semibold rounded-xl hover:bg-[#c1a22e] transition-colors text-xs mt-4"
+                    className="w-full text-center py-2.5 bg-[#D1B23E] text-black font-semibold rounded-xl hover:bg-[#c1a22e] hover:shadow-[0_4px_16px_rgba(209,178,62,0.2)] transition-all duration-200 text-xs mt-4"
                   >
-                    View All Matching References for "{query}"
+                    View All Matching References for &ldquo;{query}&rdquo;
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-10 text-gray-500 font-serif text-sm">
-                No matching luxury watches found for "{query}"
+              <div className="text-center py-10 text-gray-600 font-serif text-sm">
+                No matching luxury watches found for &ldquo;{query}&rdquo;
               </div>
             )
           ) : (
@@ -207,25 +209,25 @@ export default function SearchOverlay({ onClose }) {
                   <History size={12} /> Recent Searches
                 </span>
                 {recentSearches.length > 0 ? (
-                  <div className="flex flex-col space-y-1.5 text-sm">
+                  <div className="flex flex-col space-y-0.5 text-sm">
                     {recentSearches.map((term, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSuggestionClick(term)}
-                        className="text-left text-gray-300 hover:text-[#D1B23E] transition-colors py-1 truncate"
+                        className="text-left text-gray-400 hover:text-[#D1B23E] transition-colors duration-200 py-1.5 px-2 rounded-lg hover:bg-white/[0.04] truncate"
                       >
                         {term}
                       </button>
                     ))}
-                    <button 
+                    <button
                       onClick={clearRecentSearches}
-                      className="text-left text-[10px] text-gray-500 hover:text-white transition-colors pt-2"
+                      className="text-left text-[10px] text-gray-600 hover:text-gray-400 transition-colors duration-200 pt-2 px-2"
                     >
                       Clear history
                     </button>
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-600 font-serif">No recent queries.</p>
+                  <p className="text-xs text-gray-700 font-serif">No recent queries.</p>
                 )}
               </div>
 
@@ -239,7 +241,7 @@ export default function SearchOverlay({ onClose }) {
                     <button
                       key={idx}
                       onClick={() => handleSuggestionClick(term)}
-                      className="px-2.5 py-1 bg-white/5 border border-white/10 hover:border-[#D1B23E] hover:text-[#D1B23E] rounded-md text-xs text-gray-300 transition-all font-medium"
+                      className="px-3 py-1 bg-white/[0.04] border border-white/[0.08] hover:border-[#D1B23E]/45 hover:text-[#D1B23E] hover:bg-[#D1B23E]/[0.04] rounded-full text-xs text-gray-400 transition-all duration-200 font-medium"
                     >
                       {term}
                     </button>
@@ -251,12 +253,12 @@ export default function SearchOverlay({ onClose }) {
         </div>
 
         {/* Command Footer Guide */}
-        <div className="bg-white/5 px-5 py-3 border-t border-white/5 flex justify-between items-center text-[10px] text-gray-500 font-mono">
-          <span className="flex items-center gap-1">
-            <Command size={10} /> Enter to search catalog
+        <div className="bg-black/25 px-5 py-2.5 border-t border-white/[0.05] flex justify-between items-center text-[10px] text-gray-600 font-mono">
+          <span className="flex items-center gap-1.5">
+            <Command size={9} /> Enter to search
           </span>
-          <span className="flex items-center gap-1">
-            <Keyboard size={10} /> Esc to close
+          <span className="flex items-center gap-1.5">
+            <Keyboard size={9} /> Esc to close
           </span>
         </div>
       </div>

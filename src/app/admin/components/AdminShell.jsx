@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import axios from 'axios';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   ArrowUpRight,
+  ChevronDown,
   Gem,
   LayoutDashboard,
   LogOut,
@@ -16,7 +18,6 @@ import {
   Shield,
   Sparkles,
   Star,
-  Tags,
   Users,
 } from 'lucide-react';
 
@@ -24,7 +25,6 @@ const navigation = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Overview' },
   { href: '/admin/products', label: 'Products', icon: Package, group: 'Catalog' },
   { href: '/admin/brands', label: 'Brands', icon: Gem, group: 'Catalog' },
-  { href: '/admin/categories', label: 'Categories', icon: Tags, group: 'Catalog' },
   { href: '/admin/featured', label: 'Featured', icon: Sparkles, group: 'Merchandising' },
   { href: '/admin/best-selling', label: 'Best Selling', icon: Star, group: 'Merchandising' },
   { href: '/admin/top-brands', label: 'Top Brands', icon: Shield, group: 'Merchandising' },
@@ -35,6 +35,8 @@ const navigation = [
 
 export const adminInputClasses =
   'w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-gray-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition focus:border-[#D1B23E] focus:bg-white/7 focus:outline-none';
+
+export const adminSelectClasses = `${adminInputClasses} [color-scheme:dark]`;
 
 export const adminTextareaClasses = `${adminInputClasses} min-h-32 resize-y`;
 export const adminCheckboxClasses =
@@ -126,6 +128,22 @@ export function AdminShell({ eyebrow, title, description, actions, statStrip, ch
     }, {});
   }, [filteredNavigation]);
 
+  // The CSS canvas background comes from <html>, not <body> (CSS spec).
+  // globals.css sets html { background-color: #1e1e1e } which bleeds through at scroll depth.
+  // Override both html and body so the entire scrollable canvas stays #0d0d0d.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.backgroundColor;
+    const prevBody = body.style.backgroundColor;
+    html.style.backgroundColor = '#0d0d0d';
+    body.style.backgroundColor = '#0d0d0d';
+    return () => {
+      html.style.backgroundColor = prevHtml;
+      body.style.backgroundColor = prevBody;
+    };
+  }, []);
+
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
@@ -143,7 +161,7 @@ export function AdminShell({ eyebrow, title, description, actions, statStrip, ch
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(209,178,62,0.12),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.06),transparent_20%)]" />
 
       <div className="relative mx-auto flex min-h-screen max-w-[1800px] flex-col gap-6 px-4 py-4 lg:flex-row lg:px-6 lg:py-6">
-        <aside className="w-full shrink-0 rounded-[2rem] border border-white/8 bg-[#121212]/95 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:w-[296px] lg:overflow-hidden">
+        <aside className="w-full shrink-0 rounded-[2rem] border border-white/8 bg-[#121212] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.45)] lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:w-[296px] lg:overflow-hidden">
           <div className="flex h-full flex-col gap-5">
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
@@ -216,7 +234,7 @@ export function AdminShell({ eyebrow, title, description, actions, statStrip, ch
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 rounded-[2rem] border border-white/8 bg-[#101010]/95 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:p-8">
+        <main className="min-w-0 flex-1 rounded-[2rem] border border-white/8 bg-[#101010] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.45)] lg:p-8">
           <header className="border-b border-white/6 pb-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-3xl space-y-3">
@@ -302,6 +320,110 @@ export function AdminEmptyState({ title, description }) {
     <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-black/10 px-6 py-10 text-center">
       <h4 className="text-lg font-semibold text-white">{title}</h4>
       <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-gray-400">{description}</p>
+    </div>
+  );
+}
+
+export function AdminSelect({ value, onChange, options, className = '', placeholder = 'Select...', size = 'md' }) {
+  const [open, setOpen] = useState(false);
+  const [dropStyle, setDropStyle] = useState({});
+  const triggerRef = useRef(null);
+  const dropRef = useRef(null);
+
+  const reposition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const r = triggerRef.current.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const estimatedH = Math.min(options.length * 40 + 8, 272);
+    const below = vh - r.bottom >= estimatedH + 8;
+    const above = r.top >= estimatedH + 8;
+    const openUp = !below && above;
+    setDropStyle({
+      position: 'fixed',
+      left: r.left,
+      width: r.width,
+      zIndex: 9990,
+      ...(openUp ? { bottom: vh - r.top + 4 } : { top: r.bottom + 4 }),
+    });
+  }, [options.length]);
+
+  useEffect(() => {
+    if (!open) return;
+    reposition();
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+    return () => {
+      window.removeEventListener('scroll', reposition, true);
+      window.removeEventListener('resize', reposition);
+    };
+  }, [open, reposition]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => {
+      if (!triggerRef.current?.contains(e.target) && !dropRef.current?.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const selected = options.find((o) => String(o.value) === String(value));
+
+  const isSm = size === 'sm';
+  const triggerCls = isSm
+    ? 'w-full flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-left transition focus:border-[#D1B23E] focus:outline-none'
+    : 'w-full flex items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition focus:border-[#D1B23E] focus:outline-none';
+
+  const dropdown = open && typeof document !== 'undefined'
+    ? createPortal(
+        <div
+          ref={dropRef}
+          style={dropStyle}
+          className="rounded-2xl border border-white/10 bg-[#141414] shadow-[0_12px_48px_rgba(0,0,0,0.7)] overflow-hidden"
+        >
+          <div className="max-h-[264px] overflow-y-auto py-1">
+            {options.map((opt) => {
+              const active = String(opt.value) === String(value);
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => { onChange(opt.value); setOpen(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                    active
+                      ? 'bg-[#D1B23E]/12 text-[#D1B23E]'
+                      : 'text-white hover:bg-white/6'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>,
+        document.body
+      )
+    : null;
+
+  return (
+    <div ref={triggerRef} className={`relative ${className}`}>
+      <button type="button" onClick={() => setOpen((o) => !o)} className={triggerCls}>
+        <span className={`truncate ${selected ? 'text-white' : 'text-gray-500'}`}>
+          {selected?.label ?? placeholder}
+        </span>
+        <ChevronDown
+          size={14}
+          className={`shrink-0 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {dropdown}
     </div>
   );
 }
