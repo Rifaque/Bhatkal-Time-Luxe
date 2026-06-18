@@ -2,6 +2,7 @@
 
 import { useCurrency } from '@/context/CurrencyContext';
 import { getImageUrl } from '@/lib/image';
+import WishlistButton from '@/components/WishlistButton';
 
 export default function MobileProductCard({ product, onClick }) {
   const { formatPrice } = useCurrency();
@@ -23,6 +24,13 @@ export default function MobileProductCard({ product, onClick }) {
               -{discountPct}%
             </span>
           )}
+          <div className="absolute top-2 right-2 z-10">
+            <WishlistButton
+              productId={product._id}
+              size={13}
+              className="bg-black/25 backdrop-blur-sm p-1 rounded-full"
+            />
+          </div>
           <img
             src={getImageUrl(product.images?.[0] || product.image)}
             alt={product.name}

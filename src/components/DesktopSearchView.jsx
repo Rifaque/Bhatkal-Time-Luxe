@@ -26,8 +26,9 @@ export default function DesktopSearchView() {
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [priceRange, setPriceRange] = useState([1, 10000]);
+  const [priceRange, setPriceRange] = useState([1, 500000]);
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [sortBy, setSortBy] = useState('default');
   
   const [quickViewId, setQuickViewId] = useState(null);
   const [hoveredCardId, setHoveredCardId] = useState(null);
@@ -66,29 +67,31 @@ export default function DesktopSearchView() {
 
   const clearFilters = () => {
     setQuery('');
-    setPriceRange([1, 10000]);
+    setPriceRange([1, 500000]);
     setSelectedBrands([]);
+    setSortBy('default');
     router.push('/search');
   };
 
-  // Client filtering
-  const filteredProducts = products.filter((product) => {
+  // Client filtering + sorting
+  const filteredProducts = (() => {
     const lowerQuery = query.toLowerCase();
-    const nameMatch = product.name?.toLowerCase().includes(lowerQuery);
-    const aboutMatch = product.about?.toLowerCase().includes(lowerQuery);
-    const colorMatch = product.color?.toLowerCase().includes(lowerQuery);
-    const brandNameMatch = product.brand?.name?.toLowerCase().includes(lowerQuery);
-    
-    const textMatch = nameMatch || aboutMatch || colorMatch || brandNameMatch;
-    
-    // Price match
-    const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
-    
-    // Brand selection match
-    const brandMatch = selectedBrands.length === 0 || selectedBrands.includes(product.brand?._id);
-
-    return textMatch && priceMatch && brandMatch;
-  });
+    let results = products.filter((product) => {
+      const nameMatch = product.name?.toLowerCase().includes(lowerQuery);
+      const aboutMatch = product.about?.toLowerCase().includes(lowerQuery);
+      const colorMatch = product.color?.toLowerCase().includes(lowerQuery);
+      const brandNameMatch = product.brand?.name?.toLowerCase().includes(lowerQuery);
+      const textMatch = nameMatch || aboutMatch || colorMatch || brandNameMatch;
+      const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
+      const brandMatch = selectedBrands.length === 0 || selectedBrands.includes(product.brand?._id);
+      return textMatch && priceMatch && brandMatch;
+    });
+    if (sortBy === 'price_asc')  results = [...results].sort((a, b) => a.price - b.price);
+    if (sortBy === 'price_desc') results = [...results].sort((a, b) => b.price - a.price);
+    if (sortBy === 'name_asc')   results = [...results].sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'name_desc')  results = [...results].sort((a, b) => b.name.localeCompare(a.name));
+    return results;
+  })();
 
   const addToCart = async (productId, e) => {
     e.stopPropagation();
@@ -152,7 +155,7 @@ export default function DesktopSearchView() {
           <div className="lg:col-span-3 bg-[#171717] border border-white/5 rounded-3xl p-6 space-y-8 sticky top-28 shadow-lg">
             <div className="flex justify-between items-center pb-4 border-b border-white/5">
               <span className="font-serif font-bold text-lg flex items-center gap-1.5"><SlidersHorizontal size={18} /> Filters</span>
-              {(query || selectedBrands.length > 0 || priceRange[0] > 1 || priceRange[1] < 10000) && (
+              {(query || selectedBrands.length > 0 || priceRange[0] > 1 || priceRange[1] < 500000 || sortBy !== 'default') && (
                 <button onClick={clearFilters} className="text-xs text-[#D1B23E] hover:underline flex items-center gap-0.5">
                   <X size={12} /> Clear All
                 </button>
@@ -193,14 +196,15 @@ export default function DesktopSearchView() {
             <div className="space-y-4">
               <label className="text-xs uppercase tracking-wider text-gray-400 font-bold block">Price Range</label>
               <div className="flex justify-between text-xs text-gray-300 font-mono">
-                <span>₹{priceRange[0]}</span>
-                <span>₹{priceRange[1]}</span>
+                <span>{formatPrice(priceRange[0])}</span>
+                <span>{formatPrice(priceRange[1])}</span>
               </div>
               <div className="px-2">
                 <Slider
                   range
                   min={1}
-                  max={10000}
+                  max={500000}
+                  step={1000}
                   value={priceRange}
                   onChange={(val) => setPriceRange(val)}
                   trackStyle={[{ backgroundColor: '#D1B23E' }]}
@@ -215,6 +219,18 @@ export default function DesktopSearchView() {
           <div className="lg:col-span-9 space-y-6">
             <div className="flex justify-between items-center text-sm text-gray-400">
               <span>Showing {filteredProducts.length} matching references</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-[#171717] border border-white/10 text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#D1B23E]/40 cursor-pointer"
+                aria-label="Sort results"
+              >
+                <option value="default">Sort: Default</option>
+                <option value="price_asc">Price: Low → High</option>
+                <option value="price_desc">Price: High → Low</option>
+                <option value="name_asc">Name: A → Z</option>
+                <option value="name_desc">Name: Z → A</option>
+              </select>
             </div>
 
             {filteredProducts.length === 0 ? (

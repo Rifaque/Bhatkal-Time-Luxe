@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { icon: ShoppingCart, label: 'Cart',   path: '/cart'   },
 ];
 
-export default function MobileLayout({ children }) {
+export default function MobileLayout({ children, hideFAB = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,15 +57,17 @@ export default function MobileLayout({ children }) {
       </main>
 
       {/* WhatsApp FAB — sits just above bottom nav */}
-      <a
-        href="https://wa.me/916364282251"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Chat on WhatsApp"
-        className="fixed bottom-[72px] right-4 z-50 bg-[#171717] border border-white/10 p-3.5 rounded-full shadow-xl"
-      >
-        <FaWhatsapp size={20} style={{ color: '#D1B23E' }} />
-      </a>
+      {!hideFAB && (
+        <a
+          href="https://wa.me/916364282251"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat on WhatsApp"
+          className="fixed bottom-[72px] right-4 z-50 bg-[#171717] border border-white/10 p-3.5 rounded-full shadow-xl"
+        >
+          <FaWhatsapp size={20} style={{ color: '#D1B23E' }} />
+        </a>
+      )}
 
       {/* Bottom navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/8">

@@ -81,7 +81,7 @@ export default function MobileCartView() {
   const isEmpty = !loading && cartItems.length === 0;
 
   return (
-    <MobileLayout>
+    <MobileLayout hideFAB={!isEmpty}>
       {/* Page heading */}
       <div className="px-5 pt-6 pb-5 border-b border-white/5">
         <p className="text-[10px] uppercase tracking-[0.3em] text-[#D1B23E] font-semibold mb-1">

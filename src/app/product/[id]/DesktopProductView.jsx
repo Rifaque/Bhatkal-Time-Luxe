@@ -11,9 +11,15 @@ import Loader from '@/components/Loader';
 import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useToast } from '@/context/ToastContext';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import RecentlyViewedRow from '@/components/RecentlyViewedRow';
+import WishlistButton from '@/components/WishlistButton';
 
 export default function DesktopProductView() {
   const { formatPrice } = useCurrency();
+  const { toast } = useToast();
+  const { addItem } = useRecentlyViewed();
   const {
     product,
     loading,
@@ -31,18 +37,17 @@ export default function DesktopProductView() {
   const [quickViewId, setQuickViewId] = useState(null);
   const [hoveredCardId, setHoveredCardId] = useState(null);
 
-  // Fetch related products from the same brand
   useEffect(() => {
-    if (!product || !product.brand?._id) return;
+    if (!product) return;
+    addItem(product);
+    if (!product.brand?._id) return;
     fetch(`/api/products/brand/${product.brand._id}`)
       .then((res) => res.json())
       .then((data) => {
-        // Filter out current product
-        const filtered = data.filter((p) => p._id !== product._id);
-        setRelatedProducts(filtered.slice(0, 4));
+        setRelatedProducts(data.filter((p) => p._id !== product._id).slice(0, 4));
       })
       .catch((err) => console.error('Failed to fetch related products', err));
-  }, [product]);
+  }, [product, addItem]);
 
   const addToCart = async () => {
     if (!product) return;
@@ -216,6 +221,10 @@ export default function DesktopProductView() {
                   Buy via WhatsApp
                 </Button>
               </div>
+              <div className="flex items-center gap-2 pt-2">
+                <WishlistButton productId={product._id} size={16} />
+                <span className="text-xs text-gray-500">Save to wishlist</span>
+              </div>
             </div>
 
             {/* Detail Trust Section */}
@@ -276,7 +285,7 @@ export default function DesktopProductView() {
                   <div className="mt-5 space-y-2 flex-1 flex flex-col justify-between">
                     <div onClick={() => router.push(`/product/${p._id}`)} className="cursor-pointer">
                       <span className="text-[10px] uppercase tracking-widest text-[#D1B23E] font-bold">
-                        {product.brand?.name}
+                        {p.brand?.name}
                       </span>
                       <h3 className="text-base font-bold text-white truncate hover:text-[#D1B23E] transition-colors mt-0.5">
                         {p.name}
@@ -291,7 +300,7 @@ export default function DesktopProductView() {
                           e.stopPropagation();
                           axios.post('/api/cart', { product: p._id, quantity: 1 }).then(() => {
                             window.dispatchEvent(new Event('cart-updated'));
-                            alert('Watch added to cart!');
+                            toast({ message: 'Watch added to your cart.', type: 'success' });
                           });
                         }}
                         disabled={!p.inStock}
@@ -306,6 +315,11 @@ export default function DesktopProductView() {
             </div>
           </div>
         )}
+
+        <RecentlyViewedRow
+          excludeId={product._id}
+          className="pt-10 border-t border-white/5"
+        />
 
       </main>
 
