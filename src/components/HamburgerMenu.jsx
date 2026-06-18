@@ -1,66 +1,100 @@
-// src/components/HamburgerMenu.jsx
+'use client';
+
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react'; // X icon for closing
-import { Button } from '@/components/ui/button';
+import { X, Home, Tag, Sparkles, Phone, HelpCircle } from 'lucide-react';
 import btime from '@/assets/images/btime.webp';
 import Image from 'next/image';
 
-export default function HamburgerMenu({ isOpen, onClose }) {
+const MENU_ITEMS = [
+  { icon: Home,       label: 'Home',         path: '/'             },
+  { icon: Tag,        label: 'Collections',  path: '/brands'       },
+  { icon: Sparkles,   label: 'New Arrivals', path: '/new-arrivals' },
+  { icon: Phone,      label: 'Contact',      path: '/contact'      },
+  { icon: HelpCircle, label: 'FAQ',          path: '/faq'          },
+];
+
+export default function HamburgerMenu({ isOpen, onClose, currentPath = '' }) {
   const router = useRouter();
 
-  // A function to handle navigation and closing the menu
   const handleNavigation = (path) => {
     router.push(path);
     onClose();
   };
 
+  const isActive = (path) =>
+    path === '/' ? currentPath === '/' : currentPath.startsWith(path);
+
   return (
     <>
-      {/* Overlay */}
+      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-45 transition-opacity ${
-          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] transition-all duration-300 ${
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
+        aria-hidden="true"
       />
 
-      {/* Slide-out menu */}
+      {/* Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 bg-[#2A2A2A] text-white z-50 transform transition-transform duration-300 ${
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#0f0f0f] border-r border-white/6 flex flex-col transform transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } w-64 p-4`}
+        }`}
       >
-        {/* Header with logo and close button */}
-        <div className="flex justify-between items-start mb-8">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/6">
           <Image
             src={btime}
-            alt="Bhatkal Timeluxe Logo"
-            className="h-44 w-auto cursor-pointer"
+            alt="Bhatkal Timeluxe"
+            className="h-10 w-auto cursor-pointer"
             onClick={() => handleNavigation('/')}
           />
-          <Button variant="ghost" onClick={onClose}>
-            <X size={24} className="text-[#D1B23E]" />
-          </Button>
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        {/* Navigation items */}
-        <ul className="space-y-6">
-          <li className="cursor-pointer text-lg hover:text-[#D1B23E] transition" onClick={() => handleNavigation('/')}>
-            Home
-          </li>
-          <li className="cursor-pointer text-lg hover:text-[#D1B23E] transition" onClick={() => handleNavigation('/brands')}>
-            Collections
-          </li>
-          <li className="cursor-pointer text-lg hover:text-[#D1B23E] transition" onClick={() => handleNavigation('/new-arrivals')}>
-            New Arrivals
-          </li>
-          <li className="cursor-pointer text-lg hover:text-[#D1B23E] transition" onClick={() => handleNavigation('/contact')}>
-            Contact
-          </li>
-          <li className="cursor-pointer text-lg hover:text-[#D1B23E] transition" onClick={() => handleNavigation('/faq')}>
-            FAQ
-          </li>
-        </ul>
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
+          {MENU_ITEMS.map(({ icon: Icon, label, path }) => {
+            const active = isActive(path);
+            return (
+              <button
+                key={path}
+                onClick={() => handleNavigation(path)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 ${
+                  active
+                    ? 'bg-[#D1B23E]/10 text-[#D1B23E]'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <Icon
+                  size={17}
+                  className={active ? 'text-[#D1B23E]' : 'text-gray-600'}
+                />
+                {label}
+                {active && (
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#D1B23E]" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="px-5 py-4 border-t border-white/6">
+          <p className="text-[10px] text-gray-700 uppercase tracking-widest font-semibold">
+            Bhatkal Time Luxe
+          </p>
+          <p className="text-[10px] text-gray-800 mt-0.5">Premium Timepieces</p>
+        </div>
       </div>
     </>
   );

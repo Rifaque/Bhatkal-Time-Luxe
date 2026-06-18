@@ -92,6 +92,22 @@ nav {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* rc-slider dark-theme override for mobile search */
+.rc-slider-rail { background-color: #2a2a2a !important; }
+.rc-slider-track { background-color: #D1B23E !important; }
+.rc-slider-handle {
+  border-color: #D1B23E !important;
+  background-color: #D1B23E !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+.rc-slider-handle:hover,
+.rc-slider-handle:active,
+.rc-slider-handle-dragging {
+  border-color: #c1a22e !important;
+  box-shadow: 0 0 0 4px rgba(209,178,62,0.15) !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

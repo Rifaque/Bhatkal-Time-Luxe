@@ -1,141 +1,77 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Search, Home, Menu, Tag, ShoppingCart } from 'lucide-react';
-import btimehome from '@/assets/images/btimehome.webp';
-import Loader from '@/components/Loader';
-import HamburgerMenu from '@/components/HamburgerMenu';
-import { FaWhatsapp } from 'react-icons/fa';
-import Image from 'next/image';
-import { getImageUrl } from '@/lib/image';
+import MobileLayout from '@/components/MobileLayout';
+import MobileProductCard from '@/components/MobileProductCard';
+
+function GridSkeleton() {
+  return (
+    <>
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden animate-pulse">
+          <div className="bg-[#222]" style={{ aspectRatio: '1/1' }} />
+          <div className="px-3 py-2.5 space-y-1.5">
+            <div className="h-2.5 bg-[#222] rounded w-3/4" />
+            <div className="h-3 bg-[#222] rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
 
 export default function MobileNewArrivalsView() {
   const [products, setProducts] = useState([]);
-  const router = useRouter();
-  const newArrivalsRef = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetch('/api/products/new-arrivals')
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      })
-      .catch((err) => console.error('Failed to fetch new arrivals', err));
+      .then((r) => r.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error('Failed to fetch new arrivals', err))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="!bg-[#2A2A2A] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
-
   return (
-    <div className="!bg-[#2A2A2A] text-white min-h-screen pb-16">
-      {/* Header */}
-      <header className="flex justify-between items-center p-2">
-        <Button variant="ghost" className="mt-2" onClick={() => setMenuOpen(true)}>
-          <Menu size={28} className="text-[#D1B23E]" />
-        </Button>
-        <Image
-          src={btimehome}
-          alt="Bhatkal Timeluxe Logo"
-          className="h-16 w-auto cursor-pointer"
-          onClick={() => router.push('/')}
-        />
-        <Button variant="ghost" className="mt-2" onClick={() => router.push('/search')}>
-          <Search size={24} className="text-[#D1B23E]" />
-        </Button>
-      </header>
-      <h1 className="text-2xl font-bold mt-4 mb-6 text-center">New Arrivals</h1>
+    <MobileLayout>
+      {/* Page heading */}
+      <div className="px-5 pt-6 pb-5 border-b border-white/5">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-[#D1B23E] font-semibold mb-1">
+          Just Landed
+        </p>
+        <h1 className="text-2xl font-serif font-bold text-white">New Arrivals</h1>
+      </div>
 
-      <section ref={newArrivalsRef} className="flex-grow p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4">
-          {products.map((product) => (
-            <div
-              key={product._id}
-              className="cursor-pointer"
-              onClick={() => router.push(`/product/${product._id}`)}
-            >
-              <Card className="p-4 !bg-[#EDEDED] rounded-2xl cursor-pointer">
-                <div className="relative">
-                  {product.MRP && product.price && product.MRP > product.price && (
-                    <span className="absolute top-2 left-2 bg-[#D1B23E] text-black px-2 py-1 text-xs rounded z-10">
-                      {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
-                    </span>
-                  )}
-                  <img
-                    src={getImageUrl(product.images?.[0] || product.image)}
-                    alt={product.name}
-                    className="mb-2 rounded-xl object-contain w-full h-40"
-                    onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
-                  />
-                </div>
-                <CardContent>
-                  <h3 className="text-sm font-semibold text-black truncate">{product.name}</h3>
-                  <p className="text-sm text-black font-bold">
-                    &#8377; {new Intl.NumberFormat('en-IN').format(product.price)}
-                  </p>
-                  {product.MRP && (
-                    <p className="text-xs text-gray-600 line-through opacity-50">
-                      &#8377; {new Intl.NumberFormat('en-IN').format(product.MRP)}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+      {/* Grid */}
+      <div className="px-4 pt-5 pb-6">
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3">
+            <GridSkeleton />
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-16 px-8">
+            <p className="text-white font-semibold mb-2">Nothing new yet</p>
+            <p className="text-sm text-gray-600">Check back soon — new pieces land regularly.</p>
+          </div>
+        ) : (
+          <>
+            <p className="pb-3 text-xs text-gray-600">
+              {products.length} {products.length === 1 ? 'timepiece' : 'timepieces'}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {products.map((product) => (
+                <MobileProductCard
+                  key={product._id}
+                  product={product}
+                  onClick={() => router.push(`/product/${product._id}`)}
+                />
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="mt-8 text-center text-gray-400 text-sm mb-6">
-        <p>BHATKAL TIME LUXE</p>
-        <p>&copy; {new Date().getFullYear()} All rights reserved.</p>
-      </footer>
-
-      {/* Floating WhatsApp Button */}
-      <a
-        href="https://wa.me/916364282251"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-16 right-3 z-50 bg-[#1e1e1e] p-4 rounded-full shadow-lg"
-      >
-        <FaWhatsapp size={24} style={{ color: '#D1B23E' }} />
-      </a>
-
-      <nav className="fixed bottom-0 w-full !bg-[#1E1E1E] flex justify-around py-2 z-40">
-        <Button
-          variant="ghost"
-          className="flex flex-col items-center !text-[#D1B23E]"
-          onClick={() => router.push('/')}
-        >
-          <Home size={24} />
-        </Button>
-        <Button
-          variant="ghost"
-          className="flex flex-col items-center !text-[#D1B23E]"
-          onClick={() => router.push('/brands')}
-        >
-          <Tag size={24} />
-        </Button>
-        <Button
-          variant="ghost"
-          className="flex flex-col items-center !text-[#D1B23E]"
-          onClick={() => router.push('/cart')}
-        >
-          <ShoppingCart size={24} />
-        </Button>
-      </nav>
-      {/* Hamburger Menu */}
-      <HamburgerMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-    </div>
+          </>
+        )}
+      </div>
+    </MobileLayout>
   );
 }
