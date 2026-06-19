@@ -61,7 +61,7 @@ export default function CurrencyPicker() {
             })}
           </div>
           <div className="px-4 py-2 border-t border-white/[0.05]">
-            <p className="text-[10px] text-gray-600 font-sans">Indicative rates. Prices in INR.</p>
+            <p className="text-[10px] text-gray-600 font-sans">Indicative rates. Base: KWD.</p>
           </div>
         </div>
       )}

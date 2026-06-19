@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, Package, Truck, ShieldCheck, RefreshCw, CreditCard, MessageCircle } from 'lucide-react';
 import DesktopNavbar from './DesktopNavbar';
 import DesktopFooter from './DesktopFooter';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 const faqCategories = [
   {
@@ -21,7 +22,7 @@ const faqCategories = [
       },
       {
         q: 'Can I modify or cancel my order after placing it?',
-        a: 'Orders may be modified or cancelled within 12 hours of placement. Contact us immediately via WhatsApp at +91-6364282251 or by email. After 12 hours, the order may be in fulfillment and modifications cannot be guaranteed.',
+        a: 'Orders may be modified or cancelled within 12 hours of placement. Contact us immediately via WhatsApp or our Contact page. After 12 hours, the order may be in fulfillment and modifications cannot be guaranteed.',
       },
     ],
   },
@@ -32,15 +33,15 @@ const faqCategories = [
     questions: [
       {
         q: 'Do you offer international shipping?',
-        a: 'Currently, we ship exclusively within India. We are actively working to expand our shipping coverage. Join our Collector\'s Club to receive updates when international shipping becomes available.',
+        a: 'We currently serve Kuwait and the wider GCC region. International shipping beyond the Gulf Cooperation Council is under active development — join our Collector\'s Club to receive updates.',
       },
       {
         q: 'Is shipping free?',
-        a: 'Yes. We offer fully insured complimentary shipping on all orders throughout India. Your timepiece is handled with premium care, insured for its full purchase value, and delivered in a secure branded package.',
+        a: 'Yes. All orders within Kuwait are shipped complimentary with full insurance. Your timepiece is handled with premium care, insured for its full purchase value, and delivered in a secure branded package.',
       },
       {
         q: 'How long does delivery take?',
-        a: 'Standard delivery within major cities in Karnataka takes 2–4 business days. Pan-India delivery takes 4–7 business days. Expedited delivery options are available and can be arranged through our concierge team.',
+        a: 'Within Kuwait, deliveries typically arrive within 1–3 business days. GCC deliveries take 3–5 business days. Expedited and white-glove delivery options are available through our concierge team.',
       },
     ],
   },
@@ -85,11 +86,11 @@ const faqCategories = [
     questions: [
       {
         q: 'What payment methods do you accept?',
-        a: 'We accept UPI, bank transfer (NEFT/RTGS/IMPS), and select credit/debit card arrangements coordinated through our WhatsApp concierge. All transactions are handled securely and documented.',
+        a: 'We accept KNET, bank transfer (IBAN), and select credit/debit card arrangements coordinated through our WhatsApp concierge. All transactions are handled securely and fully documented.',
       },
       {
-        q: 'Are EMI options available?',
-        a: 'Yes. Flexible no-cost EMI arrangements are available for select timepieces above ₹25,000. Our concierge team can provide details and eligibility criteria based on your preferred payment method.',
+        q: 'Are instalment options available?',
+        a: 'Yes. Flexible no-cost instalment arrangements are available for select timepieces above KD 100. Our concierge team can provide details and eligibility criteria based on your preferred payment method.',
       },
     ],
   },
@@ -100,7 +101,7 @@ const faqCategories = [
     questions: [
       {
         q: 'How can I contact customer support?',
-        a: 'Our concierge team is available via WhatsApp at +91-6364282251, by phone at the same number, or through our Contact page. We respond to all enquiries within 2 hours during business hours (9 AM – 8 PM IST, 7 days a week).',
+        a: 'Our concierge team is available via WhatsApp, by phone, or through our Contact page. We respond to all enquiries within 2 hours during business hours (9 AM – 9 PM AST, 7 days a week).',
       },
       {
         q: 'Do you offer watch consultations?',
@@ -136,6 +137,7 @@ function FAQAccordionItem({ question, answer, isOpen, onToggle }) {
 export default function DesktopFAQView() {
   const [openItem, setOpenItem] = useState(null);
   const [activeCategory, setActiveCategory] = useState('orders');
+  const { whatsappNumber } = useStoreSettings();
 
   const currentCategory = faqCategories.find((c) => c.id === activeCategory);
 
@@ -238,7 +240,7 @@ export default function DesktopFAQView() {
                   </p>
                 </div>
                 <a
-                  href="https://wa.me/916364282251"
+                  href={whatsappNumber ? `https://wa.me/${whatsappNumber}` : '/contact'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="shrink-0 inline-flex items-center gap-2 bg-[#D1B23E] hover:bg-[#c1a22e] text-black font-semibold px-6 py-3 rounded-full text-sm transition-all shadow-[0_4px_20px_rgba(209,178,62,0.3)] hover:shadow-[0_4px_28px_rgba(209,178,62,0.45)]"

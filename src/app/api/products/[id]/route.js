@@ -4,75 +4,70 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { Product, FeaturedWatch, BestSelling } from '@/models/Schemas';
 import { getAdminFromRequest } from '@/lib/auth';
 import { uploadBuffer } from '@/lib/cloudinary';
+import { badId, validateImageFile } from '@/lib/validate';
 
 export async function GET(req, { params }) {
   try {
     const { id } = await params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
-    }
-
+    const invalid = badId(id, 'product ID');
+    if (invalid) return invalid;
     await connectToDatabase();
-    const product = await Product.findById(id);
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
+    const product = await Product.findById(id).populate('brand', 'name').lean();
+    if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     return NextResponse.json(product);
   } catch (err) {
     console.error('❌ GET Product Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: 'Failed to load product' }, { status: 500 });
   }
 }
 
 export async function PUT(req, { params }) {
   try {
     const admin = getAdminFromRequest(req);
-    if (!admin) {
-      return NextResponse.json({ error: 'Access Denied: Unauthorized' }, { status: 401 });
-    }
+    if (!admin) return NextResponse.json({ error: 'Access Denied: Unauthorized' }, { status: 401 });
 
     const { id } = await params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
-    }
-
-    const contentType = req.headers.get('content-type') || '';
-    let updateFields = {};
+    const invalidId = badId(id, 'product ID');
+    if (invalidId) return invalidId;
 
     await connectToDatabase();
+    const contentType = req.headers.get('content-type') || '';
+    let updateFields = {};
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       updateFields = {
-        name: formData.get('name'),
-        brand: formData.get('brand'),
-        MRP: Number(formData.get('MRP')),
-        price: Number(formData.get('price')),
-        inStock: formData.get('inStock') === 'true' || formData.get('inStock') === true,
-        color: formData.get('color') || '',
-        about: formData.get('about') || '',
+        name:          formData.get('name'),
+        brand:         formData.get('brand'),
+        salePrice:     Number.isFinite(parseFloat(formData.get('salePrice')))     ? parseFloat(formData.get('salePrice'))     : 0,
+        originalPrice: Number.isFinite(parseFloat(formData.get('originalPrice'))) ? parseFloat(formData.get('originalPrice')) : 0,
+        color:         formData.get('color') || '',
+        about:         formData.get('about') || '',
+        inStock:       formData.get('inStock') !== 'false',
       };
-
       const imageFiles = formData.getAll('images');
-      if (imageFiles && imageFiles.length > 0 && imageFiles[0]?.name) {
-        // Upload new images
-        const uploadPromises = imageFiles.map(async (file) => {
-          const arrayBuffer = await file.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-          const uploadResult = await uploadBuffer(buffer, 'products');
-          return uploadResult.secure_url;
-        });
-        updateFields.images = await Promise.all(uploadPromises);
+      if (imageFiles?.length > 0 && imageFiles[0]?.name) {
+        for (const file of imageFiles) {
+          const fileErr = validateImageFile(file);
+          if (fileErr) return NextResponse.json({ error: fileErr }, { status: 400 });
+        }
+        updateFields.images = await Promise.all(
+          imageFiles.map(async (file) => {
+            const buffer = Buffer.from(await file.arrayBuffer());
+            const result = await uploadBuffer(buffer, 'products');
+            return result.secure_url;
+          })
+        );
       }
     } else {
       updateFields = await req.json();
     }
 
-    const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
+    // Reference is immutable once assigned — strip it from any update payload
+    delete updateFields.reference;
 
+    const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
+    if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     return NextResponse.json(product);
   } catch (err) {
     console.error('❌ PUT Product Error:', err);
@@ -83,19 +78,13 @@ export async function PUT(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     const admin = getAdminFromRequest(req);
-    if (!admin) {
-      return NextResponse.json({ error: 'Access Denied: Unauthorized' }, { status: 401 });
-    }
+    if (!admin) return NextResponse.json({ error: 'Access Denied: Unauthorized' }, { status: 401 });
 
     const { id } = await params;
     await connectToDatabase();
-    
     const product = await Product.findByIdAndDelete(id);
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
+    if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
-    // Delete associated records from FeaturedWatch and BestSelling collections
     await FeaturedWatch.deleteMany({ productId: product._id });
     await BestSelling.deleteMany({ productId: product._id });
 

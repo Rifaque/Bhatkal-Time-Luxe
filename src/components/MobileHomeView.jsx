@@ -1,388 +1,340 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Home, ShoppingCart, Menu, Search, Tag } from 'lucide-react';
-import btimehome from '@/assets/images/btimehome.webp';
-import Loader from '@/components/Loader';
-import HamburgerMenu from '@/components/HamburgerMenu';
-import { FaWhatsapp } from 'react-icons/fa';
-import Image from 'next/image';
+import { ArrowRight, ShieldCheck, Clock, Award } from 'lucide-react';
+import MobileLayout from '@/components/MobileLayout';
+import MobileProductCard from '@/components/MobileProductCard';
 import { getImageUrl } from '@/lib/image';
+import { useWishlist } from '@/context/WishlistContext';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
+
+function CardSkeleton() {
+  return (
+    <div className="w-[42vw] md:w-52 lg:w-64 shrink-0">
+      <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
+        <div className="bg-[#222] animate-pulse" style={{ aspectRatio: '1/1' }} />
+        <div className="px-3 py-2.5 space-y-1.5">
+          <div className="h-2.5 bg-[#222] animate-pulse rounded w-3/4" />
+          <div className="h-3 bg-[#222] animate-pulse rounded w-1/2" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BrandSkeleton() {
+  return (
+    <>
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="flex flex-col items-center gap-2 shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-[#222] animate-pulse" />
+          <div className="h-2 w-12 bg-[#222] animate-pulse rounded" />
+        </div>
+      ))}
+    </>
+  );
+}
 
 export default function MobileHomeView() {
   const [topCategories, setTopCategories] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [featured, setFeatured] = useState([]);
   const [bestSelling, setBestSelling] = useState([]);
-  const newArrivalsRef = useRef(null);
-  const featuredRef = useRef(null);
-  const bestSellingRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [itemsToShow, setItemsToShow] = useState(12);
+  const { wishlistIds, count: wishlistCount } = useWishlist();
+  const { storeName } = useStoreSettings();
 
-  // Fetch data from endpoints
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const topCatRes = await fetch('/api/top-brands');
-        const topCatData = await topCatRes.json();
-        setTopCategories(topCatData);
-
-        const productsRes = await fetch('/api/products');
-        const productsData = await productsRes.json();
-        setAllProducts(productsData);
-
-        const featuredRes = await fetch('/api/featured');
-        const featuredData = await featuredRes.json();
-        setFeatured(featuredData);
-
-        const bestSellingRes = await fetch('/api/best-selling');
-        const bestSellingData = await bestSellingRes.json();
-        setBestSelling(bestSellingData);
-
-        setLoading(false);
-      } catch (err) {
-        console.error('Failed to fetch data', err);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    Promise.all([
+      fetch('/api/top-brands').then((r) => r.json()),
+      fetch('/api/products').then((r) => r.json()),
+      fetch('/api/featured').then((r) => r.json()),
+      fetch('/api/best-selling').then((r) => r.json()),
+    ])
+      .then(([topCatData, productsData, featuredData, bestSellingData]) => {
+        setTopCategories(Array.isArray(topCatData) ? topCatData : []);
+        setAllProducts(Array.isArray(productsData) ? productsData : []);
+        setFeatured(Array.isArray(featuredData) ? featuredData : []);
+        setBestSelling(Array.isArray(bestSellingData) ? bestSellingData : []);
+      })
+      .catch((err) => console.error('Failed to fetch home data', err))
+      .finally(() => setLoading(false));
   }, []);
 
-  // Set the number of items to show based on the window width
-  useEffect(() => {
-    const updateItemsToShow = () => {
-      const width = window.innerWidth;
-      if (width >= 1536) {
-        setItemsToShow(16);
-      } else if (width >= 1280) {
-        setItemsToShow(16);
-      } else if (width >= 1024) {
-        setItemsToShow(16);
-      } else if (width >= 768) {
-        setItemsToShow(16);
-      } else {
-        setItemsToShow(12);
-      }
-    };
+  const featuredProducts = useMemo(
+    () => featured.map((item) => item.productId).filter(Boolean),
+    [featured]
+  );
 
-    updateItemsToShow();
-    window.addEventListener('resize', updateItemsToShow);
-    return () => window.removeEventListener('resize', updateItemsToShow);
-  }, []);
+  const bestSellingProducts = useMemo(
+    () => bestSelling.map((item) => item.productId).filter(Boolean),
+    [bestSelling]
+  );
 
-  // Compute two random products for the top tiles
-  const randomProduct1 = useMemo(() => {
-    return allProducts.length ? allProducts[Math.floor(Math.random() * allProducts.length)] : null;
-  }, [allProducts]);
-
-  const randomProduct2 = useMemo(() => {
-    return allProducts.length ? allProducts[Math.floor(Math.random() * allProducts.length)] : null;
-  }, [allProducts]);
-
-  const featuredProducts = useMemo(() => {
-    return featured.map((item) => item.productId).filter(Boolean);
-  }, [featured]);
-
-  const bestSellingProducts = useMemo(() => {
-    return bestSelling.map((item) => item.productId).filter(Boolean);
-  }, [bestSelling]);
-
-  if (loading) {
-    return (
-      <div className="!bg-[#2A2A2A] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
-
-  const scrollToNewArrivals = () => {
-    newArrivalsRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-  const scrollToFeatured = () => {
-    featuredRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const renderImage = (product) => {
-    const imageSrc = product.images?.[0] || product.image;
-    return (
-      <img
-        src={getImageUrl(imageSrc)}
-        alt={product.name}
-        className="mb-2 rounded-xl object-contain w-full h-40"
-        onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
-        loading="lazy"
-      />
-    );
-  };
+  const wishlistProducts = useMemo(() => {
+    if (wishlistCount < 4 || allProducts.length === 0) return [];
+    const idSet = new Set(wishlistIds);
+    return allProducts.filter((p) => idSet.has(String(p._id))).slice(0, 8);
+  }, [wishlistIds, wishlistCount, allProducts]);
 
   return (
-    <div className="!bg-[#2A2A2A] text-white min-h-screen pb-16">
-      {/* Header */}
-      <header className="flex justify-between items-center p-2">
-        <Button variant="ghost" className="mt-2" onClick={() => setMenuOpen(true)}>
-          <Menu size={28} className="text-[#D1B23E]" />
-        </Button>
-        <Image
-          src={btimehome}
-          alt="Bhatkal Timeluxe Logo"
-          className="h-16 w-auto cursor-pointer"
-          onClick={() => router.push('/')}
-          priority
-        />
-        <Button variant="ghost" className="mt-2" onClick={() => router.push('/search')}>
-          <Search size={24} className="text-[#D1B23E]" />
-        </Button>
-      </header>
-
-      {/* Greeting */}
-      <section className="p-4">
-        <h1 className="text-xl font-semibold">Hello There! 👋</h1>
-        <p className="text-sm text-gray-400">Let's start shopping!!</p>
-      </section>
-
-      {/* Top Tiles */}
-      <section className="p-4 pl-0 pr-0">
-        <div className="flex gap-4 overflow-x-scroll scrollbar-hide">
-          {/* Tile 1 */}
-          <div className="!bg-[#ededed] ml-4 rounded-xl p-3 min-w-[300px]">
-            <div className="flex items-center">
-              <div className="flex-1">
-                <h2 className="text-[#4e4e4e] text-base font-bold">
-                  Shop The Best From Our Collection
-                </h2>
-                <Button
-                  className="mt-2 text-white !bg-[#777777] rounded-[20px]"
-                  onClick={scrollToFeatured}
-                >
-                  Get Now
-                </Button>
-              </div>
-              <div className="w-24 h-24 ml-2 relative">
-                {randomProduct1 && (
-                  <img
-                    src={getImageUrl(randomProduct1.images?.[0] || randomProduct1.image)}
-                    alt={randomProduct1.name}
-                    className="object-contain rounded-xl w-full h-full"
-                    onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-          {/* Tile 2 */}
-          <div className="!bg-[#494949] mr-4 rounded-xl p-3 min-w-[300px]">
-            <div className="flex items-center">
-              <div className="flex-1">
-                <h2 className="text-base font-semibold">
-                  Want Something To Gift Your Friends?
-                </h2>
-                <Button
-                  className="mt-2 text-black !bg-[#9a9a9a] rounded-[20px]"
-                  onClick={scrollToNewArrivals}
-                >
-                  Get Now
-                </Button>
-              </div>
-              <div className="w-24 h-24 ml-2 relative">
-                {randomProduct2 && (
-                  <img
-                    src={getImageUrl(randomProduct2.images?.[0] || randomProduct2.image)}
-                    alt={randomProduct2.name}
-                    className="object-contain rounded-xl w-full h-full"
-                    onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Top Categories */}
-      <section className="p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-semibold">Top Categories</h2>
-          <Button variant="link" onClick={() => router.push('/brands')} className="text-[#D1B23E] p-0 text-sm font-medium">See All</Button>
-        </div>
-
-        <div className="flex gap-2 overflow-x-scroll scrollbar-hide">
-          {topCategories.map((item) => (
-            <div
-              key={item._id}
-              className="cursor-pointer"
-              onClick={() => router.push(`/brands/${item.brand._id}`)}
+    <MobileLayout>
+      {/* ── Hero ── */}
+      <section className="relative px-5 pt-8 pb-10 md:px-8 md:pt-10 lg:px-12 lg:pt-12 lg:pb-14 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#D1B23E]/6 via-transparent to-transparent pointer-events-none" />
+        <div className="relative lg:flex lg:items-center lg:gap-10">
+          {/* Text + CTA */}
+          <div className="lg:flex-1">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-[#D1B23E] font-semibold mb-3">
+              Premium Timepieces
+            </p>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-tight text-white mb-3">
+              Discover Luxury<br />Watch Collection
+            </h1>
+            <p className="text-sm text-gray-400 leading-relaxed mb-6 max-w-[280px] md:max-w-sm lg:max-w-md">
+              Certified authentic timepieces from the world&apos;s finest horological houses.
+            </p>
+            <button
+              onClick={() => router.push('/brands')}
+              className="inline-flex items-center gap-2 bg-[#D1B23E] text-black text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#c1a22e] active:scale-[0.97] transition-all"
             >
-              <Card className="!bg-[#1E1E1E] w-24 h-24 flex justify-center items-center overflow-hidden rounded-xl shadow-md">
-                <CardContent className="w-full h-full flex items-center justify-center p-2 rounded-lg bg-[#2A2A2A]">
-                  <div className="w-full h-full bg-[#EDEDED] rounded-md flex items-center justify-center">
+              Shop Collection
+              <ArrowRight size={15} />
+            </button>
+          </div>
+
+          {/* Featured watch showcase — lg: tablet landscape only */}
+          {loading && (
+            <div className="hidden lg:block lg:w-[260px] lg:shrink-0">
+              <div className="bg-[#171717] border border-white/5 rounded-3xl overflow-hidden animate-pulse">
+                <div className="bg-[#252525] aspect-square" />
+                <div className="p-4 space-y-2">
+                  <div className="h-2.5 bg-[#252525] rounded w-1/3" />
+                  <div className="h-4 bg-[#252525] rounded w-3/4" />
+                </div>
+              </div>
+            </div>
+          )}
+          {!loading && featuredProducts.length > 0 && (
+            <div className="hidden lg:block lg:w-[260px] lg:shrink-0">
+              <div
+                className="relative bg-[#f0eeea] rounded-3xl overflow-hidden shadow-2xl cursor-pointer group active:scale-[0.98] transition-transform"
+                onClick={() => router.push(`/product/${featuredProducts[0]._id}`)}
+              >
+                <div className="p-6">
+                  <img
+                    src={getImageUrl(featuredProducts[0].images?.[0] || featuredProducts[0].image)}
+                    alt={featuredProducts[0].name}
+                    className="w-full aspect-square object-contain transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => { e.target.src = '/assets/images/fallback-image.webp'; }}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="bg-white px-4 py-3 border-t border-black/5">
+                  <p className="text-[9px] text-gray-400 uppercase tracking-widest">{featuredProducts[0].brand?.name}</p>
+                  <p className="text-sm font-bold text-[#1e1e1e] mt-0.5 truncate">{featuredProducts[0].name}</p>
+                  <span className="inline-flex items-center gap-1 mt-1.5">
+                    <span className="w-1 h-1 rounded-full bg-[#D1B23E]" />
+                    <span className="text-[9px] text-[#D1B23E] font-semibold uppercase tracking-wider">Featured</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Trust strip ── */}
+      <div className="flex gap-2 px-5 mb-8">
+        {[
+          { icon: ShieldCheck, text: 'Certified' },
+          { icon: Award,       text: 'Authentic' },
+          { icon: Clock,       text: 'Verified'  },
+        ].map(({ icon: Icon, text }) => (
+          <div
+            key={text}
+            className="flex-1 flex flex-col items-center gap-1.5 bg-[#171717] border border-white/5 rounded-2xl py-3"
+          >
+            <Icon size={16} className="text-[#D1B23E]" />
+            <span className="text-[10px] text-gray-400 font-medium">{text}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Top Brands ── */}
+      {(loading || topCategories.length > 0) && (
+        <section className="mb-8">
+          <div className="flex justify-between items-center mb-4 px-5">
+            <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
+              Top Brands
+            </h2>
+            <button
+              onClick={() => router.push('/brands')}
+              className="text-xs text-[#D1B23E] font-medium"
+            >
+              See All
+            </button>
+          </div>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 pb-1">
+            {loading ? (
+              <BrandSkeleton />
+            ) : (
+              topCategories.map((item) => (
+                <button
+                  key={item._id}
+                  onClick={() => router.push(`/brands/${item.brand._id}`)}
+                  className="flex flex-col items-center gap-2 shrink-0 active:scale-95 transition-transform"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-sm">
                     <img
                       src={getImageUrl(item.brand.logo, 'brand')}
                       alt={item.brand.name}
-                      className="max-h-full object-contain mix-blend-multiply"
+                      className="w-full h-full object-contain p-1.5 mix-blend-multiply"
                       onError={(e) => (e.target.src = '/assets/images/fallback-brand.png')}
                     />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
+                  <span className="text-[10px] text-gray-400 font-medium max-w-[64px] truncate text-center">
+                    {item.brand.name}
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+        </section>
+      )}
+
+      <div className="mx-5 h-px bg-white/5 mb-8" />
+
+      {/* ── Featured ── */}
+      <section className="mb-8">
+        <div className="flex justify-between items-center mb-4 px-5">
+          <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
+            Featured
+          </h2>
+        </div>
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1">
+          {loading ? (
+            <>
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </>
+          ) : featuredProducts.length > 0 ? (
+            featuredProducts.map((product) => (
+              <div key={product._id} className="w-[42vw] md:w-52 lg:w-64 shrink-0">
+                <MobileProductCard
+                  product={product}
+                  onClick={() => router.push(`/product/${product._id}`)}
+                />
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-600 px-1">No featured products yet.</p>
+          )}
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section ref={featuredRef} className="p-4">
-        <h2 className="text-xl font-semibold mb-4">Featured Products</h2>
-        {featuredProducts.length > 0 ? (
-          <div className="flex gap-4 overflow-x-scroll scrollbar-hide">
-            {featuredProducts.map((product) => (
-              <div
-                key={product._id}
-                className="w-[42vw] md:w-[200px] cursor-pointer"
-                onClick={() => router.push(`/product/${product._id}`)}
-              >
-                <Card className="p-4 !bg-[#EDEDED] rounded-2xl">
-                  <div className="relative">
-                    {product.MRP && product.price && product.MRP > product.price && (
-                      <span className="absolute top-2 left-2 bg-[#D1B23E] text-black px-2 py-1 text-xs rounded z-10">
-                        {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
-                      </span>
-                    )}
-                    {renderImage(product)}
-                  </div>
-                  <CardContent>
-                    <h3 className="text-sm font-semibold text-black truncate">{product.name}</h3>
-                    <p className="text-sm text-black font-bold">
-                      &#8377; {new Intl.NumberFormat('en-IN').format(product.price)}
-                    </p>
-                    {product.MRP && (
-                      <p className="text-xs text-gray-600 line-through opacity-50">
-                        &#8377; {new Intl.NumberFormat('en-IN').format(product.MRP)}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+      {/* ── Your Saved Collection — shown when wishlist >= 4 items ── */}
+      {!loading && wishlistProducts.length >= 4 && (
+        <section className="mb-8">
+          <div className="flex justify-between items-center mb-4 px-5">
+            <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
+              Your Saved Collection
+            </h2>
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1">
+            {wishlistProducts.map((product) => (
+              <div key={product._id} className="w-[42vw] md:w-52 lg:w-64 shrink-0">
+                <MobileProductCard
+                  product={product}
+                  onClick={() => router.push(`/product/${product._id}`)}
+                />
               </div>
             ))}
           </div>
-        ) : (
-          <p>No featured products available.</p>
-        )}
-      </section>
+        </section>
+      )}
 
-      {/* Best Selling */}
-      <section ref={bestSellingRef} className="p-4">
-        <h2 className="text-xl font-semibold mb-4">Best Selling Products</h2>
-        {bestSellingProducts.length > 0 ? (
-          <div className="flex gap-4 overflow-x-scroll scrollbar-hide">
-            {bestSellingProducts.map((product) => (
-              <div
-                key={product._id}
-                className="w-[42vw] md:w-[200px] cursor-pointer"
-                onClick={() => router.push(`/product/${product._id}`)}
-              >
-                <Card className="p-4 !bg-[#EDEDED] rounded-2xl">
-                  <div className="relative">
-                    {product.MRP && product.price && product.MRP > product.price && (
-                      <span className="absolute top-2 left-2 bg-[#D1B23E] text-black px-2 py-1 text-xs rounded z-10">
-                        {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
-                      </span>
-                    )}
-                    {renderImage(product)}
-                  </div>
-                  <CardContent>
-                    <h3 className="text-sm font-semibold text-black truncate">{product.name}</h3>
-                    <p className="text-sm text-black font-bold">
-                      &#8377; {new Intl.NumberFormat('en-IN').format(product.price)}
-                    </p>
-                    {product.MRP && (
-                      <p className="text-xs text-gray-600 line-through opacity-50">
-                        &#8377; {new Intl.NumberFormat('en-IN').format(product.MRP)}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+      {/* ── Best Selling ── */}
+      <section className="mb-8">
+        <div className="flex justify-between items-center mb-4 px-5">
+          <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
+            Best Selling
+          </h2>
+        </div>
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1">
+          {loading ? (
+            <>
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </>
+          ) : bestSellingProducts.length > 0 ? (
+            bestSellingProducts.map((product) => (
+              <div key={product._id} className="w-[42vw] md:w-52 lg:w-64 shrink-0">
+                <MobileProductCard
+                  product={product}
+                  onClick={() => router.push(`/product/${product._id}`)}
+                />
               </div>
-            ))}
-          </div>
-        ) : (
-          <p>No best selling products available.</p>
-        )}
+            ))
+          ) : (
+            <p className="text-sm text-gray-600 px-1">No best sellers yet.</p>
+          )}
+        </div>
       </section>
 
-      {/* New Arrivals */}
-      <section ref={newArrivalsRef} className="p-4">
-        <h2 className="text-xl font-semibold mb-4">New Arrivals</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4">
-          {allProducts.slice(0, itemsToShow).map((product) => (
-            <div
-              key={product._id}
-              className="cursor-pointer"
-              onClick={() => router.push(`/product/${product._id}`)}
-            >
-              <Card className="p-4 !bg-[#EDEDED] rounded-2xl">
-                <div className="relative">
-                  {product.MRP && product.price && product.MRP > product.price && (
-                    <span className="absolute top-2 left-2 bg-[#D1B23E] text-black px-2 py-1 text-xs rounded z-10">
-                      {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
-                    </span>
-                  )}
-                  {renderImage(product)}
+      <div className="mx-5 h-px bg-white/5 mb-8" />
+
+      {/* ── New Arrivals ── */}
+      <section className="px-5 lg:px-8 mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
+            New Arrivals
+          </h2>
+          <button
+            onClick={() => router.push('/new-arrivals')}
+            className="text-xs text-[#D1B23E] font-medium"
+          >
+            See All
+          </button>
+        </div>
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
+                <div className="bg-[#222] animate-pulse" style={{ aspectRatio: '1/1' }} />
+                <div className="px-3 py-2.5 space-y-1.5">
+                  <div className="h-2.5 bg-[#222] animate-pulse rounded w-3/4" />
+                  <div className="h-3 bg-[#222] animate-pulse rounded w-1/2" />
                 </div>
-                <CardContent>
-                  <h3 className="text-sm font-semibold text-black truncate">{product.name}</h3>
-                  <p className="text-sm text-black font-bold">
-                    &#8377; {new Intl.NumberFormat('en-IN').format(product.price)}
-                  </p>
-                  {product.MRP && (
-                    <p className="text-xs text-gray-600 line-through opacity-50">
-                      &#8377; {new Intl.NumberFormat('en-IN').format(product.MRP)}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {allProducts.slice(0, 12).map((product) => (
+              <MobileProductCard
+                key={product._id}
+                product={product}
+                onClick={() => router.push(`/product/${product._id}`)}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* Footer */}
-      <footer className="mt-8 text-center text-gray-400 text-sm mb-6">
-        <p>BHATKAL TIME LUXE</p>
-        <p>&copy; {new Date().getFullYear()} All rights reserved.</p>
+      {/* ── Footer ── */}
+      <footer className="px-5 pt-6 pb-4 border-t border-white/5">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-semibold text-center">
+          {storeName}
+        </p>
+        <p className="text-[10px] text-gray-800 text-center mt-1">
+          &copy; {new Date().getFullYear()} All rights reserved.
+        </p>
       </footer>
-
-      {/* Floating WhatsApp Button */}
-      <a
-        href="https://wa.me/916364282251"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-16 right-3 z-50 bg-[#1e1e1e] p-4 rounded-full shadow-lg"
-      >
-        <FaWhatsapp size={24} style={{ color: '#D1B23E' }} />
-      </a>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 w-full !bg-[#1E1E1E] flex justify-around py-2 z-40">
-        <Button variant="ghost" className="flex flex-col items-center !text-[#D1B23E]">
-          <Home size={24} />
-        </Button>
-        <Button variant="ghost" className="flex flex-col items-center !text-[#D1B23E]" onClick={() => router.push('/brands')}>
-          <Tag size={24} />
-        </Button>
-        <Button variant="ghost" className="flex flex-col items-center !text-[#D1B23E]" onClick={() => router.push('/cart')}>
-          <ShoppingCart size={24} />
-        </Button>
-      </nav>
-
-      {/* Hamburger Menu */}
-      <HamburgerMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-    </div>
+    </MobileLayout>
   );
 }

@@ -1,9 +1,37 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import useProductPageLogic from '@/hooks/useProductPageLogic';
-import Loader from '@/components/Loader';
-import { Button } from '@/components/ui/button';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useToast } from '@/context/ToastContext';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useIsVisible } from '@/hooks/useIsVisible';
+import { ShieldCheck, Truck, ShoppingCart, Share2 } from 'lucide-react';
 import { getImageUrl } from '@/lib/image';
+import { FaWhatsapp } from 'react-icons/fa';
+import MobileProductCard from '@/components/MobileProductCard';
+import RecentlyViewedRow from '@/components/RecentlyViewedRow';
+import WishlistButton from '@/components/WishlistButton';
+import WishlistSavedSection from '@/components/WishlistSavedSection';
+import ShareModal from '@/components/ShareModal';
+import Lightbox from '@/components/Lightbox';
+import ProductBreadcrumb from '@/components/ProductBreadcrumb';
+
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#1e1e1e] flex flex-col md:flex-row md:items-start">
+      <div className="bg-[#f0eeea] animate-pulse md:w-[45%] md:h-screen" style={{ height: '55vw' }} />
+      <div className="flex-1 px-5 pt-5 space-y-3">
+        <div className="h-6 bg-[#252525] animate-pulse rounded w-3/4" />
+        <div className="h-4 bg-[#252525] animate-pulse rounded w-1/3" />
+        <div className="h-3 bg-[#252525] animate-pulse rounded w-full mt-4" />
+        <div className="h-3 bg-[#252525] animate-pulse rounded w-5/6" />
+        <div className="h-3 bg-[#252525] animate-pulse rounded w-4/5" />
+      </div>
+    </div>
+  );
+}
 
 export default function MobileProductView() {
   const {
@@ -15,106 +43,388 @@ export default function MobileProductView() {
     setCurrentImage,
     swipeHandlers,
     buyNow,
+    buyingNow,
+    openRequestDetails,
     router,
   } = useProductPageLogic();
+  const { formatPrice } = useCurrency();
+  const { toast } = useToast();
+  const { addItem } = useRecentlyViewed();
 
-  if (loading) {
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Scroll-triggered sticky CTA: hide sticky bar while inline CTA buttons are visible
+  const inlineCTARef = useRef(null);
+  const inlineCTAVisible = useIsVisible(inlineCTARef);
+
+  // Surface buyNow failures (set by useProductPageLogic) via the mobile toast system
+  useEffect(() => {
+    if (notification) toast({ message: notification, type: 'error' });
+  }, [notification]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!product) return;
+    addItem(product);
+    fetch(`/api/products/related?productId=${product._id}`)
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setRelatedProducts(data.slice(0, 6)); })
+      .catch(() => {});
+  }, [product, addItem]);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const refLabel = product.reference ? ` (${product.reference})` : '';
+    const shareData = {
+      title: product.name,
+      text: `${product.name}${refLabel}${product.brand?.name ? ` by ${product.brand.name}` : ''} — a premium timepiece from Bhatkal Time Luxe`,
+      url,
+    };
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+      }
+    }
+    setShowShareModal(true);
+  };
+
+  const addToCart = async () => {
+    if (!product || addingToCart) return;
+    setAddingToCart(true);
+    try {
+      await axios.post('/api/cart', { product: product._id, quantity: 1 });
+      window.dispatchEvent(new Event('cart-updated'));
+      toast({ message: 'Added to your cart.', type: 'success' });
+    } catch {
+      toast({ message: 'Could not add to cart. Try again.', type: 'error' });
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  if (loading) return <LoadingSkeleton />;
+  if (error || !product) {
     return (
-      <div className="!bg-[#2A2A2A] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
+      <div className="min-h-screen bg-[#1e1e1e] flex items-center justify-center px-8">
+        <div className="text-center max-w-sm">
+          <p className="text-[#D1B23E] text-xs uppercase tracking-[0.3em] font-semibold mb-3">Unavailable</p>
+          <h1 className="text-2xl font-serif font-bold text-white mb-3">Product Not Found</h1>
+          <p className="text-gray-400 text-sm mb-7 leading-relaxed">
+            This timepiece is no longer available or may have been removed from our collection.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <button
+              onClick={() => router.push('/')}
+              className="w-full py-3 bg-[#D1B23E] text-black text-sm font-semibold rounded-xl hover:bg-[#c1a22e] transition-colors"
+            >
+              Continue Shopping
+            </button>
+            <button
+              onClick={() => router.push('/brands')}
+              className="w-full py-3 border border-white/15 text-white text-sm font-medium rounded-xl hover:border-[#D1B23E]/40 transition-colors"
+            >
+              Browse Brands
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
-  if (error) return <p className="text-red-500 text-center p-8">{error}</p>;
-  
+
+  const salePrice = product.salePrice ?? product.priceKwd ?? 0;
+  const origPrice = product.originalPrice ?? product.originalPriceKwd ?? 0;
+  const hasDiscount = origPrice > salePrice;
+  const discountPct = hasDiscount ? Math.round(((origPrice - salePrice) / origPrice) * 100) : 0;
+  const inStock = product.inStock;
+  const images = product.images?.length > 0 ? product.images : (product.image ? [product.image] : []);
+
   return (
-    <div className="min-h-screen bg-[#ededed] relative flex flex-col">
-      {/* Notification */}
-      {notification && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-[#323232] text-white text-center py-2">
-          {notification}
-        </div>
-      )}
-      
-      {/* Main Content */}
-      <div className="flex flex-col flex-grow">
-        {/* Product Image Container */}
-        <div
-          {...swipeHandlers}
-          className="relative h-[50vh] w-full max-w-md mx-auto"
-        >
-          {/* Discount Badge */}
-          {product.MRP && product.price && product.MRP > product.price && (
-            <span className="absolute top-5 right-5 !bg-[#D1B23E] text-black px-2 py-1 text-xs rounded z-10">
-              {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
+    <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col md:flex-row md:items-start">
+
+      {/* ── Gallery block ── */}
+      <div className="md:w-[45%] md:sticky md:top-0 md:h-screen md:flex md:flex-col md:overflow-hidden">
+        <div className="relative bg-[#f0eeea] md:flex-1 md:flex md:flex-col">
+
+          {/* Discount badge */}
+          <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
+            <WishlistButton
+              productId={product._id}
+              size={18}
+              className="bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
+            />
+            {hasDiscount && (
+              <span className="bg-[#D1B23E] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">
+                -{discountPct}%
+              </span>
+            )}
+          </div>
+
+          {/* Main image — swipeable + tap to lightbox */}
+          <div
+            {...swipeHandlers}
+            onClick={() => images.length > 0 && setLightboxOpen(true)}
+            className="flex items-center justify-center min-h-[55vw] max-h-[70vw] md:flex-1 md:min-h-0 md:max-h-none cursor-zoom-in"
+          >
+            <img
+              src={getImageUrl(images[currentImage] || product.image)}
+              alt={product.name}
+              className="w-full object-contain p-5 max-h-[70vw] md:max-h-full"
+              onError={(e) => (e.currentTarget.src = '/assets/images/fallback-image.webp')}
+            />
+          </div>
+
+          {/* Image count pill */}
+          {images.length > 1 && (
+            <span className="absolute bottom-10 right-3 text-[10px] text-white/60 bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-full pointer-events-none">
+              {currentImage + 1} / {images.length}
             </span>
           )}
-          <img
-            src={getImageUrl(product.images?.[currentImage] || product.image)}
-            alt={product.name}
-            className="mt-14 h-[36vh] object-contain mx-auto rounded-2xl"
-            onError={(e) => (e.currentTarget.src = '/assets/images/fallback-image.webp')}
-          />
-          {/* Carousel Indicators */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {product.images?.map((_, index) => (
+
+          {/* Carousel dots */}
+          {images.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); setCurrentImage(i); }}
+                  aria-label={`Image ${i + 1}`}
+                  className={`rounded-full transition-all duration-200 ${
+                    currentImage === i ? 'w-4 h-1.5 bg-[#D1B23E]' : 'w-1.5 h-1.5 bg-black/25'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Thumbnail strip */}
+        {images.length > 1 && (
+          <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide bg-[#1e1e1e] border-b border-white/5 md:bg-[#f0eeea] md:border-t md:border-black/8 md:border-b-0">
+            {images.map((img, i) => (
               <button
-                key={index}
-                onClick={() => setCurrentImage(index)}
-                className={`w-3 h-3 rounded-full ${
-                  currentImage === index ? 'bg-[#cca326]' : 'bg-gray-300'
+                key={i}
+                onClick={() => setCurrentImage(i)}
+                aria-label={`View image ${i + 1}`}
+                className={`shrink-0 w-12 h-12 rounded-xl overflow-hidden border-2 transition-all duration-150 ${
+                  currentImage === i
+                    ? 'border-[#D1B23E] shadow-[0_0_0_1px_rgba(209,178,62,0.3)]'
+                    : 'border-transparent'
                 }`}
-              ></button>
+              >
+                <img
+                  src={getImageUrl(img)}
+                  alt=""
+                  className="w-full h-full object-contain bg-[#f0eeea] p-1"
+                />
+              </button>
             ))}
           </div>
-          {/* Back Button */}
-          <button
-            onClick={() => router.back()}
-            className="absolute top-4 text-4xl/6 left-4 bg-white bg-opacity-50 rounded-full pb-4 p-2"
+        )}
+      </div>
+
+      {/* ── Product details ── */}
+      <div className="flex-1 px-5 pt-5 pb-36 md:pb-8 md:px-8 md:pt-6 md:h-screen md:overflow-y-auto md:overscroll-contain">
+
+        {/* Breadcrumb */}
+        <ProductBreadcrumb brand={product.brand} productName={product.name} className="mb-3" />
+
+        <h1 className="text-xl md:text-2xl font-bold text-white leading-snug">{product.name}</h1>
+
+        {/* Price + stock */}
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl lg:text-3xl font-bold text-[#D1B23E]">{formatPrice(salePrice)}</span>
+            {hasDiscount && (
+              <span className="text-sm text-gray-500 line-through">{formatPrice(origPrice)}</span>
+            )}
+          </div>
+          <span
+            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              inStock ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+            }`}
           >
-            &#8592;
+            {inStock ? 'In Stock' : 'Out of Stock'}
+          </span>
+        </div>
+
+        {/* Specifications: Reference + Brand + Colorway */}
+        {(product.reference || product.brand?.name || product.color) && (
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            {product.brand?.name && (
+              <button
+                onClick={() => router.push(`/brands/${product.brand._id}`)}
+                className="bg-[#171717] border border-white/5 hover:border-[#D1B23E]/20 rounded-xl p-3 text-left transition-colors"
+              >
+                <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-0.5">Brand</p>
+                <p className="text-sm font-semibold text-white truncate">{product.brand.name}</p>
+              </button>
+            )}
+            {product.color && (
+              <div className="bg-[#171717] border border-white/5 rounded-xl p-3">
+                <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-0.5">Colorway</p>
+                <p className="text-sm font-semibold text-white truncate">{product.color}</p>
+              </div>
+            )}
+            {product.reference && (
+              <div className="bg-[#171717] border border-white/5 rounded-xl p-3">
+                <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-0.5">Reference</p>
+                <p className="text-sm font-semibold text-white font-mono truncate">{product.reference}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="h-px bg-white/5 my-5" />
+
+        {/* About */}
+        {product.about && (
+          <>
+            <h2 className="text-sm font-semibold text-white mb-2">About</h2>
+            <p className="text-sm text-gray-400 leading-relaxed">{product.about}</p>
+          </>
+        )}
+
+        {/* Trust signals */}
+        <div className="mt-6 bg-[#171717] border border-white/5 rounded-2xl p-4 space-y-3">
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            <ShieldCheck size={14} className="text-[#D1B23E] shrink-0" />
+            <span>Certified authenticity on every timepiece</span>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            <Truck size={14} className="text-[#D1B23E] shrink-0" />
+            <span>Complimentary fully insured shipping</span>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            <FaWhatsapp size={14} style={{ color: '#D1B23E' }} className="shrink-0" />
+            <span>WhatsApp concierge support available</span>
+          </div>
+        </div>
+
+        {/* Inline buy actions — visible on all sizes; triggers scroll-sensitive sticky CTA */}
+        <div ref={inlineCTARef} className="flex gap-3 mt-6">
+          <button
+            onClick={addToCart}
+            disabled={!inStock || addingToCart}
+            className="flex-1 bg-[#D1B23E] text-black font-bold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all hover:bg-[#c1a22e]"
+          >
+            <ShoppingCart size={16} />
+            {addingToCart ? 'Adding…' : inStock ? 'Add to Cart' : 'Out of Stock'}
+          </button>
+          {inStock && (
+            <button
+              onClick={buyNow}
+              disabled={buyingNow}
+              className="shrink-0 bg-[#171717] border border-white/10 text-white font-medium py-3.5 px-4 rounded-2xl text-sm flex items-center justify-center active:scale-[0.98] transition-all hover:border-[#D1B23E]/30 disabled:opacity-50"
+              aria-label="Buy via WhatsApp"
+            >
+              <FaWhatsapp size={20} style={{ color: '#25D366' }} />
+            </button>
+          )}
+        </div>
+
+        {/* Wishlist + Share + Request Details row */}
+        <div className="flex gap-2 mt-3">
+          <WishlistButton
+            productId={product._id}
+            size={15}
+            showLabel
+            className="flex-1 justify-center bg-[#171717] border border-white/8 rounded-2xl py-3"
+          />
+          <button
+            onClick={handleShare}
+            aria-label="Share this product"
+            className="flex items-center gap-1.5 bg-[#171717] border border-white/8 rounded-2xl px-4 py-3 text-gray-400 hover:text-white hover:border-white/20 transition-all active:scale-95"
+          >
+            <Share2 size={15} />
+            <span className="text-xs font-medium">Share</span>
           </button>
         </div>
 
-        {/* Product Details */}
-        <div className="w-full max-w-md mx-auto bg-[#323232] text-gray-300 p-4 flex-grow">
-          <h2 className="text-2xl mt-4 ">{product.name}</h2>
-          <div className="flex items-center justify-between mt-6">
-            <div
-              className="flex items-center space-x-2"
-              style={{ fontFamily: 'Sebino Extra Bold, sans-serif' }}
-            >
-              <p className="text-xl font-semibold text-white">
-                &#8377; {new Intl.NumberFormat('en-IN').format(product.price)}
-              </p>
-              <p className="text-sm text-gray-400 line-through">
-                &#8377; {new Intl.NumberFormat('en-IN').format(product.MRP)}
-              </p>
+        {/* Request Details via WhatsApp */}
+        <button
+          onClick={openRequestDetails}
+          className="w-full mt-2 flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-[#25D366] border border-white/5 hover:border-[#25D366]/20 rounded-2xl py-3 transition-all"
+        >
+          <FaWhatsapp size={14} style={{ color: '#25D366' }} />
+          Request Details via WhatsApp
+        </button>
+
+        {/* Related watches */}
+        {relatedProducts.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
+              Related Timepieces
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {relatedProducts.map((p) => (
+                <MobileProductCard
+                  key={p._id}
+                  product={p}
+                  onClick={() => router.push(`/product/${p._id}`)}
+                />
+              ))}
             </div>
-            <p
-              className={`text-sm font-medium ${
-                product.inStock ? 'text-green-400' : 'text-red-400'
-              }`}
-            >
-              {product.inStock ? 'Available in stock' : 'Out of Stock'}
-            </p>
-          </div>
-          <h3 className="mt-6 text-lg font-semibold text-white">About</h3>
-          <p className="mt-1 text-[#cccccc]">{product.about}</p>
-          <div className="mt-4 h-32"></div>
-        </div>
+          </section>
+        )}
+
+        {/* Recently viewed */}
+        <RecentlyViewedRow excludeId={product._id} className="mt-8" />
+
+        {/* Saved timepieces from wishlist */}
+        <WishlistSavedSection
+          title="Saved Timepieces"
+          excludeId={product._id}
+          className="mt-8"
+        />
       </div>
 
-      {/* Floating Sticky Bottom Buttons */}
-      <div className="fixed bottom-8 left-4 right-4 z-50 flex justify-center">
-        <div className="flex space-x-4 max-w-md w-full px-4">
-          <Button
-            onClick={buyNow}
-            disabled={!product.inStock}
-            className="!bg-[#cca326] text-white flex-1 rounded-[10px]"
+      {/* Share modal */}
+      {showShareModal && product && (
+        <ShareModal product={product} onClose={() => setShowShareModal(false)} />
+      )}
+
+      {/* Lightbox */}
+      {lightboxOpen && images.length > 0 && (
+        <Lightbox
+          images={images}
+          currentIndex={currentImage}
+          onChange={setCurrentImage}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
+
+      {/* ── Sticky CTA — mobile only, slides away when inline CTA is visible ── */}
+      <div
+        aria-hidden={inlineCTAVisible || undefined}
+        {...(inlineCTAVisible ? { inert: '' } : {})}
+        className={`fixed bottom-0 left-0 right-0 z-30 bg-[#1e1e1e]/95 backdrop-blur-xl border-t border-white/8 px-5 py-4 md:hidden transition-transform duration-300 ${
+          inlineCTAVisible ? 'translate-y-full' : 'translate-y-0'
+        }`}
+      >
+        <div className="flex gap-3">
+          <button
+            onClick={addToCart}
+            disabled={!inStock || addingToCart}
+            className="flex-1 bg-[#D1B23E] text-black font-bold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all hover:bg-[#c1a22e]"
           >
-            Buy Now
-          </Button>
+            <ShoppingCart size={16} />
+            {addingToCart ? 'Adding…' : inStock ? 'Add to Cart' : 'Out of Stock'}
+          </button>
+          {inStock && (
+            <button
+              onClick={buyNow}
+              disabled={buyingNow}
+              className="shrink-0 bg-[#171717] border border-white/10 text-white font-medium py-3.5 px-4 rounded-2xl text-sm flex items-center justify-center active:scale-[0.98] transition-all hover:border-[#D1B23E]/30 disabled:opacity-50"
+              aria-label="Buy via WhatsApp"
+            >
+              <FaWhatsapp size={20} style={{ color: '#25D366' }} />
+            </button>
+          )}
         </div>
       </div>
     </div>

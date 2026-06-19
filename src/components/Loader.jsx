@@ -1,37 +1,13 @@
-import React from 'react';
-
-const Loader = () => {
+export default function Loader() {
   return (
-    <div className="text-center">
-      <div className="w-16 h-16 border-4 border-dashed rounded-full border-yellow-500 mx-auto animate-luxurious" />
-      <h2 className="text-zinc-900 dark:text-white mt-4">Loading...</h2>
-      <p className="text-zinc-600 dark:text-zinc-400">
-        Finding the perfect timepiece for you...
-      </p>
-
-      <style>
-        {`
-          @keyframes luxurious-spin {
-            0% {
-              transform: rotate(0deg) scale(1);
-              opacity: 0.9;
-            }
-            50% {
-              transform: rotate(180deg) scale(1.1);
-              opacity: 1;
-            }
-            100% {
-              transform: rotate(360deg) scale(1);
-              opacity: 0.9;
-            }
-          }
-          .animate-luxurious {
-            animation: luxurious-spin 1.5s ease-in-out infinite;
-          }
-        `}
-      </style>
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative w-12 h-12">
+        {/* Outer ring */}
+        <div className="absolute inset-0 rounded-full border-2 border-[#D1B23E]/15" />
+        {/* Spinning arc */}
+        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#D1B23E] animate-spin" />
+      </div>
+      <p className="text-xs text-gray-500 font-medium tracking-widest uppercase">Loading</p>
     </div>
   );
-};
-
-export default Loader;
+}

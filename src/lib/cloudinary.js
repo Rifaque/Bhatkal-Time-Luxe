@@ -18,7 +18,7 @@ cloudinary.config({
 export function uploadBuffer(buffer, folder = 'bhatkal-time-luxe') {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder },
+      { folder, resource_type: 'image', allowed_formats: ['jpg', 'jpeg', 'png', 'webp'] },
       (error, result) => {
         if (error) {
           console.error('❌ Cloudinary Upload Stream Error:', error);

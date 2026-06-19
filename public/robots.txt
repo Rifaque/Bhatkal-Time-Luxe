@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cart
+Disallow: /order-confirmation
+
+Sitemap: https://bhatkaltimeluxe.in/sitemap.xml

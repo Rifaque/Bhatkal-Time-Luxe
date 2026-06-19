@@ -28,7 +28,6 @@ export async function connectToDatabase() {
     };
 
     cached.promise = mongoose.connect(MONGO_URI, opts).then((mongooseInstance) => {
-      console.log('✅ Connected to MongoDB Atlas cluster');
       return mongooseInstance;
     });
   }

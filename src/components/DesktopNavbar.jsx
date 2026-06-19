@@ -73,24 +73,46 @@ export default function DesktopNavbar() {
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
           {/* Left: Logo and Links */}
           <div className="flex items-center space-x-12">
-            <Link href="/" className="flex items-center opacity-90 hover:opacity-100 transition-opacity duration-200">
-              <Image
-                src={btimehome}
-                alt="Bhatkal Time Luxe Logo"
-                className="h-12 w-auto cursor-pointer object-contain"
-                priority
-              />
-            </Link>
+            {pathname === '/' ? (
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex items-center opacity-90 hover:opacity-100 transition-opacity duration-200"
+                aria-label="Scroll to top"
+              >
+                <Image
+                  src={btimehome}
+                  alt="Bhatkal Time Luxe Logo"
+                  className="h-12 w-auto object-contain"
+                  priority
+                />
+              </button>
+            ) : (
+              <Link href="/" className="flex items-center opacity-90 hover:opacity-100 transition-opacity duration-200">
+                <Image
+                  src={btimehome}
+                  alt="Bhatkal Time Luxe Logo"
+                  className="h-12 w-auto cursor-pointer object-contain"
+                  priority
+                />
+              </Link>
+            )}
             <nav className="hidden lg:flex items-center space-x-8 bg-transparent">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
-                return (
+                return isActive ? (
+                  <button
+                    key={link.name}
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="relative text-sm font-medium tracking-wide text-[#D1B23E] group"
+                  >
+                    {link.name}
+                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-[#D1B23E] rounded-full" />
+                  </button>
+                ) : (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`text-sm font-medium tracking-wide transition-colors duration-200 hover:text-[#D1B23E] ${
-                      isActive ? 'text-[#D1B23E]' : 'text-gray-400'
-                    }`}
+                    className="text-sm font-medium tracking-wide transition-colors duration-200 hover:text-[#D1B23E] text-gray-400"
                   >
                     {link.name}
                   </Link>
@@ -119,6 +141,19 @@ export default function DesktopNavbar() {
             <CurrencyPicker />
 
             {/* Shopping Cart */}
+            {pathname === '/cart' ? (
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="relative text-[#D1B23E] p-2"
+              >
+                <ShoppingCart size={19} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#D1B23E] text-[9px] font-bold text-black ring-2 ring-[#0a0a0a]">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            ) : (
             <Link
               href="/cart"
               className="relative text-gray-500 hover:text-[#D1B23E] p-2 transition-colors duration-200"
@@ -130,6 +165,7 @@ export default function DesktopNavbar() {
                 </span>
               )}
             </Link>
+            )}
           </div>
         </div>
       </header>

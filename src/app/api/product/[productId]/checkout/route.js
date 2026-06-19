@@ -1,73 +1,105 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
-import { Product, Stats, Order } from '@/models/Schemas';
+import { Product, Stats, Order, ExchangeRate } from '@/models/Schemas';
+import {
+  buildLineItems,
+  buildWhatsAppMessage,
+  generateOrderId,
+} from '@/lib/orderPricing';
+import { getSettings } from '@/lib/settings';
+import { badId } from '@/lib/validate';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
-const fmt = (n) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(n);
+const checkoutLimiter = rateLimit({ maxRequests: 20, windowMs: 10 * 60 * 1000 });
 
-function generateOrderId(count) {
-  const year = new Date().getFullYear();
-  return `BTL-${year}-${String(count).padStart(6, '0')}`;
+async function getServerRate(currency) {
+  if (!currency || currency === 'KWD') return 1;
+  try {
+    const record = await ExchangeRate.findOne({ singleton: 'latest' }).lean();
+    const rate   = record?.rates?.[currency];
+    return Number.isFinite(rate) && rate > 0 ? rate : 1;
+  } catch {
+    return 1;
+  }
 }
 
-export async function GET(req, { params }) {
+export async function POST(req, { params }) {
+  const ip = getClientIp(req);
+  const limit = checkoutLimiter(ip);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many checkout requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    );
+  }
+
   try {
     const { productId } = await params;
-    await connectToDatabase();
+    const invalid = badId(productId, 'product ID');
+    if (invalid) return invalid;
 
-    const product = await Product.findById(productId).populate('brand');
+    const body = await req.json().catch(() => ({}));
+    const orderCurrency = body.currency || 'KWD';
+
+    await connectToDatabase();
+    const exchangeRateUsed = await getServerRate(orderCurrency);
+
+    // lean() returns raw MongoDB doc — no Mongoose schema-default injection
+    const product = await Product.findById(productId).populate('brand').lean();
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    const quantity = 1;
-    const total = product.price * quantity;
+    // Build and validate line items (throws on missing/NaN price)
+    const { orderItems, baseKwdAmount } = buildLineItems([{ product, quantity: 1 }]);
 
-    // Increment global order counter
     const globalStats = await Stats.findOneAndUpdate(
       {},
       { $inc: { globalOrderCount: 1 } },
       { new: true, upsert: true }
     );
-
     const orderId = generateOrderId(globalStats.globalOrderCount);
 
-    // Build WhatsApp message
-    const message = `BHATKAL TIME LUXE — ORDER CONFIRMATION\n\nOrder ID: ${orderId}\n\nProduct: ${product.name}\nColor/Dial: ${product.color || 'N/A'}\nPrice: ${fmt(product.price)}${product.MRP > product.price ? ` (MRP: ${fmt(product.MRP)})` : ''}\n\nORDER TOTAL: ${fmt(total)}\n\nPlease quote Order ID ${orderId} in all communications.\nOur team will reach out to confirm your order.`;
+    const { message, displayAmount } = buildWhatsAppMessage({
+      orderId,
+      orderItems,
+      baseKwdAmount,
+      orderCurrency,
+      exchangeRateUsed,
+    });
 
-    // Save order with orderId
     const order = new Order({
       orderId,
       cartId: 'direct',
-      items: [{
-        product: product._id,
-        name: product.name,
-        brand: product.brand?.name || '',
-        price: product.price,
-        quantity,
-        image: product.images?.[0] || '',
-      }],
-      total,
+      items:            orderItems,
+      total:            baseKwdAmount,
+      totalKwd:         baseKwdAmount,
+      orderCurrency,
+      exchangeRateUsed,
+      baseKwdAmount,
+      displayAmount,
       message,
     });
     await order.save();
 
-    // Generate WhatsApp URL
-    const whatsappNumber = process.env.WHATSAPP_NUMBER || '';
-    let whatsappUrl = '';
-    if (whatsappNumber) {
-      whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-    }
+    const { whatsappNumber: waNumber } = await getSettings();
+    const whatsappNumber = waNumber || process.env.WHATSAPP_NUMBER || '';
+    const whatsappUrl = whatsappNumber
+      ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
+      : '';
 
     return NextResponse.json({
       message,
-      total,
+      total:       baseKwdAmount,
+      displayAmount,
+      orderCurrency,
+      exchangeRateUsed,
       globalOrderCount: globalStats.globalOrderCount,
       whatsappUrl,
       orderId,
     });
   } catch (err) {
     console.error('❌ Direct Checkout Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Checkout failed. Please try again.' }, { status: 500 });
   }
 }

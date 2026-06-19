@@ -2,17 +2,18 @@
 
 import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle2, ShieldCheck, Truck, MessageCircle, ArrowLeft, Home, ShoppingCart } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, Truck, MessageCircle } from 'lucide-react';
 import DesktopNavbar from '@/components/DesktopNavbar';
 import DesktopFooter from '@/components/DesktopFooter';
+import MobileLayout from '@/components/MobileLayout';
 import useIsDesktop from '@/hooks/useIsDesktop';
-import { Button } from '@/components/ui/button';
+import { useCurrency } from '@/context/CurrencyContext';
 
 function ConfirmationCard({ orderId, total }) {
   const router = useRouter();
-  const formattedTotal = total
-    ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(total)
-    : null;
+  const { formatPrice } = useCurrency();
+  const kwdTotal = total ? parseFloat(total) : null;
+  const formattedTotal = kwdTotal && Number.isFinite(kwdTotal) ? formatPrice(kwdTotal) : null;
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -91,29 +92,12 @@ function DesktopConfirmation({ orderId, total }) {
 }
 
 function MobileConfirmation({ orderId, total }) {
-  const router = useRouter();
   return (
-    <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col pb-20">
-      <main className="flex-1 flex items-center justify-center px-5 py-16">
+    <MobileLayout hideFAB>
+      <div className="flex items-center justify-center px-5 py-10 min-h-[calc(100vh-8rem)]">
         <ConfirmationCard orderId={orderId} total={total} />
-      </main>
-      <nav className="fixed bottom-0 w-full bg-[#1E1E1E] flex justify-around py-3 z-40 border-t border-white/8">
-        <button
-          onClick={() => router.push('/')}
-          className="flex flex-col items-center gap-1 text-[#D1B23E]"
-        >
-          <Home size={20} />
-          <span className="text-[10px]">Home</span>
-        </button>
-        <button
-          onClick={() => router.push('/cart')}
-          className="flex flex-col items-center gap-1 text-gray-400"
-        >
-          <ShoppingCart size={20} />
-          <span className="text-[10px]">Cart</span>
-        </button>
-      </nav>
-    </div>
+      </div>
+    </MobileLayout>
   );
 }
 

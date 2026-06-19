@@ -13,16 +13,16 @@ export async function GET(req) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get('limit')) || 40;
+    const limit = Math.min(parseInt(searchParams.get('limit')) || 40, 100);
 
     await connectToDatabase();
-    newArrivals = await Product.find().sort({ dateAdded: -1 }).limit(limit).lean();
+    newArrivals = await Product.find().sort({ dateAdded: -1 }).limit(limit).populate('brand', 'name').lean();
     
     cache.set('newArrivals', newArrivals);
     return NextResponse.json(newArrivals);
   } catch (err) {
     console.error('❌ GET New Arrivals Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: 'Failed to load new arrivals' }, { status: 500 });
   }
 }
 export { cache as newArrivalsCache };

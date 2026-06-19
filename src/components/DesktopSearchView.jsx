@@ -26,34 +26,26 @@ export default function DesktopSearchView() {
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [priceRange, setPriceRange] = useState([1, 10000]);
+  const [priceRange, setPriceRange] = useState([1, 3000]);
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [sortBy, setSortBy] = useState('default');
   
   const [quickViewId, setQuickViewId] = useState(null);
   const [hoveredCardId, setHoveredCardId] = useState(null);
 
   // Fetch products and brands on load
   useEffect(() => {
-    // Sync query state if URL parameter changes
     setQuery(initialQuery);
-
-    const loadData = async () => {
-      try {
-        const prodRes = await fetch('/api/products');
-        const prodData = await prodRes.json();
+    Promise.all([
+      fetch('/api/products').then((r) => r.json()),
+      fetch('/api/brands').then((r) => r.json()),
+    ])
+      .then(([prodData, brandData]) => {
         setProducts(prodData);
-
-        const brandRes = await fetch('/api/brands');
-        const brandData = await brandRes.json();
         setBrands(brandData.sort((a, b) => a.name.localeCompare(b.name)));
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Failed to load search data', err);
-        setLoading(false);
-      }
-    };
-    loadData();
+      })
+      .catch((err) => console.error('Failed to load search data', err))
+      .finally(() => setLoading(false));
   }, [initialQuery]);
 
   const toggleBrand = (brandId) => {
@@ -66,29 +58,32 @@ export default function DesktopSearchView() {
 
   const clearFilters = () => {
     setQuery('');
-    setPriceRange([1, 10000]);
+    setPriceRange([1, 3000]);
     setSelectedBrands([]);
+    setSortBy('default');
     router.push('/search');
   };
 
-  // Client filtering
-  const filteredProducts = products.filter((product) => {
+  // Client filtering + sorting
+  const filteredProducts = (() => {
     const lowerQuery = query.toLowerCase();
-    const nameMatch = product.name?.toLowerCase().includes(lowerQuery);
-    const aboutMatch = product.about?.toLowerCase().includes(lowerQuery);
-    const colorMatch = product.color?.toLowerCase().includes(lowerQuery);
-    const brandNameMatch = product.brand?.name?.toLowerCase().includes(lowerQuery);
-    
-    const textMatch = nameMatch || aboutMatch || colorMatch || brandNameMatch;
-    
-    // Price match
-    const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
-    
-    // Brand selection match
-    const brandMatch = selectedBrands.length === 0 || selectedBrands.includes(product.brand?._id);
-
-    return textMatch && priceMatch && brandMatch;
-  });
+    let results = products.filter((product) => {
+      const nameMatch = product.name?.toLowerCase().includes(lowerQuery);
+      const aboutMatch = product.about?.toLowerCase().includes(lowerQuery);
+      const colorMatch = product.color?.toLowerCase().includes(lowerQuery);
+      const brandNameMatch = product.brand?.name?.toLowerCase().includes(lowerQuery);
+      const refMatch = product.reference?.toLowerCase().includes(lowerQuery);
+      const textMatch = nameMatch || aboutMatch || colorMatch || brandNameMatch || refMatch;
+      const priceMatch = (product.salePrice ?? product.priceKwd ?? 0) >= priceRange[0] && (product.salePrice ?? product.priceKwd ?? 0) <= priceRange[1];
+      const brandMatch = selectedBrands.length === 0 || selectedBrands.includes(product.brand?._id);
+      return textMatch && priceMatch && brandMatch;
+    });
+    if (sortBy === 'price_asc')  results = [...results].sort((a, b) => (a.salePrice ?? a.priceKwd ?? 0) - (b.salePrice ?? b.priceKwd ?? 0));
+    if (sortBy === 'price_desc') results = [...results].sort((a, b) => (b.salePrice ?? b.priceKwd ?? 0) - (a.salePrice ?? a.priceKwd ?? 0));
+    if (sortBy === 'name_asc')   results = [...results].sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'name_desc')  results = [...results].sort((a, b) => b.name.localeCompare(a.name));
+    return results;
+  })();
 
   const addToCart = async (productId, e) => {
     e.stopPropagation();
@@ -152,7 +147,7 @@ export default function DesktopSearchView() {
           <div className="lg:col-span-3 bg-[#171717] border border-white/5 rounded-3xl p-6 space-y-8 sticky top-28 shadow-lg">
             <div className="flex justify-between items-center pb-4 border-b border-white/5">
               <span className="font-serif font-bold text-lg flex items-center gap-1.5"><SlidersHorizontal size={18} /> Filters</span>
-              {(query || selectedBrands.length > 0 || priceRange[0] > 1 || priceRange[1] < 10000) && (
+              {(query || selectedBrands.length > 0 || priceRange[0] > 1 || priceRange[1] < 3000 || sortBy !== 'default') && (
                 <button onClick={clearFilters} className="text-xs text-[#D1B23E] hover:underline flex items-center gap-0.5">
                   <X size={12} /> Clear All
                 </button>
@@ -193,14 +188,15 @@ export default function DesktopSearchView() {
             <div className="space-y-4">
               <label className="text-xs uppercase tracking-wider text-gray-400 font-bold block">Price Range</label>
               <div className="flex justify-between text-xs text-gray-300 font-mono">
-                <span>₹{priceRange[0]}</span>
-                <span>₹{priceRange[1]}</span>
+                <span>{formatPrice(priceRange[0])}</span>
+                <span>{formatPrice(priceRange[1])}</span>
               </div>
               <div className="px-2">
                 <Slider
                   range
                   min={1}
-                  max={10000}
+                  max={3000}
+                  step={50}
                   value={priceRange}
                   onChange={(val) => setPriceRange(val)}
                   trackStyle={[{ backgroundColor: '#D1B23E' }]}
@@ -215,6 +211,18 @@ export default function DesktopSearchView() {
           <div className="lg:col-span-9 space-y-6">
             <div className="flex justify-between items-center text-sm text-gray-400">
               <span>Showing {filteredProducts.length} matching references</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-[#171717] border border-white/10 text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#D1B23E]/40 cursor-pointer"
+                aria-label="Sort results"
+              >
+                <option value="default">Sort: Default</option>
+                <option value="price_asc">Price: Low → High</option>
+                <option value="price_desc">Price: High → Low</option>
+                <option value="name_asc">Name: A → Z</option>
+                <option value="name_desc">Name: Z → A</option>
+              </select>
             </div>
 
             {filteredProducts.length === 0 ? (
@@ -234,9 +242,9 @@ export default function DesktopSearchView() {
                     onMouseLeave={() => setHoveredCardId(null)}
                     className="relative group bg-[#171717] border border-white/5 hover:border-white/10 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                   >
-                    {product.MRP > product.price && (
+                    {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                       <span className="absolute top-4 left-4 z-10 bg-[#D1B23E] text-black text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded">
-                        {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
+                        {Math.round((((product.originalPrice ?? product.originalPriceKwd) - (product.salePrice ?? product.priceKwd)) / (product.originalPrice ?? product.originalPriceKwd)) * 100)}% OFF
                       </span>
                     )}
 
@@ -275,11 +283,11 @@ export default function DesktopSearchView() {
                       <div className="flex items-center justify-between pt-2">
                         <div>
                           <div className="text-base font-bold text-white">
-                            {formatPrice(product.price)}
+                            {formatPrice(product.salePrice ?? product.priceKwd ?? 0)}
                           </div>
-                          {product.MRP > product.price && (
+                          {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                             <div className="text-xs text-gray-500 line-through opacity-60">
-                              {formatPrice(product.MRP)}
+                              {formatPrice(product.originalPrice ?? product.originalPriceKwd ?? 0)}
                             </div>
                           )}
                         </div>

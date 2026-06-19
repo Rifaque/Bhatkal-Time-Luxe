@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminFromRequest } from '@/lib/auth';
 import { uploadBuffer } from '@/lib/cloudinary';
+import { validateImageFile } from '@/lib/validate';
 
 export async function POST(req) {
   try {
@@ -14,6 +15,9 @@ export async function POST(req) {
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
+
+    const fileErr = validateImageFile(file);
+    if (fileErr) return NextResponse.json({ error: fileErr }, { status: 400 });
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { TopBrand } from '@/models/Schemas';
 import { getAdminFromRequest } from '@/lib/auth';
+import { badId } from '@/lib/validate';
+import { logAdminAction } from '@/lib/audit';
+import { getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req) {
   try {
@@ -11,9 +14,8 @@ export async function POST(req) {
     }
 
     const { brandId } = await req.json();
-    if (!brandId) {
-      return NextResponse.json({ error: 'Brand ID is required' }, { status: 400 });
-    }
+    const invalid = badId(brandId, 'brand ID');
+    if (invalid) return invalid;
 
     await connectToDatabase();
 
@@ -24,6 +26,8 @@ export async function POST(req) {
 
     const topBrand = new TopBrand({ brand: brandId });
     await topBrand.save();
+
+    logAdminAction({ admin, action: 'TOP_BRAND_ADD', entity: 'TopBrand', entityId: brandId, ip: getClientIp(req) });
 
     return NextResponse.json({ message: 'Brand added to top brands list', topBrand }, { status: 201 });
   } catch (err) {

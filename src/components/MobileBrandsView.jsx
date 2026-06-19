@@ -2,126 +2,97 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Search, Home, Menu, ShoppingCart, Tag } from 'lucide-react';
-import btimehome from '@/assets/images/btimehome.webp';
-import Loader from '@/components/Loader';
-import HamburgerMenu from '@/components/HamburgerMenu';
-import { FaWhatsapp } from 'react-icons/fa';
-import { Card } from '@/components/ui/card';
-import Image from 'next/image';
+import { Search } from 'lucide-react';
+import MobileLayout from '@/components/MobileLayout';
 import { getImageUrl } from '@/lib/image';
+
+function BrandSkeleton({ count = 6 }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl p-4 flex flex-col items-center gap-3 animate-pulse">
+          <div className="w-14 h-14 rounded-xl bg-[#252525]" />
+          <div className="h-2.5 bg-[#252525] rounded w-16" />
+        </div>
+      ))}
+    </>
+  );
+}
 
 export default function MobileBrandsView() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/brands')
-      .then((res) => res.json())
-      .then((data) => {
-        const sortedBrands = data.sort((a, b) => a.name.localeCompare(b.name));
-        setBrands(sortedBrands);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch brands', err);
-        setLoading(false);
-      });
+      .then((r) => r.json())
+      .then((data) => setBrands(data.sort((a, b) => a.name.localeCompare(b.name))))
+      .catch((err) => console.error('Failed to fetch brands', err))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="!bg-[#2A2A2A] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
+  const filtered = searchQuery
+    ? brands.filter((b) => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : brands;
 
   return (
-    <div className="!bg-[#2A2A2A] text-white min-h-screen pb-16">
-      {/* Header */}
-      <header className="flex justify-between items-center p-2">
-        <Button variant="ghost" className="mt-2" onClick={() => setMenuOpen(true)}>
-          <Menu size={28} className="text-[#D1B23E]" />
-        </Button>
-        <Image
-          src={btimehome}
-          alt="Bhatkal Timeluxe Logo"
-          className="h-16 w-auto cursor-pointer"
-          onClick={() => router.push('/')}
-        />
-        <Button variant="ghost" className="mt-2" onClick={() => router.push('/search')}>
-          <Search size={24} className="text-[#D1B23E]" />
-        </Button>
-      </header>
+    <MobileLayout>
+      {/* Page heading */}
+      <div className="px-5 pt-6 pb-5">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-[#D1B23E] font-semibold mb-1">
+          Our Collection
+        </p>
+        <h1 className="text-2xl font-serif font-bold text-white">All Brands</h1>
+      </div>
 
-      {/* Main Content */}
-      <div className="w-full max-w-4xl mt-8 mx-auto px-4">
-        <h1 className="text-2xl font-bold mb-6 text-center font-sans">All Brands</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {brands.map((brand) => (
-            <div
-              key={brand._id}
-              className="cursor-pointer"
-              onClick={() => router.push(`/brands/${brand._id}`)}
-            >
-              <Card className="!bg-[#EDEDED] flex flex-col items-center p-2">
-                <div className="w-full h-24 flex items-center justify-center rounded-lg bg-[#EDEDED]">
-                  <img
-                    src={getImageUrl(brand.logo, 'brand')}
-                    alt={brand.name}
-                    className="max-h-full object-contain mix-blend-multiply"
-                    onError={(e) => (e.target.src = '/assets/images/fallback-brand.png')}
-                  />
-                </div>
-              </Card>
-            </div>
-          ))}
+      {/* Brand search */}
+      <div className="px-4 mb-5">
+        <div className="relative">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Find a brand…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#171717] border border-white/8 text-sm text-white placeholder-gray-600 pl-9 pr-4 py-2.5 rounded-xl focus:outline-none focus:border-[#D1B23E]/40 transition-all"
+          />
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-8 text-center text-gray-400 text-sm mb-6">
-        <p>BHATKAL TIME LUXE</p>
-        <p>&copy; {new Date().getFullYear()} All rights reserved.</p>
-      </footer>
-
-      {/* Floating WhatsApp Button */}
-      <a
-        href="https://wa.me/916364282251"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-16 right-3 z-50 bg-[#1e1e1e] p-4 rounded-full shadow-lg"
-      >
-        <FaWhatsapp size={24} style={{ color: '#D1B23E' }} />
-      </a>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 w-full !bg-[#1E1E1E] flex justify-around py-2 z-40">
-        <Button
-          variant="ghost"
-          className="flex flex-col items-center !text-[#D1B23E]"
-          onClick={() => router.push('/')}
-        >
-          <Home size={24} />
-        </Button>
-        <Button variant="ghost" className="flex flex-col items-center !text-[#D1B23E]">
-          <Tag size={24} />
-        </Button>
-        <Button
-          variant="ghost"
-          className="flex flex-col items-center !text-[#D1B23E]"
-          onClick={() => router.push('/cart')}
-        >
-          <ShoppingCart size={24} />
-        </Button>
-      </nav>
-
-      {/* Hamburger Menu */}
-      <HamburgerMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-    </div>
+      {/* Brand grid */}
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-4 pb-6 lg:px-8">
+        {loading ? (
+          <BrandSkeleton />
+        ) : filtered.length === 0 ? (
+          <div className="col-span-3 text-center py-12 text-gray-600">
+            No brands found.
+          </div>
+        ) : (
+          filtered.map((brand) => (
+            <button
+              key={brand._id}
+              onClick={() => router.push(`/brands/${brand._id}`)}
+              className="bg-[#171717] border border-white/5 rounded-2xl p-3 flex flex-col items-center gap-2 hover:border-[#D1B23E]/20 active:scale-95 transition-all duration-200"
+            >
+              {/* Logo panel */}
+              <div className="w-full aspect-square rounded-xl bg-white flex items-center justify-center overflow-hidden">
+                <img
+                  src={getImageUrl(brand.logo, 'brand')}
+                  alt={brand.name}
+                  className="w-full h-full object-contain p-2 mix-blend-multiply"
+                  onError={(e) => (e.target.src = '/assets/images/fallback-brand.png')}
+                />
+              </div>
+              {/* Brand name */}
+              <span className="text-[10px] text-gray-300 font-medium text-center leading-tight line-clamp-2">
+                {brand.name}
+              </span>
+            </button>
+          ))
+        )}
+      </div>
+    </MobileLayout>
   );
 }

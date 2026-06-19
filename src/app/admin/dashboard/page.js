@@ -7,10 +7,8 @@ import {
   AdminShell,
   AdminStatCard,
   AdminPanel,
-  adminDangerButtonClasses,
 } from '../components/AdminShell';
-import AdminLogs from '../components/AdminLogs';
-import { Package, Gem, Sparkles, Star, Shield, Trash2, ArrowRight } from 'lucide-react';
+import { Package, Gem, Sparkles, Star, Shield, ArrowRight } from 'lucide-react';
 
 const quickActions = [
   { label: 'Manage Products', href: '/admin/products', icon: Package },
@@ -29,9 +27,7 @@ export default function AdminDashboard() {
     bestSelling: '—',
     topBrands: '—',
   });
-  const [cleanupResult, setCleanupResult] = useState(null);
-  const [cleanupError, setCleanupError] = useState(null);
-  const [cleanupDisabled, setCleanupDisabled] = useState(false);
+  const [availability, setAvailability] = useState({ inStock: '—', outOfStock: '—' });
 
   useEffect(() => {
     async function fetchCounts() {
@@ -43,12 +39,17 @@ export default function AdminDashboard() {
           axios.get('/api/best-selling'),
           axios.get('/api/top-brands'),
         ]);
+        const prods = resProducts.data;
         setCounts({
           brands: resBrands.data.length,
-          products: resProducts.data.length,
+          products: prods.length,
           featured: resFeatured.data.length,
           bestSelling: resBestSelling.data.length,
           topBrands: resTopBrands.data.length,
+        });
+        setAvailability({
+          inStock:    prods.filter((p) => p.inStock !== false).length,
+          outOfStock: prods.filter((p) => p.inStock === false).length,
         });
       } catch (err) {
         console.error('Failed to fetch counts', err);
@@ -56,25 +57,6 @@ export default function AdminDashboard() {
     }
     fetchCounts();
   }, []);
-
-  const handleCleanup = async () => {
-    setCleanupResult(null);
-    setCleanupError(null);
-    setCleanupDisabled(true);
-    const token = localStorage.getItem('adminToken');
-    try {
-      const res = await axios.post(
-        '/api/admin/cleanup-images',
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCleanupResult(res.data);
-    } catch (err) {
-      setCleanupError(err.response?.data?.error || 'Cleanup failed');
-    } finally {
-      setTimeout(() => setCleanupDisabled(false), 30000);
-    }
-  };
 
   return (
     <AdminShell
@@ -118,47 +100,24 @@ export default function AdminDashboard() {
           </div>
         </AdminPanel>
 
-        {/* Image Cleanup */}
-        <AdminPanel
-          title="Image Cleanup"
-          description="Remove orphaned images from Cloudinary that are no longer linked to any product or brand."
-          action={
-            <button
-              onClick={handleCleanup}
-              disabled={cleanupDisabled}
-              className={`${adminDangerButtonClasses} ${cleanupDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-            >
-              <Trash2 size={15} />
-              {cleanupDisabled ? 'Please wait 30s…' : 'Run Cleanup'}
-            </button>
-          }
-        >
-          {cleanupResult && (
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/8 p-4 text-sm text-emerald-200 space-y-1">
-              <p className="font-medium">{cleanupResult.message}</p>
-              {cleanupResult.deletedFiles?.length > 0 && (
-                <p className="text-xs text-emerald-300/70">
-                  Deleted: {cleanupResult.deletedFiles.join(', ')}
-                </p>
-              )}
-              <p className="text-xs text-emerald-300/70">Total removed: {cleanupResult.count}</p>
+        {/* Availability Summary */}
+        <AdminPanel title="Availability" description="In-stock status across the product catalog.">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3.5">
+              <Package size={18} className="text-emerald-400 shrink-0" />
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-emerald-500/70 font-semibold">In Stock</p>
+                <p className="text-xl font-bold text-emerald-400 mt-0.5">{availability.inStock}</p>
+              </div>
             </div>
-          )}
-          {cleanupError && (
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/8 p-4 text-sm text-red-200">
-              {cleanupError}
+            <div className="flex items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/5 px-4 py-3.5">
+              <Package size={18} className="text-red-400 shrink-0" />
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-red-500/70 font-semibold">Out of Stock</p>
+                <p className="text-xl font-bold text-red-400 mt-0.5">{availability.outOfStock}</p>
+              </div>
             </div>
-          )}
-          {!cleanupResult && !cleanupError && (
-            <p className="text-sm text-gray-500">
-              No cleanup has been run this session. Use the button above to scan and remove orphaned media assets.
-            </p>
-          )}
-        </AdminPanel>
-
-        {/* Activity Log */}
-        <AdminPanel title="Recent Activity" description="Changelog entries from your admin operations.">
-          <AdminLogs />
+          </div>
         </AdminPanel>
 
       </div>

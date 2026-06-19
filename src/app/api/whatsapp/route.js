@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { getSettings } from '@/lib/settings';
 
 export async function GET(req) {
-  const number = process.env.WHATSAPP_NUMBER;
+  const { whatsappNumber } = await getSettings();
+  const number = whatsappNumber || process.env.WHATSAPP_NUMBER;
   const origin = new URL(req.url).origin;
   if (!number) {
     return NextResponse.redirect(`${origin}/contact`);

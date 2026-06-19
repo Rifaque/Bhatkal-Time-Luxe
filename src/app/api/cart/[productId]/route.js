@@ -2,12 +2,15 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Cart } from '@/models/Schemas';
 import { getOrCreateCartId } from '../route';
+import { badId } from '@/lib/validate';
 
 export async function PUT(req, { params }) {
   try {
     const { productId } = await params;
+    const invalid = badId(productId, 'product ID');
+    if (invalid) return invalid;
+
     const { quantity } = await req.json();
-    
     if (quantity === undefined) {
       return NextResponse.json({ error: 'Quantity is required' }, { status: 400 });
     }
@@ -28,7 +31,7 @@ export async function PUT(req, { params }) {
     if (quantity <= 0) {
       cart.items.splice(itemIndex, 1);
     } else {
-      cart.items[itemIndex].quantity = quantity;
+      cart.items[itemIndex].quantity = Math.min(99, parseInt(quantity, 10) || 1);
     }
     cart.updatedAt = new Date();
     await cart.save();
@@ -36,13 +39,15 @@ export async function PUT(req, { params }) {
     return NextResponse.json(cart);
   } catch (err) {
     console.error('❌ PUT Cart Item Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: 'Failed to update cart item' }, { status: 500 });
   }
 }
 
 export async function DELETE(req, { params }) {
   try {
     const { productId } = await params;
+    const invalid = badId(productId, 'product ID');
+    if (invalid) return invalid;
     const cartId = await getOrCreateCartId();
     await connectToDatabase();
 
@@ -58,6 +63,6 @@ export async function DELETE(req, { params }) {
     return NextResponse.json(cart);
   } catch (err) {
     console.error('❌ DELETE Cart Item Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: 'Failed to remove cart item' }, { status: 500 });
   }
 }

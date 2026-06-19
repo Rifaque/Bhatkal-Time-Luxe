@@ -23,7 +23,7 @@ function ToastItem({ toast, onRemove }) {
     <div className={`flex items-start gap-3 bg-[#1c1c1c] border ${border} rounded-2xl px-4 py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] min-w-[260px] max-w-xs`}>
       <Icon size={16} className={`${iconClass} shrink-0 mt-0.5`} />
       <span className="text-sm text-white font-medium leading-snug flex-1">{toast.message}</span>
-      <button onClick={onRemove} className="text-gray-500 hover:text-white transition-colors shrink-0 mt-0.5">
+      <button onClick={onRemove} aria-label="Dismiss notification" className="text-gray-500 hover:text-white transition-colors shrink-0 mt-0.5">
         <X size={14} />
       </button>
     </div>
@@ -44,9 +44,9 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[500] flex flex-col gap-2 pointer-events-none">
+      <div className="fixed bottom-[80px] right-4 md:bottom-6 md:right-6 z-[500] flex flex-col gap-2 pointer-events-none">
         {toasts.map((t) => (
-          <div key={t.id} className="pointer-events-auto">
+          <div key={t.id} className="pointer-events-auto" role="status" aria-live="polite" aria-atomic="true">
             <ToastItem toast={t} onRemove={() => remove(t.id)} />
           </div>
         ))}

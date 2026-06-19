@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Receipt, Search, Trash2, Eye, CheckCircle2, MessageCircle,
+  Receipt, Search, Trash2, Eye, CheckCircle2, MessageCircle, ArrowLeft,
 } from 'lucide-react';
 import axios from 'axios';
 import {
@@ -14,6 +14,7 @@ import {
   adminPrimaryButtonClasses,
   adminDangerButtonClasses,
 } from '../components/AdminShell';
+import { useToast } from '@/context/ToastContext';
 
 const ORDER_STATUSES = [
   { value: 'pending',          label: 'Pending',          color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
@@ -55,12 +56,11 @@ function getSmartScore(order) {
   return score;
 }
 
-const fmt = (n) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(n);
+const fmt = (n) => `KD ${Number(n || 0).toFixed(3)}`;
 
 function formatDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleString('en-IN', {
+  return new Date(d).toLocaleString('en', {
     day: 'numeric', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -95,18 +95,16 @@ export default function OrdersPage() {
   const [selected, setSelected] = useState(null);
   const [editForm, setEditForm] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('smart');
+  const [sortBy, setSortBy] = useState('newest');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const { toast } = useToast();
 
   const fetchOrders = useCallback(async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      const res = await axios.get('/api/admin/orders', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get('/api/admin/orders');
       setOrders(res.data);
     } catch (err) {
       console.error('Failed to load orders', err);
@@ -131,15 +129,29 @@ export default function OrdersPage() {
       internalNotes: order.internalNotes || '',
       adminApproved: order.adminApproved || false,
     });
-    const token = localStorage.getItem('adminToken');
     try {
-      await axios.post(`/api/admin/orders/${order._id}/view`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(`/api/admin/orders/${order._id}/view`, {});
       setOrders((prev) => prev.map((o) =>
         o._id === order._id ? { ...o, viewCount: (o.viewCount || 0) + 1 } : o
       ));
     } catch { /* silently fail */ }
+  };
+
+  const handleInstantSave = async (updates) => {
+    if (!selected) return;
+    const toastLabel =
+      'orderStatus' in updates ? `Status → ${updates.orderStatus}` :
+      'paymentStatus' in updates ? `Payment → ${updates.paymentStatus}` :
+      updates.adminApproved ? 'Order Approved' : 'Approval Removed';
+    setEditForm((prev) => ({ ...prev, ...updates }));
+    setOrders((prev) => prev.map((o) => o._id === selected._id ? { ...o, ...updates } : o));
+    try {
+      await axios.patch(`/api/admin/orders/${selected._id}`, updates);
+      toast({ message: toastLabel, type: 'success' });
+    } catch {
+      toast({ message: 'Failed to save', type: 'error' });
+      fetchOrders();
+    }
   };
 
   const handleSave = async () => {
@@ -148,10 +160,7 @@ export default function OrdersPage() {
     setError('');
     setSuccess('');
     try {
-      const token = localStorage.getItem('adminToken');
-      await axios.patch(`/api/admin/orders/${selected._id}`, editForm, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.patch(`/api/admin/orders/${selected._id}`, editForm);
       setSuccess('Order updated successfully.');
       setOrders((prev) => prev.map((o) =>
         o._id === selected._id ? { ...o, ...editForm } : o
@@ -178,10 +187,7 @@ export default function OrdersPage() {
       setEditForm(null);
     }
     try {
-      const token = localStorage.getItem('adminToken');
-      await axios.delete(`/api/admin/orders/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(`/api/admin/orders/${id}`);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to delete order');
       fetchOrders();
@@ -196,17 +202,26 @@ export default function OrdersPage() {
         o.orderId?.toLowerCase().includes(q) ||
         o.customer?.name?.toLowerCase().includes(q) ||
         o.customer?.phone?.includes(q) ||
+        o.customer?.email?.toLowerCase().includes(q) ||
         o._id?.toLowerCase().includes(q)
       );
     })
     .sort((a, b) => {
+      const byNewest = new Date(b.createdAt) - new Date(a.createdAt);
       switch (sortBy) {
-        case 'smart':      return getSmartScore(b) - getSmartScore(a);
-        case 'newest':     return new Date(b.createdAt) - new Date(a.createdAt);
-        case 'oldest':     return new Date(a.createdAt) - new Date(b.createdAt);
-        case 'total_desc': return (b.total || 0) - (a.total || 0);
-        case 'total_asc':  return (a.total || 0) - (b.total || 0);
-        default:           return 0;
+        case 'smart':       return getSmartScore(b) - getSmartScore(a);
+        case 'newest':      return byNewest;
+        case 'oldest':      return new Date(a.createdAt) - new Date(b.createdAt);
+        case 'approved':    return (b.adminApproved ? 1 : 0) - (a.adminApproved ? 1 : 0) || byNewest;
+        case 'pending':     return (b.orderStatus === 'pending' ? 1 : 0) - (a.orderStatus === 'pending' ? 1 : 0) || byNewest;
+        case 'paid':        return (b.paymentStatus === 'paid' ? 1 : 0) - (a.paymentStatus === 'paid' ? 1 : 0) || byNewest;
+        case 'unpaid':      return (a.paymentStatus === 'paid' ? 1 : 0) - (b.paymentStatus === 'paid' ? 1 : 0) || byNewest;
+        case 'shipped':     return (b.orderStatus === 'shipped' ? 1 : 0) - (a.orderStatus === 'shipped' ? 1 : 0) || byNewest;
+        case 'delivered':   return (b.orderStatus === 'delivered' ? 1 : 0) - (a.orderStatus === 'delivered' ? 1 : 0) || byNewest;
+        case 'most_viewed': return (b.viewCount || 0) - (a.viewCount || 0);
+        case 'total_desc':  return (b.total || 0) - (a.total || 0);
+        case 'total_asc':   return (a.total || 0) - (b.total || 0);
+        default:            return 0;
       }
     });
 
@@ -232,7 +247,7 @@ export default function OrdersPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:items-start">
 
           {/* ── Left: Order List ── */}
-          <div className="lg:col-span-2 flex flex-col gap-0">
+          <div className={`lg:col-span-2 flex-col gap-0 ${selected ? 'hidden lg:flex' : 'flex'}`}>
             <div className={panelBase}>
               {/* Toolbar */}
               <div className="px-4 py-3.5 border-b border-white/6 shrink-0">
@@ -251,20 +266,27 @@ export default function OrdersPage() {
                     value={sortBy}
                     onChange={setSortBy}
                     size="sm"
-                    className="w-28 shrink-0"
+                    className="w-32 shrink-0"
                     options={[
-                      { value: 'smart',      label: 'Smart' },
-                      { value: 'newest',     label: 'Newest' },
-                      { value: 'oldest',     label: 'Oldest' },
-                      { value: 'total_desc', label: 'Highest' },
-                      { value: 'total_asc',  label: 'Lowest' },
+                      { value: 'newest',      label: 'Recent' },
+                      { value: 'smart',       label: 'Smart' },
+                      { value: 'oldest',      label: 'Oldest' },
+                      { value: 'approved',    label: 'Approved' },
+                      { value: 'pending',     label: 'Pending' },
+                      { value: 'paid',        label: 'Paid' },
+                      { value: 'unpaid',      label: 'Unpaid' },
+                      { value: 'shipped',     label: 'Shipped' },
+                      { value: 'delivered',   label: 'Delivered' },
+                      { value: 'most_viewed', label: 'Most Viewed' },
+                      { value: 'total_desc',  label: 'Highest Value' },
+                      { value: 'total_asc',   label: 'Lowest Value' },
                     ]}
                   />
                 </div>
               </div>
 
               {/* Order rows */}
-              <div className="flex-1 overflow-y-auto divide-y divide-white/5 max-h-[calc(100vh-310px)] min-h-[300px]">
+              <div className="flex-1 overflow-y-auto divide-y divide-white/5 lg:max-h-[calc(100vh-310px)] min-h-[300px]">
                 {loading ? (
                   <>
                     {[...Array(6)].map((_, i) => <OrderSkeletonRow key={i} />)}
@@ -297,7 +319,7 @@ export default function OrdersPage() {
                           </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-sm font-bold text-white">{fmt(order.total)}</p>
+                          <p className="text-sm font-bold text-white">{fmt(order.totalKwd ?? order.total ?? 0)}</p>
                           <p className="text-[10px] text-gray-500 mt-0.5">
                             {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''}
                           </p>
@@ -312,7 +334,7 @@ export default function OrdersPage() {
                             </span>
                           )}
                           <span className="text-[10px] text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                            {new Date(order.createdAt).toLocaleDateString('en', { day: 'numeric', month: 'short' })}
                           </span>
                         </div>
                       </div>
@@ -324,7 +346,7 @@ export default function OrdersPage() {
           </div>
 
           {/* ── Right: Order Detail ── */}
-          <div className="lg:col-span-3">
+          <div className={`lg:col-span-3 ${!selected ? 'hidden lg:block' : 'block'}`}>
             {!selected ? (
               <div className={`${panelBase} min-h-[400px] items-center justify-center p-12 text-center gap-4`}>
                 <Receipt size={48} className="text-gray-600" />
@@ -335,6 +357,16 @@ export default function OrdersPage() {
               </div>
             ) : (
               <div className={panelBase}>
+                {/* Mobile back button */}
+                <button
+                  type="button"
+                  onClick={() => { setSelected(null); setEditForm(null); }}
+                  className="lg:hidden flex items-center gap-2 px-6 pt-5 pb-1 text-sm font-medium text-[#D1B23E] hover:text-[#e0c45b] transition"
+                >
+                  <ArrowLeft size={16} />
+                  Back to Orders
+                </button>
+
                 {/* Fixed detail header */}
                 <div className="px-6 py-5 border-b border-white/8 shrink-0">
                   <div className="flex items-start justify-between gap-4">
@@ -342,12 +374,12 @@ export default function OrdersPage() {
                       <p className="text-[11px] uppercase tracking-wider text-[#D1B23E] font-bold">
                         {selected.orderId || `Order #${selected._id.slice(-6)}`}
                       </p>
-                      <p className="text-xl font-semibold text-white mt-0.5">{fmt(selected.total)}</p>
+                      <p className="text-xl font-semibold text-white mt-0.5">{fmt(selected.totalKwd ?? selected.total ?? 0)}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{formatDate(selected.createdAt)}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <button
-                        onClick={() => setEditForm((prev) => ({ ...prev, adminApproved: !prev.adminApproved }))}
+                        onClick={() => handleInstantSave({ adminApproved: !editForm.adminApproved })}
                         className={`inline-flex items-center gap-2 rounded-2xl border px-3.5 py-2 text-xs font-semibold transition ${
                           editForm?.adminApproved
                             ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
@@ -373,7 +405,7 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Scrollable detail body */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-5 max-h-[calc(100vh-390px)] min-h-[300px]">
+                <div className="flex-1 overflow-y-auto p-6 space-y-5 lg:max-h-[calc(100vh-390px)] min-h-[300px]">
                   {/* Order Items */}
                   <div className="rounded-2xl border border-white/8 bg-white/3 p-4">
                     <h4 className={`${labelClasses} mb-3`}>Order Items</h4>
@@ -387,13 +419,13 @@ export default function OrdersPage() {
                             )}
                           </div>
                           <div className="text-right shrink-0 text-gray-300 whitespace-nowrap">
-                            ×{item.quantity} — {fmt(item.price * item.quantity)}
+                            ×{item.quantity} — {fmt((item.priceKwd ?? item.price ?? 0) * item.quantity)}
                           </div>
                         </div>
                       ))}
                       <div className="pt-2.5 border-t border-white/8 flex justify-between font-bold">
                         <span className="text-white">Total</span>
-                        <span className="text-[#D1B23E]">{fmt(selected.total)}</span>
+                        <span className="text-[#D1B23E]">{fmt(selected.totalKwd ?? selected.total ?? 0)}</span>
                       </div>
                     </div>
                   </div>
@@ -403,12 +435,12 @@ export default function OrdersPage() {
                       {/* Status + Logistics */}
                       <div className="rounded-2xl border border-white/8 bg-white/3 p-4 space-y-4">
                         <h4 className={labelClasses}>Status &amp; Logistics</h4>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <label className={labelClasses}>Order Status</label>
                             <AdminSelect
                               value={editForm.orderStatus}
-                              onChange={(val) => setEditForm((prev) => ({ ...prev, orderStatus: val }))}
+                              onChange={(val) => handleInstantSave({ orderStatus: val })}
                               options={ORDER_STATUSES.map((s) => ({ value: s.value, label: s.label }))}
                             />
                           </div>
@@ -416,7 +448,7 @@ export default function OrdersPage() {
                             <label className={labelClasses}>Payment Status</label>
                             <AdminSelect
                               value={editForm.paymentStatus}
-                              onChange={(val) => setEditForm((prev) => ({ ...prev, paymentStatus: val }))}
+                              onChange={(val) => handleInstantSave({ paymentStatus: val })}
                               options={PAYMENT_STATUSES.map((s) => ({ value: s.value, label: s.label }))}
                             />
                           </div>
@@ -446,7 +478,7 @@ export default function OrdersPage() {
                       {/* Customer Info */}
                       <div className="rounded-2xl border border-white/8 bg-white/3 p-4 space-y-4">
                         <h4 className={labelClasses}>Customer Details</h4>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {[
                             ['name', 'Name', 'Customer name'],
                             ['phone', 'Phone', 'Phone number'],
@@ -467,7 +499,7 @@ export default function OrdersPage() {
                               />
                             </div>
                           ))}
-                          <div className="col-span-2">
+                          <div className="sm:col-span-2">
                             <label className={labelClasses}>Address</label>
                             <input
                               type="text"
