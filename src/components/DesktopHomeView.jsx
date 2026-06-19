@@ -28,7 +28,6 @@ export default function DesktopHomeView() {
   const [bestSelling, setBestSelling] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quickViewId, setQuickViewId] = useState(null);
-  const [hoveredCardId, setHoveredCardId] = useState(null);
   
   const catalogRef = useRef(null);
   const router = useRouter();
@@ -109,6 +108,29 @@ export default function DesktopHomeView() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Scroll-reveal: fade chapters up as they enter the viewport (one-shot per section)
+  useEffect(() => {
+    if (loading) return;
+    const els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      els.forEach((el) => el.classList.add('reveal-in'));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-in');
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [loading]);
 
   if (loading) {
     return (
@@ -238,7 +260,7 @@ export default function DesktopHomeView() {
       </section>
 
       {/* Chapter 2: Luxury Watch Houses (Brand Showcase) */}
-      <section className="py-28 bg-[#141414] border-b border-white/5">
+      <section className="reveal py-28 bg-[#141414] border-b border-white/5">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-2xl mx-auto mb-20 space-y-2">
             <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
@@ -288,7 +310,7 @@ export default function DesktopHomeView() {
       </section>
 
       {/* Chapter 3: Featured Collection ("Curated Spotlight") */}
-      <section className="py-28 bg-[#1e1e1e]">
+      <section className="reveal py-28 bg-[#1e1e1e]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex justify-between items-end mb-20">
             <div className="text-left space-y-2">
@@ -310,8 +332,6 @@ export default function DesktopHomeView() {
             {featuredProducts.map((product) => (
               <div
                 key={product._id}
-                onMouseEnter={() => setHoveredCardId(product._id)}
-                onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#151515] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
                 {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
@@ -328,11 +348,11 @@ export default function DesktopHomeView() {
                   <img
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
-                    className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                    className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
                   {/* Hover Quick View Overlay */}
-                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -385,7 +405,7 @@ export default function DesktopHomeView() {
 
       {/* Your Saved Collection — shown when wishlist >= 4 items */}
       {wishlistProducts.length >= 4 && (
-        <section className="py-20 bg-[#181818] border-t border-white/5">
+        <section className="reveal py-20 bg-[#181818] border-t border-white/5">
           <div className="mx-auto max-w-7xl px-6">
             <div className="flex justify-between items-end mb-12">
               <div className="text-left space-y-2">
@@ -399,8 +419,6 @@ export default function DesktopHomeView() {
               {wishlistProducts.map((product) => (
                 <div
                   key={product._id}
-                  onMouseEnter={() => setHoveredCardId(product._id)}
-                  onMouseLeave={() => setHoveredCardId(null)}
                   className="shrink-0 w-56 relative group bg-[#151515] border border-white/5 rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:border-[#D1B23E]/15"
                 >
                   <div
@@ -410,10 +428,10 @@ export default function DesktopHomeView() {
                     <img
                       src={getImageUrl(product.images?.[0] || product.image)}
                       alt={product.name}
-                      className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                      className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                     />
-                    <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -455,7 +473,7 @@ export default function DesktopHomeView() {
       )}
 
       {/* Transition Chapter: Trust Section */}
-      <section className="py-20 bg-[#121212] border-t border-b border-white/5">
+      <section className="reveal py-20 bg-[#121212] border-t border-b border-white/5">
         <div className="mx-auto max-w-7xl px-6 grid grid-cols-1 md:grid-cols-3 gap-10">
           <div className="flex flex-col items-center text-center space-y-4 p-8 bg-white/5 border border-white/5 rounded-3xl">
             <div className="p-4 bg-[#D1B23E]/10 rounded-full text-[#D1B23E]">
@@ -491,7 +509,7 @@ export default function DesktopHomeView() {
 
       {/* Chapter 4: Executive Collection (Editorial Showcase) */}
       {executiveWatch && (
-        <section className="relative overflow-hidden min-h-[750px] flex items-center bg-[#171717] border-b border-white/5 py-0">
+        <section className="reveal relative overflow-hidden min-h-[750px] flex items-center bg-[#171717] border-b border-white/5 py-0">
           <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 rounded-full bg-[#D1B23E]/5 blur-[90px] pointer-events-none" />
           <div className="mx-auto max-w-7xl px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left text editorial */}
@@ -545,7 +563,7 @@ export default function DesktopHomeView() {
       )}
 
       {/* Chapter 5: Best Sellers Section */}
-      <section className="py-28 bg-[#1a1a1a] border-b border-white/5">
+      <section className="reveal py-28 bg-[#1a1a1a] border-b border-white/5">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-2xl mx-auto mb-20 space-y-2">
             <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
@@ -559,8 +577,6 @@ export default function DesktopHomeView() {
             {bestSellingProducts.map((product) => (
               <div
                 key={product._id}
-                onMouseEnter={() => setHoveredCardId(product._id)}
-                onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#141414] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
                 {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
@@ -576,10 +592,10 @@ export default function DesktopHomeView() {
                   <img
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
-                    className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                    className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
-                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -631,7 +647,7 @@ export default function DesktopHomeView() {
 
       {/* Chapter 6: Sport Collection (Editorial Showcase) */}
       {sportWatch && (
-        <section className="relative overflow-hidden min-h-[750px] flex items-center bg-[#141414] border-b border-white/5 py-0">
+        <section className="reveal relative overflow-hidden min-h-[750px] flex items-center bg-[#141414] border-b border-white/5 py-0">
           <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 rounded-full bg-[#D1B23E]/5 blur-[90px] pointer-events-none" />
           <div className="mx-auto max-w-7xl px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left watch visual */}
@@ -685,7 +701,7 @@ export default function DesktopHomeView() {
       )}
 
       {/* Chapter 7: New Arrivals Section */}
-      <section ref={catalogRef} className="py-28 bg-[#1e1e1e]">
+      <section ref={catalogRef} className="reveal py-28 bg-[#1e1e1e]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-2xl mx-auto mb-20 space-y-2">
             <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
@@ -699,8 +715,6 @@ export default function DesktopHomeView() {
             {allProducts.slice(0, 8).map((product) => (
               <div
                 key={product._id}
-                onMouseEnter={() => setHoveredCardId(product._id)}
-                onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#151515] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
                 {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
@@ -716,10 +730,10 @@ export default function DesktopHomeView() {
                   <img
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
-                    className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                    className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
-                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -770,7 +784,7 @@ export default function DesktopHomeView() {
       </section>
 
       {/* Concierge Support */}
-      <section className="pt-32 pb-40 bg-gradient-to-b from-[#121212] via-[#0e0e0e] to-[#080808] border-t border-white/5 relative">
+      <section className="reveal pt-32 pb-40 bg-gradient-to-b from-[#121212] via-[#0e0e0e] to-[#080808] border-t border-white/5 relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#D1B23E]/5 blur-[120px]" />
         </div>

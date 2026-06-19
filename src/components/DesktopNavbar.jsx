@@ -112,9 +112,10 @@ export default function DesktopNavbar() {
                   <Link
                     key={link.name}
                     href={link.href}
-                    className="text-sm font-medium tracking-wide transition-colors duration-200 hover:text-[#D1B23E] text-gray-400"
+                    className="relative text-sm font-medium tracking-wide transition-colors duration-200 hover:text-[#D1B23E] text-gray-400 group"
                   >
                     {link.name}
+                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-[#D1B23E] rounded-full origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
                   </Link>
                 );
               })}

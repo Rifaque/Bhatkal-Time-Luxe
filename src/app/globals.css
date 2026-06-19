@@ -230,3 +230,25 @@ nav {
   animation: sk-shimmer 1.5s ease-in-out infinite;
   border-radius: 0.75rem;
 }
+
+/* Scroll-reveal — chapters fade-up as they enter the viewport.
+   `.reveal-in` is added by an IntersectionObserver once the element is in view. */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
