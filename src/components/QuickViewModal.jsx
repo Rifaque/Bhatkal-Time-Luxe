@@ -261,7 +261,7 @@ export default function QuickViewModal({ productId, onClose }) {
                       disabled={!product.inStock}
                       className="w-full !bg-[#D1B23E] hover:bg-[#c1a22e] text-black font-semibold py-3 rounded-xl transition-all"
                     >
-                      Buy Now
+                      Buy via WhatsApp
                     </Button>
                   </div>
                   <button
