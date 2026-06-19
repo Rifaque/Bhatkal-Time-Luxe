@@ -10,7 +10,7 @@ import MobileProductCard from '@/components/MobileProductCard';
 import { useCurrency } from '@/context/CurrencyContext';
 
 const PRICE_MIN = 1;
-const PRICE_MAX = 500000;
+const PRICE_MAX = 3000;
 
 const SORT_OPTIONS = [
   { value: 'default',    label: 'Default'   },
@@ -21,7 +21,7 @@ const SORT_OPTIONS = [
 
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 px-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 px-4 lg:px-0">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden animate-pulse">
           <div className="bg-[#222]" style={{ aspectRatio: '1/1' }} />
@@ -79,13 +79,14 @@ export default function MobileSearchView() {
       const aboutMatch = p.about?.toLowerCase().includes(q);
       const colorMatch = p.color?.toLowerCase().includes(q);
       const brandMatch = p.brand?.name?.toLowerCase().includes(q);
-      const priceMatch = p.price >= priceRange[0] && p.price <= priceRange[1];
+      const refMatch = p.reference?.toLowerCase().includes(q);
+      const priceMatch = (p.salePrice ?? p.priceKwd ?? 0) >= priceRange[0] && (p.salePrice ?? p.priceKwd ?? 0) <= priceRange[1];
       const brandFilter = selectedBrands.length === 0 || selectedBrands.includes(p.brand?._id);
-      return (nameMatch || aboutMatch || colorMatch || brandMatch) && priceMatch && brandFilter;
+      return (nameMatch || aboutMatch || colorMatch || brandMatch || refMatch) && priceMatch && brandFilter;
     });
 
-    if (sortBy === 'price_asc')  results = [...results].sort((a, b) => a.price - b.price);
-    if (sortBy === 'price_desc') results = [...results].sort((a, b) => b.price - a.price);
+    if (sortBy === 'price_asc')  results = [...results].sort((a, b) => (a.salePrice ?? a.priceKwd ?? 0) - (b.salePrice ?? b.priceKwd ?? 0));
+    if (sortBy === 'price_desc') results = [...results].sort((a, b) => (b.salePrice ?? b.priceKwd ?? 0) - (a.salePrice ?? a.priceKwd ?? 0));
     if (sortBy === 'name_asc')   results = [...results].sort((a, b) => a.name.localeCompare(b.name));
 
     return results;
@@ -97,9 +98,18 @@ export default function MobileSearchView() {
     selectedBrands.length > 0 ||
     sortBy !== 'default';
 
+  const sliderStyles = {
+    trackStyle: [{ backgroundColor: '#D1B23E', height: 3 }],
+    railStyle: { backgroundColor: '#333', height: 3 },
+    handleStyle: [
+      { borderColor: '#D1B23E', backgroundColor: '#D1B23E', boxShadow: 'none', width: 16, height: 16, marginTop: -6 },
+      { borderColor: '#D1B23E', backgroundColor: '#D1B23E', boxShadow: 'none', width: 16, height: 16, marginTop: -6 },
+    ],
+  };
+
   return (
     <MobileLayout>
-      {/* Search bar */}
+      {/* ── Sticky search + controls bar ── */}
       <div className="sticky top-14 z-30 bg-[#1e1e1e]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3">
         <div className="relative flex items-center">
           <Search size={17} className="absolute left-3.5 text-gray-500 pointer-events-none" />
@@ -122,8 +132,8 @@ export default function MobileSearchView() {
           )}
         </div>
 
-        {/* Filter + sort toggle */}
-        <div className="flex items-center gap-2 mt-2.5">
+        {/* Filter toggle + sort chips — mobile/tablet only, hidden at lg: */}
+        <div className="flex items-center gap-2 mt-2.5 lg:hidden">
           <button
             onClick={() => setShowFilters((v) => !v)}
             className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${
@@ -137,7 +147,6 @@ export default function MobileSearchView() {
             {filtersActive && <span className="w-1.5 h-1.5 rounded-full bg-[#D1B23E]" />}
           </button>
 
-          {/* Sort chips */}
           <div className="flex gap-1.5 overflow-x-auto scrollbar-hide flex-1">
             {SORT_OPTIONS.map((opt) => (
               <button
@@ -156,10 +165,9 @@ export default function MobileSearchView() {
           </div>
         </div>
 
-        {/* Filter panel */}
+        {/* Collapsible filter panel — mobile/tablet only */}
         {showFilters && (
-          <div className="mt-3 bg-[#171717] border border-white/8 rounded-2xl p-4 animate-fade-in space-y-4">
-            {/* Brand chips */}
+          <div className="lg:hidden mt-3 bg-[#171717] border border-white/8 rounded-2xl p-4 animate-fade-in space-y-4">
             {brands.length > 0 && (
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-2.5">Brand</p>
@@ -180,34 +188,15 @@ export default function MobileSearchView() {
                 </div>
               </div>
             )}
-
-            {/* Price range */}
             <div>
               <div className="flex justify-between text-xs text-gray-400 mb-3">
                 <span>{formatPrice(priceRange[0])}</span>
                 <span>{formatPrice(priceRange[1])}</span>
               </div>
-              <Slider
-                range
-                min={PRICE_MIN}
-                max={PRICE_MAX}
-                step={1000}
-                value={priceRange}
-                onChange={(val) => setPriceRange(val)}
-                trackStyle={[{ backgroundColor: '#D1B23E', height: 3 }]}
-                railStyle={{ backgroundColor: '#333', height: 3 }}
-                handleStyle={[
-                  { borderColor: '#D1B23E', backgroundColor: '#D1B23E', boxShadow: 'none', width: 16, height: 16, marginTop: -6 },
-                  { borderColor: '#D1B23E', backgroundColor: '#D1B23E', boxShadow: 'none', width: 16, height: 16, marginTop: -6 },
-                ]}
-              />
+              <Slider range min={PRICE_MIN} max={PRICE_MAX} step={50} value={priceRange} onChange={(val) => setPriceRange(val)} {...sliderStyles} />
             </div>
-
             {filtersActive && (
-              <button
-                onClick={clearFilters}
-                className="text-xs text-[#D1B23E] font-medium"
-              >
+              <button onClick={clearFilters} className="text-xs text-[#D1B23E] font-medium">
                 Reset all filters
               </button>
             )}
@@ -215,42 +204,109 @@ export default function MobileSearchView() {
         )}
       </div>
 
-      {/* Results */}
-      <div className="pt-4 pb-4">
-        {loading ? (
-          <GridSkeleton />
-        ) : filteredProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
-            <Frown size={36} className="text-gray-700 mb-4" />
-            <p className="text-white font-semibold mb-1">No results found</p>
-            <p className="text-sm text-gray-600">
-              Try a different search or adjust your filters.
-            </p>
-            {filtersActive && (
-              <button
-                onClick={clearFilters}
-                className="mt-4 text-sm text-[#D1B23E] font-medium"
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <p className="px-5 pb-3 text-xs text-gray-600">
-              {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'}
-            </p>
-            <div className="grid grid-cols-2 gap-3 px-4">
-              {filteredProducts.map((product) => (
-                <MobileProductCard
-                  key={product._id}
-                  product={product}
-                  onClick={() => router.push(`/product/${product._id}`)}
-                />
-              ))}
+      {/* ── Results area — sidebar layout at lg: ── */}
+      <div className="lg:flex lg:items-start lg:gap-6 lg:px-6 lg:pt-5">
+
+        {/* Permanent filter sidebar — lg: only */}
+        <aside className="hidden lg:block lg:w-60 lg:shrink-0 lg:sticky lg:top-36">
+          <div className="bg-[#171717] border border-white/8 rounded-2xl p-4 space-y-5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-widest text-gray-500 font-semibold flex items-center gap-1.5">
+                <SlidersHorizontal size={12} /> Filters
+              </p>
+              {filtersActive && (
+                <button onClick={clearFilters} className="text-xs text-[#D1B23E] font-medium">
+                  Reset
+                </button>
+              )}
             </div>
-          </>
-        )}
+
+            {/* Sort — sidebar version */}
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-2.5">Sort By</p>
+              <div className="space-y-1">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setSortBy(opt.value)}
+                    className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-all ${
+                      sortBy === opt.value
+                        ? 'bg-[#D1B23E]/12 text-[#D1B23E] font-semibold'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Brand filter */}
+            {brands.length > 0 && (
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-2.5">Brand</p>
+                <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+                  {brands.map((brand) => (
+                    <label key={brand._id} className="flex items-center gap-2.5 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={selectedBrands.includes(brand._id)}
+                        onChange={() => toggleBrand(brand._id)}
+                        className="rounded bg-white/5 border-white/20 text-[#D1B23E] focus:ring-[#D1B23E]/50 focus:ring-offset-0 focus:ring-1"
+                      />
+                      <span className={`text-xs transition-colors ${selectedBrands.includes(brand._id) ? 'text-[#D1B23E]' : 'text-gray-400 group-hover:text-white'}`}>
+                        {brand.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Price range */}
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-3">Price Range</p>
+              <div className="flex justify-between text-xs text-gray-400 mb-3">
+                <span>{formatPrice(priceRange[0])}</span>
+                <span>{formatPrice(priceRange[1])}</span>
+              </div>
+              <Slider range min={PRICE_MIN} max={PRICE_MAX} step={50} value={priceRange} onChange={(val) => setPriceRange(val)} {...sliderStyles} />
+            </div>
+          </div>
+        </aside>
+
+        {/* Product results */}
+        <div className="lg:flex-1 pt-4 lg:pt-0 pb-4">
+          {loading ? (
+            <GridSkeleton />
+          ) : filteredProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
+              <Frown size={36} className="text-gray-700 mb-4" />
+              <p className="text-white font-semibold mb-1">No results found</p>
+              <p className="text-sm text-gray-600">Try a different search or adjust your filters.</p>
+              {filtersActive && (
+                <button onClick={clearFilters} className="mt-4 text-sm text-[#D1B23E] font-medium">
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <p className="px-5 lg:px-0 pb-3 text-xs text-gray-600">
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'}
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 px-4 lg:px-0">
+                {filteredProducts.map((product) => (
+                  <MobileProductCard
+                    key={product._id}
+                    product={product}
+                    onClick={() => router.push(`/product/${product._id}`)}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </MobileLayout>
   );

@@ -7,12 +7,13 @@ import DesktopNavbar from '@/components/DesktopNavbar';
 import DesktopFooter from '@/components/DesktopFooter';
 import MobileLayout from '@/components/MobileLayout';
 import useIsDesktop from '@/hooks/useIsDesktop';
+import { useCurrency } from '@/context/CurrencyContext';
 
 function ConfirmationCard({ orderId, total }) {
   const router = useRouter();
-  const formattedTotal = total
-    ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(total)
-    : null;
+  const { formatPrice } = useCurrency();
+  const kwdTotal = total ? parseFloat(total) : null;
+  const formattedTotal = kwdTotal && Number.isFinite(kwdTotal) ? formatPrice(kwdTotal) : null;
 
   return (
     <div className="w-full max-w-lg mx-auto">

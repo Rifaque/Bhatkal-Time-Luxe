@@ -18,8 +18,11 @@ export function useRecentlyViewed() {
     const snapshot = {
       _id: product._id,
       name: product.name,
-      price: product.price,
-      MRP: product.MRP,
+      reference: product.reference,
+      salePrice: product.salePrice,
+      originalPrice: product.originalPrice,
+      priceKwd: product.priceKwd,
+      originalPriceKwd: product.originalPriceKwd,
       images: product.images,
       image: product.image,
       brand: product.brand,
@@ -35,5 +38,17 @@ export function useRecentlyViewed() {
     });
   }, []);
 
-  return { items, addItem };
+  // Removes any items whose IDs are not in validIds (i.e. deleted products).
+  const pruneItems = useCallback((validIds) => {
+    const liveSet = new Set(validIds.map(String));
+    setItems((prev) => {
+      const next = prev.filter((p) => liveSet.has(String(p._id)));
+      if (next.length !== prev.length) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      }
+      return next;
+    });
+  }, []);
+
+  return { items, addItem, pruneItems };
 }

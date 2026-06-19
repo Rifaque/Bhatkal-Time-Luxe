@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { BestSelling } from '@/models/Schemas';
 import { getAdminFromRequest } from '@/lib/auth';
+import { badId } from '@/lib/validate';
+import { logAdminAction } from '@/lib/audit';
+import { getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req) {
   try {
@@ -11,9 +14,8 @@ export async function POST(req) {
     }
 
     const { productId } = await req.json();
-    if (!productId) {
-      return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
-    }
+    const invalid = badId(productId, 'product ID');
+    if (invalid) return invalid;
 
     await connectToDatabase();
 
@@ -24,6 +26,8 @@ export async function POST(req) {
 
     const bestSelling = new BestSelling({ productId });
     await bestSelling.save();
+
+    logAdminAction({ admin, action: 'BEST_SELLING_ADD', entity: 'BestSelling', entityId: productId, ip: getClientIp(req) });
 
     return NextResponse.json({ message: 'Product added to best-selling list', bestSelling }, { status: 201 });
   } catch (err) {

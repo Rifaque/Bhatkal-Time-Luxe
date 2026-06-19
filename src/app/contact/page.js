@@ -6,5 +6,6 @@ import MobileContactView from './MobileContactView';
 
 export default function ContactPage() {
   const isDesktop = useIsDesktop();
+  if (isDesktop === null) return null;
   return isDesktop ? <DesktopContactView /> : <MobileContactView />;
 }

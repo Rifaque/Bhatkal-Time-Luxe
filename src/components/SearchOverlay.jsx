@@ -55,11 +55,13 @@ export default function SearchOverlay({ onClose }) {
 
     const filtered = allProducts
       .filter((product) => {
-        const nameMatch = product.name?.toLowerCase().includes(query.toLowerCase());
-        const aboutMatch = product.about?.toLowerCase().includes(query.toLowerCase());
-        const brandMatch = product.brand?.name?.toLowerCase().includes(query.toLowerCase());
-        const colorMatch = product.color?.toLowerCase().includes(query.toLowerCase());
-        return nameMatch || aboutMatch || brandMatch || colorMatch;
+        const q = query.toLowerCase();
+        const nameMatch = product.name?.toLowerCase().includes(q);
+        const aboutMatch = product.about?.toLowerCase().includes(q);
+        const brandMatch = product.brand?.name?.toLowerCase().includes(q);
+        const colorMatch = product.color?.toLowerCase().includes(q);
+        const refMatch = product.reference?.toLowerCase().includes(q);
+        return nameMatch || aboutMatch || brandMatch || colorMatch || refMatch;
       })
       .slice(0, 5); // Show top 5 instant results
 
@@ -182,7 +184,7 @@ export default function SearchOverlay({ onClose }) {
                       </div>
                       <div className="text-right shrink-0">
                         <div className="text-sm font-bold text-white">
-                          {formatPrice(product.price)}
+                          {formatPrice(product.salePrice ?? product.priceKwd ?? 0)}
                         </div>
                       </div>
                     </div>

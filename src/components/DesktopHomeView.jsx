@@ -13,10 +13,14 @@ import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useToast } from '@/context/ToastContext';
+import { useWishlist } from '@/context/WishlistContext';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 export default function DesktopHomeView() {
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
+  const { wishlistIds, count: wishlistCount } = useWishlist();
+  const { storeName } = useStoreSettings();
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [topCategories, setTopCategories] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
@@ -30,32 +34,20 @@ export default function DesktopHomeView() {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const topCatRes = await fetch('/api/top-brands');
-        const topCatData = await topCatRes.json();
-        setTopCategories(topCatData);
-
-        const productsRes = await fetch('/api/products');
-        const productsData = await productsRes.json();
-        setAllProducts(productsData);
-
-        const featuredRes = await fetch('/api/featured');
-        const featuredData = await featuredRes.json();
-        setFeatured(featuredData);
-
-        const bestSellingRes = await fetch('/api/best-selling');
-        const bestSellingData = await bestSellingRes.json();
-        setBestSelling(bestSellingData);
-
-        setLoading(false);
-      } catch (err) {
-        console.error('Failed to fetch data', err);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    Promise.all([
+      fetch('/api/top-brands').then((r) => r.json()),
+      fetch('/api/products').then((r) => r.json()),
+      fetch('/api/featured').then((r) => r.json()),
+      fetch('/api/best-selling').then((r) => r.json()),
+    ])
+      .then(([topCatData, productsData, featuredData, bestSellingData]) => {
+        setTopCategories(Array.isArray(topCatData) ? topCatData : []);
+        setAllProducts(Array.isArray(productsData) ? productsData : []);
+        setFeatured(Array.isArray(featuredData) ? featuredData : []);
+        setBestSelling(Array.isArray(bestSellingData) ? bestSellingData : []);
+      })
+      .catch((err) => console.error('Failed to fetch home data', err))
+      .finally(() => setLoading(false));
   }, []);
 
   const featuredProducts = useMemo(() => {
@@ -65,6 +57,12 @@ export default function DesktopHomeView() {
   const bestSellingProducts = useMemo(() => {
     return bestSelling.map((item) => item.productId).filter(Boolean);
   }, [bestSelling]);
+
+  const wishlistProducts = useMemo(() => {
+    if (wishlistCount < 4 || allProducts.length === 0) return [];
+    const idSet = new Set(wishlistIds);
+    return allProducts.filter((p) => idSet.has(String(p._id))).slice(0, 8);
+  }, [wishlistIds, wishlistCount, allProducts]);
 
   const heroWatch = useMemo(() => {
     if (allProducts.length === 0) return null;
@@ -224,7 +222,7 @@ export default function DesktopHomeView() {
                       <h3 className="text-base font-bold text-white truncate max-w-[200px] mt-1 group-hover:text-[#D1B23E] transition-colors">{heroWatch.name}</h3>
                     </div>
                     <div className="text-right">
-                      <span className="text-base font-bold text-[#D1B23E]">{formatPrice(heroWatch.price)}</span>
+                      <span className="text-base font-bold text-[#D1B23E]">{formatPrice(heroWatch.salePrice ?? heroWatch.priceKwd ?? 0)}</span>
                     </div>
                   </div>
                 </div>
@@ -311,14 +309,14 @@ export default function DesktopHomeView() {
                 onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#151515] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
-                {product.MRP > product.price && (
+                {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                   <span className="absolute top-4 left-4 z-10 bg-[#D1B23E] text-black text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                    {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
+                    {Math.round((((product.originalPrice ?? product.originalPriceKwd) - (product.salePrice ?? product.priceKwd)) / (product.originalPrice ?? product.originalPriceKwd)) * 100)}% OFF
                   </span>
                 )}
 
                 {/* Whitespace Image Container */}
-                <div 
+                <div
                   onClick={() => router.push(`/product/${product._id}`)}
                   className="bg-white p-6 rounded-xl h-60 flex items-center justify-center overflow-hidden relative cursor-pointer"
                 >
@@ -355,11 +353,11 @@ export default function DesktopHomeView() {
                   <div className="flex items-center justify-between pt-2">
                     <div>
                       <div className="text-base font-bold text-white">
-                        {formatPrice(product.price)}
+                        {formatPrice(product.salePrice ?? product.priceKwd ?? 0)}
                       </div>
-                      {product.MRP > product.price && (
+                      {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                         <div className="text-xs text-gray-500 line-through opacity-60">
-                          {formatPrice(product.MRP)}
+                          {formatPrice(product.originalPrice ?? product.originalPriceKwd ?? 0)}
                         </div>
                       )}
                     </div>
@@ -379,6 +377,77 @@ export default function DesktopHomeView() {
           </div>
         </div>
       </section>
+
+      {/* Your Saved Collection — shown when wishlist >= 4 items */}
+      {wishlistProducts.length >= 4 && (
+        <section className="py-20 bg-[#181818] border-t border-white/5">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="flex justify-between items-end mb-12">
+              <div className="text-left space-y-2">
+                <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
+                  Your Curation
+                </span>
+                <h2 className="text-3xl font-serif font-bold">Your Saved Collection</h2>
+              </div>
+            </div>
+            <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-3">
+              {wishlistProducts.map((product) => (
+                <div
+                  key={product._id}
+                  onMouseEnter={() => setHoveredCardId(product._id)}
+                  onMouseLeave={() => setHoveredCardId(null)}
+                  className="shrink-0 w-56 relative group bg-[#151515] border border-white/5 rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:border-[#D1B23E]/15"
+                >
+                  <div
+                    onClick={() => router.push(`/product/${product._id}`)}
+                    className="bg-white p-5 rounded-xl h-44 flex items-center justify-center overflow-hidden relative cursor-pointer"
+                  >
+                    <img
+                      src={getImageUrl(product.images?.[0] || product.image)}
+                      alt={product.name}
+                      className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                      onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
+                    />
+                    <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setQuickViewId(product._id);
+                        }}
+                        className="!bg-[#D1B23E] hover:bg-[#c1a22e] text-black font-semibold rounded-full px-4 py-2 flex items-center gap-1.5 shadow-lg text-xs"
+                      >
+                        <Eye size={13} /> Quick View
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-1.5">
+                    <span className="text-[9px] uppercase tracking-widest text-[#D1B23E] font-bold">{product.brand?.name}</span>
+                    <h3
+                      onClick={() => router.push(`/product/${product._id}`)}
+                      className="text-xs font-bold text-white truncate hover:text-[#D1B23E] transition-colors cursor-pointer"
+                    >
+                      {product.name}
+                    </h3>
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-sm font-bold text-white">
+                        {formatPrice(product.salePrice ?? product.priceKwd ?? 0)}
+                      </span>
+                      <Button
+                        variant="secondary"
+                        onClick={(e) => addToCart(product._id, e)}
+                        disabled={!product.inStock}
+                        className="font-semibold text-[9px] py-1 px-3 rounded-lg"
+                      >
+                        {product.inStock ? '+ Add' : 'OOS'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Transition Chapter: Trust Section */}
       <section className="py-20 bg-[#121212] border-t border-b border-white/5">
@@ -462,7 +531,7 @@ export default function DesktopHomeView() {
                     <span className="text-gray-500 uppercase font-bold tracking-wider">{executiveWatch.brand?.name}</span>
                     <h4 className="text-sm font-bold text-white truncate max-w-[150px] mt-0.5">{executiveWatch.name}</h4>
                   </div>
-                  <span className="text-sm font-bold text-[#D1B23E]">{formatPrice(executiveWatch.price)}</span>
+                  <span className="text-sm font-bold text-[#D1B23E]">{formatPrice(executiveWatch.salePrice ?? executiveWatch.priceKwd ?? 0)}</span>
                 </div>
               </div>
             </div>
@@ -489,13 +558,13 @@ export default function DesktopHomeView() {
                 onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#141414] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
-                {product.MRP > product.price && (
+                {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                   <span className="absolute top-4 left-4 z-10 bg-[#D1B23E] text-black text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                    {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
+                    {Math.round((((product.originalPrice ?? product.originalPriceKwd) - (product.salePrice ?? product.priceKwd)) / (product.originalPrice ?? product.originalPriceKwd)) * 100)}% OFF
                   </span>
                 )}
 
-                <div 
+                <div
                   onClick={() => router.push(`/product/${product._id}`)}
                   className="bg-white p-6 rounded-xl h-60 flex items-center justify-center overflow-hidden relative cursor-pointer"
                 >
@@ -530,11 +599,11 @@ export default function DesktopHomeView() {
                   <div className="flex items-center justify-between pt-2">
                     <div>
                       <div className="text-base font-bold text-white">
-                        {formatPrice(product.price)}
+                        {formatPrice(product.salePrice ?? product.priceKwd ?? 0)}
                       </div>
-                      {product.MRP > product.price && (
+                      {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                         <div className="text-xs text-gray-500 line-through opacity-60">
-                          {formatPrice(product.MRP)}
+                          {formatPrice(product.originalPrice ?? product.originalPriceKwd ?? 0)}
                         </div>
                       )}
                     </div>
@@ -578,7 +647,7 @@ export default function DesktopHomeView() {
                     <span className="text-gray-500 uppercase font-bold tracking-wider">{sportWatch.brand?.name}</span>
                     <h4 className="text-sm font-bold text-white truncate max-w-[150px] mt-0.5">{sportWatch.name}</h4>
                   </div>
-                  <span className="text-sm font-bold text-[#D1B23E]">{formatPrice(sportWatch.price)}</span>
+                  <span className="text-sm font-bold text-[#D1B23E]">{formatPrice(sportWatch.salePrice ?? sportWatch.priceKwd ?? 0)}</span>
                 </div>
               </div>
             </div>
@@ -629,13 +698,13 @@ export default function DesktopHomeView() {
                 onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#151515] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
-                {product.MRP > product.price && (
+                {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                   <span className="absolute top-4 left-4 z-10 bg-[#D1B23E] text-black text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                    {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
+                    {Math.round((((product.originalPrice ?? product.originalPriceKwd) - (product.salePrice ?? product.priceKwd)) / (product.originalPrice ?? product.originalPriceKwd)) * 100)}% OFF
                   </span>
                 )}
 
-                <div 
+                <div
                   onClick={() => router.push(`/product/${product._id}`)}
                   className="bg-white p-6 rounded-xl h-60 flex items-center justify-center overflow-hidden relative cursor-pointer"
                 >
@@ -670,11 +739,11 @@ export default function DesktopHomeView() {
                   <div className="flex items-center justify-between pt-2">
                     <div>
                       <div className="text-base font-bold text-white">
-                        {formatPrice(product.price)}
+                        {formatPrice(product.salePrice ?? product.priceKwd ?? 0)}
                       </div>
-                      {product.MRP > product.price && (
+                      {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                         <div className="text-xs text-gray-500 line-through opacity-60">
-                          {formatPrice(product.MRP)}
+                          {formatPrice(product.originalPrice ?? product.originalPriceKwd ?? 0)}
                         </div>
                       )}
                     </div>
@@ -756,7 +825,7 @@ export default function DesktopHomeView() {
         <div className="relative mx-auto max-w-6xl px-6 mt-24 flex flex-col items-center gap-5">
           <div className="h-px w-48 bg-gradient-to-r from-transparent via-[#D1B23E]/50 to-transparent" />
           <p className="text-[11px] uppercase tracking-[0.35em] text-gray-500 font-sans">
-            Bhatkal Time Luxe · Est. 2020 · Certified Horological Excellence
+            {storeName} · Est. 2020 · Certified Horological Excellence
           </p>
           <div className="h-px w-48 bg-gradient-to-r from-transparent via-[#D1B23E]/50 to-transparent" />
         </div>

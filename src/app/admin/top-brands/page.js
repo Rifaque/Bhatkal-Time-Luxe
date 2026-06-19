@@ -56,12 +56,7 @@ export default function TopBrandsManager() {
     }
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('adminToken');
-      await axios.post(
-        '/api/admin/top-brands',
-        { brandId: selectedBrand.value },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.post('/api/admin/top-brands', { brandId: selectedBrand.value });
       setSuccess('Top brand added!');
       setSelectedBrand(null);
       fetchTopBrands();
@@ -82,10 +77,7 @@ export default function TopBrandsManager() {
     setError('');
     setSuccess('');
     try {
-      const token = localStorage.getItem('adminToken');
-      await axios.delete(`/api/admin/top-brands/${brandId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(`/api/admin/top-brands/${brandId}`);
       setSuccess('Top brand removed!');
       fetchTopBrands();
     } catch (err) {
@@ -188,8 +180,7 @@ export default function TopBrandsManager() {
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase tracking-wider text-[#D1B23E] font-bold">Watch House</p>
-                      <p className="text-sm font-semibold text-white mt-0.5">{item.brand.name}</p>
+                      <p className="text-sm font-semibold text-white">{item.brand.name}</p>
                     </div>
                     <button
                       onClick={() => handleDeleteTopBrand(item.brand._id)}

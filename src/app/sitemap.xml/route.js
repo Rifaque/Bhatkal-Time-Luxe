@@ -10,25 +10,34 @@ export async function GET() {
     const brands = await Brand.find({}).lean();
     const products = await Product.find({}).lean();
 
-    const urls = [
-      `${BASE_URL}/`,
-      `${BASE_URL}/brands`,
-      `${BASE_URL}/faq`,
-      `${BASE_URL}/contact`,
-      ...brands.map((b) => `${BASE_URL}/brands/${b._id}`),
-      ...products.map((p) => `${BASE_URL}/product/${p._id}`),
+    const staticUrls = [
+      { loc: `${BASE_URL}/`,              changefreq: 'daily',   priority: '1.0' },
+      { loc: `${BASE_URL}/brands`,        changefreq: 'weekly',  priority: '0.9' },
+      { loc: `${BASE_URL}/new-arrivals`,  changefreq: 'daily',   priority: '0.9' },
+      { loc: `${BASE_URL}/faq`,           changefreq: 'monthly', priority: '0.5' },
+      { loc: `${BASE_URL}/contact`,       changefreq: 'monthly', priority: '0.5' },
     ];
+    const brandUrls = brands.map((b) => ({
+      loc: `${BASE_URL}/brands/${b._id}`,
+      changefreq: 'weekly',
+      priority: '0.8',
+    }));
+    const productUrls = products.map((p) => ({
+      loc: `${BASE_URL}/product/${p._id}`,
+      changefreq: 'weekly',
+      priority: '0.7',
+    }));
+
+    const allUrls = [...staticUrls, ...brandUrls, ...productUrls];
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
-${urls
-  .map((url) => {
-    return `  <url>
-    <loc>${url}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
-  })
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allUrls
+  .map(({ loc, changefreq, priority }) => `  <url>
+    <loc>${loc}</loc>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`)
   .join('\n')}
 </urlset>`;
 

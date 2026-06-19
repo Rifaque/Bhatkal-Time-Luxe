@@ -5,11 +5,15 @@ import { FeaturedWatch } from '@/models/Schemas';
 export async function GET() {
   try {
     await connectToDatabase();
-    // Sorts by order field if available (as in Express: sort({ order: 1 }).populate("productId"))
-    const featuredWatches = await FeaturedWatch.find().sort({ order: 1 }).populate('productId');
-    return NextResponse.json(featuredWatches);
+    const all = await FeaturedWatch.find().sort({ order: 1 }).populate('productId').lean();
+    // Self-heal: remove entries whose product no longer exists
+    const orphanIds = all.filter((i) => !i.productId).map((i) => i._id);
+    if (orphanIds.length > 0) {
+      await FeaturedWatch.deleteMany({ _id: { $in: orphanIds } });
+    }
+    return NextResponse.json(all.filter((i) => i.productId));
   } catch (err) {
     console.error('❌ GET Featured Watches Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load featured watches' }, { status: 500 });
   }
 }

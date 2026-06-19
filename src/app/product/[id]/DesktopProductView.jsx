@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Star, ShieldCheck, Truck, RotateCcw, Check, ShoppingCart, Eye } from 'lucide-react';
+import { Star, ShieldCheck, Truck, RotateCcw, Check, ShoppingCart, Eye, Share2, MessageCircle } from 'lucide-react';
 import useProductPageLogic from '@/hooks/useProductPageLogic';
 import DesktopNavbar from '@/components/DesktopNavbar';
 import DesktopFooter from '@/components/DesktopFooter';
 import QuickViewModal from '@/components/QuickViewModal';
-import Loader from '@/components/Loader';
 import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -15,6 +14,10 @@ import { useToast } from '@/context/ToastContext';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import RecentlyViewedRow from '@/components/RecentlyViewedRow';
 import WishlistButton from '@/components/WishlistButton';
+import WishlistSavedSection from '@/components/WishlistSavedSection';
+import ShareModal from '@/components/ShareModal';
+import Lightbox from '@/components/Lightbox';
+import ProductBreadcrumb from '@/components/ProductBreadcrumb';
 
 export default function DesktopProductView() {
   const { formatPrice } = useCurrency();
@@ -27,6 +30,8 @@ export default function DesktopProductView() {
     notification,
     setNotification,
     buyNow,
+    buyingNow,
+    openRequestDetails,
     router,
   } = useProductPageLogic();
 
@@ -36,16 +41,15 @@ export default function DesktopProductView() {
   const [addedMessage, setAddedMessage] = useState('');
   const [quickViewId, setQuickViewId] = useState(null);
   const [hoveredCardId, setHoveredCardId] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     if (!product) return;
     addItem(product);
-    if (!product.brand?._id) return;
-    fetch(`/api/products/brand/${product.brand._id}`)
+    fetch(`/api/products/related?productId=${product._id}`)
       .then((res) => res.json())
-      .then((data) => {
-        setRelatedProducts(data.filter((p) => p._id !== product._id).slice(0, 4));
-      })
+      .then((data) => { if (Array.isArray(data)) setRelatedProducts(data.slice(0, 4)); })
       .catch((err) => console.error('Failed to fetch related products', err));
   }, [product, addItem]);
 
@@ -68,19 +72,67 @@ export default function DesktopProductView() {
 
   if (loading) {
     return (
-      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col items-center justify-center">
-        <Loader />
+      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col">
+        <DesktopNavbar />
+        <main className="mx-auto max-w-7xl px-6 py-16 w-full flex-1">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            <div className="lg:col-span-6 space-y-4">
+              <div className="bg-[#252525] rounded-3xl animate-pulse" style={{ height: '500px' }} />
+              <div className="flex gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-20 h-20 bg-[#252525] rounded-xl animate-pulse" />
+                ))}
+              </div>
+            </div>
+            <div className="lg:col-span-6 space-y-5 pt-2">
+              <div className="h-3 bg-[#252525] rounded animate-pulse w-20" />
+              <div className="h-10 bg-[#252525] rounded animate-pulse w-3/4" />
+              <div className="h-5 bg-[#252525] rounded animate-pulse w-1/3" />
+              <div className="h-28 bg-[#252525] rounded-2xl animate-pulse" />
+              <div className="space-y-2 pt-2">
+                {[80, 70, 60, 55].map((w, i) => (
+                  <div key={i} className="h-3 bg-[#252525] rounded animate-pulse" style={{ width: `${w}%` }} />
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <div className="h-14 bg-[#252525] rounded-xl animate-pulse" />
+                <div className="h-14 bg-[#D1B23E]/20 rounded-xl animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </main>
+        <DesktopFooter />
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col justify-between">
+      <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col">
         <DesktopNavbar />
-        <p className="text-red-500 text-center p-8 flex-1 flex items-center justify-center font-serif">
-          {error || 'Product not found'}
-        </p>
+        <main className="flex-1 flex items-center justify-center px-6 py-20">
+          <div className="text-center max-w-md">
+            <p className="text-[#D1B23E] text-xs uppercase tracking-[0.3em] font-semibold mb-4">Unavailable</p>
+            <h1 className="text-3xl font-serif font-bold text-white mb-3">Product Not Found</h1>
+            <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+              This timepiece is no longer available or may have been removed from our collection.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => router.push('/')}
+                className="px-5 py-2.5 bg-[#D1B23E] text-black text-sm font-semibold rounded-xl hover:bg-[#c1a22e] transition-colors"
+              >
+                Continue Shopping
+              </button>
+              <button
+                onClick={() => router.push('/brands')}
+                className="px-5 py-2.5 border border-white/15 text-white text-sm font-medium rounded-xl hover:border-[#D1B23E]/40 transition-colors"
+              >
+                Browse Brands
+              </button>
+            </div>
+          </div>
+        </main>
         <DesktopFooter />
       </div>
     );
@@ -95,19 +147,30 @@ export default function DesktopProductView() {
 
       {/* Main product wrapper */}
       <main className="mx-auto max-w-7xl px-6 py-12 md:py-16 w-full flex-1 space-y-20">
-        
+
+        {/* Breadcrumb */}
+        <ProductBreadcrumb brand={product.brand} productName={product.name} className="-mb-14" />
+
         {/* Detail Split Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
+
           {/* Left Column: Image Gallery */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="bg-white border border-white/10 rounded-3xl p-8 flex items-center justify-center h-[500px] overflow-hidden shadow-xl">
+            <div
+              className="bg-white border border-white/10 rounded-3xl p-8 flex items-center justify-center h-[500px] overflow-hidden shadow-xl cursor-zoom-in relative"
+              onClick={() => setLightboxOpen(true)}
+            >
               <img
                 src={getImageUrl(imagesList[activeImageIdx])}
                 alt={product.name}
                 className="max-h-full max-w-full object-contain mx-auto transition-all duration-300"
                 onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
               />
+              {imagesList.length > 1 && (
+                <span className="absolute bottom-4 right-4 text-[11px] text-gray-400 bg-black/8 px-2 py-0.5 rounded-full font-medium pointer-events-none">
+                  {activeImageIdx + 1} / {imagesList.length}
+                </span>
+              )}
             </div>
             
             {/* Gallery Thumbnails */}
@@ -136,9 +199,12 @@ export default function DesktopProductView() {
           {/* Right Column: Spec Sheet & Actions */}
           <div className="lg:col-span-6 space-y-6">
             <div>
-              <span className="text-xs tracking-widest text-[#D1B23E] uppercase font-bold">
+              <button
+                onClick={() => product.brand?._id && router.push(`/brands/${product.brand._id}`)}
+                className="text-xs tracking-widest text-[#D1B23E] uppercase font-bold hover:text-[#c1a22e] transition-colors"
+              >
                 {product.brand?.name}
-              </span>
+              </button>
               <h1 className="text-3xl md:text-4xl font-serif font-bold text-white tracking-tight mt-1.5 leading-tight">
                 {product.name}
               </h1>
@@ -156,20 +222,20 @@ export default function DesktopProductView() {
             <div className="p-6 bg-white/5 border border-white/5 rounded-2xl space-y-3">
               <div className="flex items-end gap-3.5">
                 <span className="text-3xl font-bold text-white">
-                  {formatPrice(product.price)}
+                  {formatPrice(product.salePrice ?? product.priceKwd ?? 0)}
                 </span>
-                {product.MRP > product.price && (
+                {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                   <>
                     <span className="text-lg text-gray-500 line-through opacity-75">
-                      {formatPrice(product.MRP)}
+                      {formatPrice(product.originalPrice ?? product.originalPriceKwd ?? 0)}
                     </span>
                     <span className="bg-[#D1B23E] text-black px-2.5 py-0.5 text-xs rounded font-bold uppercase tracking-wider">
-                      {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
+                      {Math.round((((product.originalPrice ?? product.originalPriceKwd) - (product.salePrice ?? product.priceKwd)) / (product.originalPrice ?? product.originalPriceKwd)) * 100)}% OFF
                     </span>
                   </>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2 text-xs">
                 <span className={`inline-block w-2.5 h-2.5 rounded-full ${product.inStock ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                 <span className="font-bold text-gray-300">
@@ -184,8 +250,16 @@ export default function DesktopProductView() {
               <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm border-t border-white/5 pt-3">
                 <div className="py-1 flex justify-between border-b border-white/5"><span className="text-gray-500">Colorway</span> <span className="font-semibold text-white">{product.color || 'Classic'}</span></div>
                 <div className="py-1 flex justify-between border-b border-white/5"><span className="text-gray-500">Collection</span> <span className="font-semibold text-white">Luxury Automatics</span></div>
-                <div className="py-1 flex justify-between border-b border-white/5"><span className="text-gray-500">Certification</span> <span className="font-semibold text-white">Fully Verified</span></div>
-                <div className="py-1 flex justify-between border-b border-white/5"><span className="text-gray-500">Secured Shipping</span> <span className="font-semibold text-white">Complimentary</span></div>
+                {product.reference && (
+                  <div className="py-1 flex justify-between border-b border-white/5">
+                    <span className="text-gray-500">Reference</span>
+                    <span className="font-semibold text-white font-mono">{product.reference}</span>
+                  </div>
+                )}
+                <div className={`py-1 flex justify-between border-b border-white/5${!product.reference ? ' col-span-2' : ''}`}>
+                  <span className="text-gray-500">Secured Shipping</span>
+                  <span className="font-semibold text-white">Complimentary</span>
+                </div>
               </div>
             </div>
 
@@ -215,16 +289,29 @@ export default function DesktopProductView() {
                 </Button>
                 <Button
                   onClick={buyNow}
-                  disabled={!product.inStock}
-                  className="w-full !bg-[#D1B23E] hover:bg-[#c1a22e] text-black font-semibold py-4 rounded-xl text-base transition-all"
+                  disabled={!product.inStock || buyingNow}
+                  className="w-full !bg-[#D1B23E] hover:bg-[#c1a22e] text-black font-semibold py-4 rounded-xl text-base transition-all disabled:opacity-60"
                 >
-                  Buy via WhatsApp
+                  {buyingNow ? 'Processing…' : 'Buy via WhatsApp'}
                 </Button>
               </div>
-              <div className="flex items-center gap-2 pt-2">
-                <WishlistButton productId={product._id} size={16} />
-                <span className="text-xs text-gray-500">Save to wishlist</span>
+              <div className="flex items-center gap-3 pt-2">
+                <WishlistButton productId={product._id} size={16} showLabel className="flex-1" />
+                <button
+                  onClick={() => setShowShareModal(true)}
+                  className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#D1B23E] border border-white/8 hover:border-[#D1B23E]/20 rounded-xl px-4 py-2.5 transition-all"
+                >
+                  <Share2 size={14} />
+                  Share
+                </button>
               </div>
+              <button
+                onClick={openRequestDetails}
+                className="w-full flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-[#25D366] border border-white/5 hover:border-[#25D366]/20 rounded-xl py-2.5 transition-all"
+              >
+                <MessageCircle size={13} />
+                Request Details via WhatsApp
+              </button>
             </div>
 
             {/* Detail Trust Section */}
@@ -253,9 +340,9 @@ export default function DesktopProductView() {
                   onMouseLeave={() => setHoveredCardId(null)}
                   className="relative group bg-[#171717] border border-white/5 hover:border-white/10 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                 >
-                  {p.MRP > p.price && (
+                  {(p.originalPrice ?? p.originalPriceKwd ?? 0) > (p.salePrice ?? p.priceKwd ?? 0) && (
                     <span className="absolute top-4 left-4 z-10 bg-[#D1B23E] text-black text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded">
-                      {Math.round(((p.MRP - p.price) / p.MRP) * 100)}% OFF
+                      {Math.round((((p.originalPrice ?? p.originalPriceKwd) - (p.salePrice ?? p.priceKwd)) / (p.originalPrice ?? p.originalPriceKwd)) * 100)}% OFF
                     </span>
                   )}
 
@@ -293,9 +380,10 @@ export default function DesktopProductView() {
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <div className="text-sm font-bold text-white">
-                        {formatPrice(p.price)}
+                        {formatPrice(p.salePrice ?? p.priceKwd ?? 0)}
                       </div>
                       <Button
+                        variant="secondary"
                         onClick={(e) => {
                           e.stopPropagation();
                           axios.post('/api/cart', { product: p._id, quantity: 1 }).then(() => {
@@ -304,7 +392,7 @@ export default function DesktopProductView() {
                           });
                         }}
                         disabled={!p.inStock}
-                        className="!bg-white/5 border border-white/10 hover:border-[#D1B23E] hover:bg-[#D1B23E] hover:text-black font-semibold text-xs py-1.5 px-3 rounded-lg transition-all"
+                        className="font-semibold text-xs py-1.5 px-3 rounded-lg"
                       >
                         {p.inStock ? '+ Add' : 'OOS'}
                       </Button>
@@ -321,10 +409,31 @@ export default function DesktopProductView() {
           className="pt-10 border-t border-white/5"
         />
 
+        <WishlistSavedSection
+          title="Saved Timepieces"
+          excludeId={product._id}
+          className="pt-10 border-t border-white/5"
+        />
+
       </main>
 
       {/* Premium Footer */}
       <DesktopFooter />
+
+      {/* Share modal */}
+      {showShareModal && product && (
+        <ShareModal product={product} onClose={() => setShowShareModal(false)} />
+      )}
+
+      {/* Lightbox */}
+      {lightboxOpen && imagesList.length > 0 && (
+        <Lightbox
+          images={imagesList}
+          currentIndex={activeImageIdx}
+          onChange={setActiveImageIdx}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
 
       {/* Related Products Quick View Overlay */}
       {quickViewId && (

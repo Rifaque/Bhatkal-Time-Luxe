@@ -3,26 +3,35 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { Cart } from '@/models/Schemas';
 import { getOrCreateCartId } from '../route';
 
+// Resolve canonical KWD price regardless of schema migration state.
+// lean() returns raw MongoDB objects — no Mongoose default getters —
+// so salePrice is undefined (not 0) on unmigrated documents, and the
+// || fallback chain correctly reaches priceKwd.
+function resolvePrice(product) {
+  return product.salePrice || product.priceKwd || product.price || 0;
+}
+
 export async function GET() {
   try {
     const cartId = await getOrCreateCartId();
     await connectToDatabase();
 
-    const cart = await Cart.findOne({ cartId }).populate('items.product');
-    if (!cart) {
-      return NextResponse.json({ total: 0 });
-    }
+    const cart = await Cart.findOne({ cartId })
+      .populate('items.product')
+      .lean();
+
+    if (!cart) return NextResponse.json({ total: 0 });
 
     let total = 0;
-    cart.items.forEach((item) => {
-      if (item.product && item.product.price) {
-        total += item.product.price * item.quantity;
+    for (const item of cart.items) {
+      if (item.product) {
+        total += resolvePrice(item.product) * item.quantity;
       }
-    });
+    }
 
     return NextResponse.json({ total });
   } catch (err) {
     console.error('❌ GET Cart Total Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: 'Failed to load cart total' }, { status: 500 });
   }
 }

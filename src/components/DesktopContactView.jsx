@@ -5,13 +5,12 @@ import { Phone, MessageCircle, Mail, MapPin, Clock, ShieldCheck, Send, Check } f
 import { FaWhatsapp } from 'react-icons/fa';
 import DesktopNavbar from './DesktopNavbar';
 import DesktopFooter from './DesktopFooter';
-
-const WHATSAPP_NUMBER = '916364282251';
-const PHONE_NUMBER = '+91-6364282251';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 export default function DesktopContactView() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const { whatsappNumber, supportPhone, supportEmail, businessAddress } = useStoreSettings();
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -23,7 +22,7 @@ export default function DesktopContactView() {
     const text = encodeURIComponent(
       `*New Inquiry from ${form.name}*\nEmail: ${form.email}\nSubject: ${form.subject || 'General Inquiry'}\n\n${form.message}`
     );
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
+    if (whatsappNumber) window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
     setSubmitted(true);
     setForm({ name: '', email: '', subject: '', message: '' });
     setTimeout(() => setSubmitted(false), 6000);
@@ -64,7 +63,7 @@ export default function DesktopContactView() {
                 <p className="text-[10px] uppercase tracking-[0.25em] text-gray-500">Reach Us Directly</p>
 
                 <a
-                  href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                  href={whatsappNumber ? `https://wa.me/${whatsappNumber}` : '/contact'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-4 bg-[#171717] border border-white/5 hover:border-[#D1B23E]/40 rounded-2xl p-5 group transition-all duration-200"
@@ -74,38 +73,42 @@ export default function DesktopContactView() {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-white font-serif group-hover:text-[#D1B23E] transition-colors">WhatsApp Concierge</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">+91-6364282251</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{supportPhone || whatsappNumber}</p>
                     <p className="text-xs text-gray-600 mt-1 font-serif">Fastest response. Available 9 AM – 8 PM daily.</p>
                   </div>
                 </a>
 
-                <a
-                  href={`tel:${PHONE_NUMBER}`}
-                  className="flex items-start gap-4 bg-[#171717] border border-white/5 hover:border-[#D1B23E]/40 rounded-2xl p-5 group transition-all duration-200"
-                >
-                  <div className="p-3 bg-[#D1B23E]/10 rounded-xl text-[#D1B23E] shrink-0 group-hover:bg-[#D1B23E]/15 transition-colors">
-                    <Phone size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white font-serif group-hover:text-[#D1B23E] transition-colors">Direct Phone Line</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">{PHONE_NUMBER}</p>
-                    <p className="text-xs text-gray-600 mt-1 font-serif">Speak with a specialist directly.</p>
-                  </div>
-                </a>
+                {supportPhone && (
+                  <a
+                    href={`tel:${supportPhone}`}
+                    className="flex items-start gap-4 bg-[#171717] border border-white/5 hover:border-[#D1B23E]/40 rounded-2xl p-5 group transition-all duration-200"
+                  >
+                    <div className="p-3 bg-[#D1B23E]/10 rounded-xl text-[#D1B23E] shrink-0 group-hover:bg-[#D1B23E]/15 transition-colors">
+                      <Phone size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white font-serif group-hover:text-[#D1B23E] transition-colors">Direct Phone Line</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">{supportPhone}</p>
+                      <p className="text-xs text-gray-600 mt-1 font-serif">Speak with a specialist directly.</p>
+                    </div>
+                  </a>
+                )}
 
-                <a
-                  href={`mailto:info@bhatkaltimeluze.com`}
-                  className="flex items-start gap-4 bg-[#171717] border border-white/5 hover:border-[#D1B23E]/40 rounded-2xl p-5 group transition-all duration-200"
-                >
-                  <div className="p-3 bg-[#D1B23E]/10 rounded-xl text-[#D1B23E] shrink-0 group-hover:bg-[#D1B23E]/15 transition-colors">
-                    <Mail size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white font-serif group-hover:text-[#D1B23E] transition-colors">Email Correspondence</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">info@bhatkaltimeluze.com</p>
-                    <p className="text-xs text-gray-600 mt-1 font-serif">For formal inquiries and documentation requests.</p>
-                  </div>
-                </a>
+                {supportEmail && (
+                  <a
+                    href={`mailto:${supportEmail}`}
+                    className="flex items-start gap-4 bg-[#171717] border border-white/5 hover:border-[#D1B23E]/40 rounded-2xl p-5 group transition-all duration-200"
+                  >
+                    <div className="p-3 bg-[#D1B23E]/10 rounded-xl text-[#D1B23E] shrink-0 group-hover:bg-[#D1B23E]/15 transition-colors">
+                      <Mail size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white font-serif group-hover:text-[#D1B23E] transition-colors">Email Correspondence</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">{supportEmail}</p>
+                      <p className="text-xs text-gray-600 mt-1 font-serif">For formal inquiries and documentation requests.</p>
+                    </div>
+                  </a>
+                )}
               </div>
 
               {/* Location + Hours */}
@@ -115,8 +118,8 @@ export default function DesktopContactView() {
                     <MapPin size={16} />
                     <span className="text-xs font-semibold uppercase tracking-wider">Location</span>
                   </div>
-                  <p className="text-sm text-gray-300 font-serif leading-relaxed">
-                    Bhatkal, Karnataka<br />India — 581320
+                  <p className="text-sm text-gray-300 font-serif leading-relaxed whitespace-pre-line">
+                    {businessAddress || 'Bhatkal, Karnataka\nIndia — 581320'}
                   </p>
                 </div>
                 <div className="bg-[#141414] border border-white/5 rounded-2xl p-5 space-y-2">
@@ -136,6 +139,22 @@ export default function DesktopContactView() {
                 <p className="text-xs text-gray-400 font-serif leading-relaxed">
                   All communications are confidential. We never share client information with third parties. Inquiries about high-value acquisitions are handled with complete discretion.
                 </p>
+              </div>
+
+              {/* Concierge Services */}
+              <div className="bg-[#171717] border border-white/5 rounded-2xl p-5 space-y-3">
+                <p className="text-[10px] uppercase tracking-[0.25em] text-gray-500 font-semibold">Concierge Services</p>
+                {[
+                  'Product consultation & timepiece selection',
+                  'Order tracking & fulfilment support',
+                  'Authentication & certification assistance',
+                  'Private collection & acquisition inquiries',
+                ].map((service) => (
+                  <div key={service} className="flex items-center gap-2.5 text-xs text-gray-400 font-serif">
+                    <span className="w-1 h-1 rounded-full bg-[#D1B23E] shrink-0" />
+                    {service}
+                  </div>
+                ))}
               </div>
             </div>
 

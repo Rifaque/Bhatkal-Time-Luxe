@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminFromRequest } from '@/lib/auth';
 import { uploadBuffer } from '@/lib/cloudinary';
+import { validateImageFile } from '@/lib/validate';
 
 export async function POST(req) {
   try {
@@ -13,6 +14,11 @@ export async function POST(req) {
     const imageFiles = formData.getAll('images');
     if (!imageFiles || imageFiles.length === 0) {
       return NextResponse.json({ error: 'No files uploaded' }, { status: 400 });
+    }
+
+    for (const file of imageFiles) {
+      const fileErr = validateImageFile(file);
+      if (fileErr) return NextResponse.json({ error: fileErr }, { status: 400 });
     }
 
     const uploadPromises = imageFiles.map(async (file) => {

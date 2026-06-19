@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import axios from 'axios';
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -11,6 +12,7 @@ import {
   Gem,
   LayoutDashboard,
   LogOut,
+  Menu,
   Package,
   Receipt,
   Search,
@@ -19,12 +21,14 @@ import {
   Sparkles,
   Star,
   Users,
+  X,
 } from 'lucide-react';
 
 const navigation = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Overview' },
   { href: '/admin/products', label: 'Products', icon: Package, group: 'Catalog' },
   { href: '/admin/brands', label: 'Brands', icon: Gem, group: 'Catalog' },
+
   { href: '/admin/featured', label: 'Featured', icon: Sparkles, group: 'Merchandising' },
   { href: '/admin/best-selling', label: 'Best Selling', icon: Star, group: 'Merchandising' },
   { href: '/admin/top-brands', label: 'Top Brands', icon: Shield, group: 'Merchandising' },
@@ -108,8 +112,11 @@ export const adminSelectStyles = {
 export function AdminShell({ eyebrow, title, description, actions, statStrip, children }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { storeName } = useStoreSettings();
   const [navSearch, setNavSearch] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const filteredNavigation = useMemo(() => {
     if (!navSearch.trim()) {
@@ -144,6 +151,13 @@ export function AdminShell({ eyebrow, title, description, actions, statStrip, ch
     };
   }, []);
 
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
@@ -151,7 +165,6 @@ export function AdminShell({ eyebrow, title, description, actions, statStrip, ch
     } catch (error) {
       console.error('Logout API call failed', error);
     } finally {
-      localStorage.removeItem('adminToken');
       router.push('/admin/login');
     }
   };
@@ -160,13 +173,136 @@ export function AdminShell({ eyebrow, title, description, actions, statStrip, ch
     <div className="min-h-screen bg-[#0d0d0d] text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(209,178,62,0.12),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.06),transparent_20%)]" />
 
-      <div className="relative mx-auto flex min-h-screen max-w-[1800px] flex-col gap-6 px-4 py-4 lg:flex-row lg:px-6 lg:py-6">
-        <aside className="w-full shrink-0 rounded-[2rem] border border-white/8 bg-[#121212] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.45)] lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:w-[296px] lg:overflow-hidden">
+      {/* ── Mobile sticky header ── */}
+      <header className="md:hidden sticky top-0 z-40 h-14 bg-[#0d0d0d]/95 backdrop-blur-xl border-b border-white/8 flex items-center justify-between px-4 shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-300 transition hover:border-[#D1B23E]/40 hover:text-white"
+          aria-label="Open navigation menu"
+        >
+          <Menu size={18} />
+        </button>
+
+        <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
+          {eyebrow && (
+            <p className="text-[10px] uppercase tracking-[0.28em] text-[#D1B23E] leading-none">{eyebrow}</p>
+          )}
+          <p className="text-sm font-semibold text-white leading-tight">{title}</p>
+        </div>
+
+        <Link
+          href="/"
+          title="Back to storefront"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-300 transition hover:border-[#D1B23E]/40 hover:text-white"
+        >
+          <ArrowUpRight size={18} />
+        </Link>
+      </header>
+
+      {/* ── Mobile navigation drawer ── */}
+      {mounted && createPortal(
+        <div className={`md:hidden ${mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+          {/* Backdrop */}
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+              mobileMenuOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          {/* Slide-in panel */}
+          <div
+            className={`fixed left-0 top-0 bottom-0 z-50 w-[280px] bg-[#121212] border-r border-white/8 shadow-[8px_0_48px_rgba(0,0,0,0.6)] transition-transform duration-300 flex flex-col ${
+              mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+          >
+            {/* Drawer header */}
+            <div className="flex items-start justify-between gap-4 p-5 border-b border-white/[0.06]">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.32em] text-[#D1B23E]">{storeName}</p>
+                <h1 className="mt-1.5 text-xl font-semibold tracking-tight text-white">Admin Console</h1>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-gray-400 transition hover:border-white/20 hover:text-white"
+                aria-label="Close navigation menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Nav search */}
+            <div className="px-5 pt-4">
+              <label className="relative block">
+                <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <input
+                  type="search"
+                  value={navSearch}
+                  onChange={(e) => setNavSearch(e.target.value)}
+                  placeholder="Search admin sections"
+                  className={`${adminInputClasses} pl-11`}
+                />
+              </label>
+            </div>
+
+            {/* Nav links */}
+            <nav className="flex-1 overflow-y-auto px-5 pt-4 pb-4 space-y-5">
+              {Object.entries(groupedNavigation).map(([group, items]) => (
+                <div key={group} className="space-y-2">
+                  <p className="px-2 text-[10px] uppercase tracking-[0.28em] text-gray-500">{group}</p>
+                  <div className="space-y-1.5">
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`flex items-center justify-between rounded-2xl px-3.5 py-3 text-sm transition ${
+                            isActive
+                              ? 'bg-[#D1B23E] text-black shadow-[0_16px_30px_rgba(209,178,62,0.28)]'
+                              : 'text-gray-300 hover:bg-white/6 hover:text-white'
+                          }`}
+                        >
+                          <span className="flex items-center gap-3">
+                            <Icon size={17} />
+                            <span className="font-medium">{item.label}</span>
+                          </span>
+                          <ArrowUpRight size={14} className={isActive ? 'opacity-90' : 'opacity-30'} />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+
+            {/* Logout */}
+            <div className="p-5 border-t border-white/[0.06]">
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:border-red-400/30 hover:bg-red-500/10 disabled:opacity-60"
+              >
+                <LogOut size={16} />
+                {loggingOut ? 'Signing out...' : 'Logout'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      <div className="relative mx-auto flex min-h-screen max-w-[1800px] flex-col gap-0 px-3 py-2 md:gap-4 md:flex-row md:px-4 md:py-4 lg:gap-6 lg:px-6 lg:py-6">
+        <aside className="hidden shrink-0 rounded-[2rem] border border-white/8 bg-[#121212] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.45)] md:flex md:flex-col md:sticky md:top-4 md:h-[calc(100vh-2rem)] md:w-60 md:overflow-hidden lg:top-6 lg:h-[calc(100vh-3rem)] lg:w-[296px]">
           <div className="flex h-full flex-col gap-5">
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.32em] text-[#D1B23E]">Bhatkal Time Luxe</p>
+                  <p className="text-[11px] uppercase tracking-[0.32em] text-[#D1B23E]">{storeName}</p>
                   <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">Admin Console</h1>
                 </div>
                 <Link
@@ -234,7 +370,7 @@ export function AdminShell({ eyebrow, title, description, actions, statStrip, ch
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 rounded-[2rem] border border-white/8 bg-[#101010] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.45)] lg:p-8">
+        <main className="min-w-0 flex-1 rounded-[1.5rem] md:rounded-[2rem] border border-white/8 bg-[#101010] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.45)] md:p-6 lg:p-8">
           <header className="border-b border-white/6 pb-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-3xl space-y-3">
@@ -381,7 +517,10 @@ export function AdminSelect({ value, onChange, options, className = '', placehol
     ? 'w-full flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-left transition focus:border-[#D1B23E] focus:outline-none'
     : 'w-full flex items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition focus:border-[#D1B23E] focus:outline-none';
 
-  const dropdown = open && typeof document !== 'undefined'
+  const [selectMounted, setSelectMounted] = useState(false);
+  useEffect(() => setSelectMounted(true), []);
+
+  const dropdown = open && selectMounted
     ? createPortal(
         <div
           ref={dropRef}

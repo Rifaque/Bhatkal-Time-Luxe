@@ -14,7 +14,7 @@ import {
   adminSelectStyles,
 } from '../components/AdminShell';
 
-const fmt = (n) => new Intl.NumberFormat('en-IN').format(n);
+const fmt = (n) => Number(n || 0).toFixed(3);
 
 export default function FeaturedManager() {
   const [featured, setFeatured] = useState([]);
@@ -73,12 +73,7 @@ export default function FeaturedManager() {
     }
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('adminToken');
-      await axios.post(
-        '/api/admin/featured',
-        { productId: selectedProduct.value },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.post('/api/admin/featured', { productId: selectedProduct.value });
       setSuccess('Featured product added!');
       setSelectedProduct(null);
       fetchFeatured();
@@ -99,10 +94,7 @@ export default function FeaturedManager() {
     setError('');
     setSuccess('');
     try {
-      const token = localStorage.getItem('adminToken');
-      await axios.delete(`/api/admin/featured/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(`/api/admin/featured/${id}`);
       setSuccess('Featured product removed!');
       fetchFeatured();
     } catch (err) {
@@ -114,8 +106,8 @@ export default function FeaturedManager() {
     value: p._id,
     label: p.name,
     brand: brandMap[p.brand] || '',
-    price: p.price,
-    MRP: p.MRP,
+    price: p.salePrice ?? p.priceKwd ?? 0,
+    originalPrice: p.originalPrice ?? p.originalPriceKwd ?? 0,
     image: p.images?.[0] || '',
   })), [products, brandMap]);
 
@@ -133,9 +125,9 @@ export default function FeaturedManager() {
         <p className="text-[10px] text-[#D1B23E] uppercase tracking-wider font-bold leading-none">{option.brand}</p>
         <p className="text-sm text-white font-medium truncate leading-snug">{option.label}</p>
         <div className="flex items-baseline gap-1.5">
-          <p className="text-xs text-gray-400">₹{fmt(option.price)}</p>
-          {option.MRP > option.price && (
-            <p className="text-[10px] text-gray-600 line-through">₹{fmt(option.MRP)}</p>
+          <p className="text-xs text-gray-400">KD {fmt(option.price)}</p>
+          {option.originalPrice > option.price && (
+            <p className="text-[10px] text-gray-600 line-through">KD {fmt(option.originalPrice)}</p>
           )}
         </div>
       </div>
@@ -224,9 +216,9 @@ export default function FeaturedManager() {
                       )}
                       <p className="text-sm font-semibold text-white leading-snug mt-0.5 line-clamp-1">{p.name}</p>
                       <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-sm font-bold text-white">₹{fmt(p.price)}</span>
-                        {p.MRP > p.price && (
-                          <span className="text-xs text-gray-500 line-through">₹{fmt(p.MRP)}</span>
+                        <span className="text-sm font-bold text-white">KD {fmt(p.salePrice ?? p.priceKwd ?? 0)}</span>
+                        {(p.originalPrice ?? p.originalPriceKwd ?? 0) > (p.salePrice ?? p.priceKwd ?? 0) && (
+                          <span className="text-xs text-gray-500 line-through">KD {fmt(p.originalPrice ?? p.originalPriceKwd ?? 0)}</span>
                         )}
                       </div>
                     </div>
@@ -238,7 +230,7 @@ export default function FeaturedManager() {
                       }
                     >
                       <Trash2 size={14} />
-                      {isPending ? 'Confirm?' : 'Remove'}
+                      <span className="hidden sm:inline">{isPending ? 'Confirm?' : 'Remove'}</span>
                     </button>
                   </div>
                 );

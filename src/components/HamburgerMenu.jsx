@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { X, Home, Tag, Sparkles, Phone, HelpCircle } from 'lucide-react';
 import btime from '@/assets/images/btime.webp';
 import Image from 'next/image';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 const MENU_ITEMS = [
   { icon: Home,       label: 'Home',         path: '/'             },
@@ -15,10 +16,15 @@ const MENU_ITEMS = [
 
 export default function HamburgerMenu({ isOpen, onClose, currentPath = '' }) {
   const router = useRouter();
+  const { storeName } = useStoreSettings();
 
   const handleNavigation = (path) => {
-    router.push(path);
     onClose();
+    if (currentPath === path) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    router.push(path);
   };
 
   const isActive = (path) =>
@@ -91,7 +97,7 @@ export default function HamburgerMenu({ isOpen, onClose, currentPath = '' }) {
         {/* Footer */}
         <div className="px-5 py-4 border-t border-white/6">
           <p className="text-[10px] text-gray-700 uppercase tracking-widest font-semibold">
-            Bhatkal Time Luxe
+            {storeName}
           </p>
           <p className="text-[10px] text-gray-800 mt-0.5">Premium Timepieces</p>
         </div>

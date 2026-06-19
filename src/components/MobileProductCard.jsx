@@ -6,10 +6,10 @@ import WishlistButton from '@/components/WishlistButton';
 
 export default function MobileProductCard({ product, onClick }) {
   const { formatPrice } = useCurrency();
-  const hasDiscount = product.MRP && product.price && product.MRP > product.price;
-  const discountPct = hasDiscount
-    ? Math.round(((product.MRP - product.price) / product.MRP) * 100)
-    : 0;
+  const hasDiscount = (product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0);
+  const salePrice = product.salePrice ?? product.priceKwd ?? 0;
+  const origPrice = product.originalPrice ?? product.originalPriceKwd ?? 0;
+  const discountPct = hasDiscount ? Math.round(((origPrice - salePrice) / origPrice) * 100) : 0;
 
   return (
     <div
@@ -43,9 +43,9 @@ export default function MobileProductCard({ product, onClick }) {
         <div className="px-3 py-2.5">
           <p className="text-[11px] text-white/90 font-medium truncate leading-tight">{product.name}</p>
           <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-sm font-bold text-[#D1B23E]">{formatPrice(product.price)}</span>
+            <span className="text-sm font-bold text-[#D1B23E]">{formatPrice(salePrice)}</span>
             {hasDiscount && (
-              <span className="text-[10px] text-gray-600 line-through">{formatPrice(product.MRP)}</span>
+              <span className="text-[10px] text-gray-600 line-through">{formatPrice(origPrice)}</span>
             )}
           </div>
         </div>

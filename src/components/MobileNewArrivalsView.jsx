@@ -47,7 +47,7 @@ export default function MobileNewArrivalsView() {
       {/* Grid */}
       <div className="px-4 pt-5 pb-6">
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             <GridSkeleton />
           </div>
         ) : products.length === 0 ? (
@@ -60,7 +60,7 @@ export default function MobileNewArrivalsView() {
             <p className="pb-3 text-xs text-gray-600">
               {products.length} {products.length === 1 ? 'timepiece' : 'timepieces'}
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {products.map((product) => (
                 <MobileProductCard
                   key={product._id}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import MobileLayout from '@/components/MobileLayout';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 const faqs = [
   {
@@ -12,7 +13,7 @@ const faqs = [
   },
   {
     question: 'Do you offer international shipping?',
-    answer: 'Currently, we ship only within India. We are working on expanding our shipping options.',
+    answer: 'We currently serve Kuwait and the wider GCC region. We are actively working on expanding our shipping to more destinations.',
   },
   {
     question: 'What is your return policy?',
@@ -28,19 +29,20 @@ const faqs = [
   },
   {
     question: 'What payment methods do you accept?',
-    answer: 'We accept UPI, bank transfer (NEFT/RTGS/IMPS), and select card arrangements coordinated through our WhatsApp concierge.',
+    answer: 'We accept KNET, bank transfer (IBAN), and select card arrangements coordinated through our WhatsApp concierge.',
   },
 ];
 
 export default function MobileFAQView() {
   const [openIndex, setOpenIndex] = useState(null);
+  const { whatsappNumber } = useStoreSettings();
 
   const toggle = (i) => setOpenIndex(openIndex === i ? null : i);
 
   return (
     <MobileLayout>
       {/* Page heading */}
-      <div className="px-5 pt-6 pb-5">
+      <div className="px-5 pt-6 pb-5 lg:max-w-2xl lg:mx-auto">
         <p className="text-[10px] uppercase tracking-[0.3em] text-[#D1B23E] font-semibold mb-1">
           Client Guidance
         </p>
@@ -51,7 +53,7 @@ export default function MobileFAQView() {
       </div>
 
       {/* Accordion */}
-      <section className="px-5 pb-6">
+      <section className="px-5 pb-6 lg:max-w-2xl lg:mx-auto">
         <div className="divide-y divide-white/5">
           {faqs.map((faq, i) => (
             <div key={i}>
@@ -80,9 +82,9 @@ export default function MobileFAQView() {
       </section>
 
       {/* Concierge CTA */}
-      <div className="px-5 pb-6">
+      <div className="px-5 pb-6 lg:max-w-2xl lg:mx-auto">
         <a
-          href="https://wa.me/916364282251"
+          href={whatsappNumber ? `https://wa.me/${whatsappNumber}` : '/contact'}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full bg-[#D1B23E] text-black font-semibold py-3.5 rounded-2xl text-sm active:scale-[0.98] transition-all"

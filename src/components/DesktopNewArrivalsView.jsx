@@ -103,9 +103,9 @@ export default function DesktopNewArrivalsView() {
               onMouseLeave={() => setHoveredCardId(null)}
               className="relative group bg-[#171717] border border-white/5 hover:border-white/10 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
             >
-              {product.MRP > product.price && (
+              {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                 <span className="absolute top-4 left-4 z-10 bg-[#D1B23E] text-black text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded">
-                  {Math.round(((product.MRP - product.price) / product.MRP) * 100)}% OFF
+                  {Math.round((((product.originalPrice ?? product.originalPriceKwd) - (product.salePrice ?? product.priceKwd)) / (product.originalPrice ?? product.originalPriceKwd)) * 100)}% OFF
                 </span>
               )}
 
@@ -144,11 +144,11 @@ export default function DesktopNewArrivalsView() {
                 <div className="flex items-center justify-between pt-2">
                   <div>
                     <div className="text-lg font-bold text-white">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.salePrice ?? product.priceKwd ?? 0)}
                     </div>
-                    {product.MRP > product.price && (
+                    {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
                       <div className="text-xs text-gray-500 line-through opacity-60">
-                        {formatPrice(product.MRP)}
+                        {formatPrice(product.originalPrice ?? product.originalPriceKwd ?? 0)}
                       </div>
                     )}
                   </div>

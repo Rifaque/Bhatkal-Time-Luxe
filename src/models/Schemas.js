@@ -3,10 +3,13 @@ import mongoose from 'mongoose';
 // 1. Schemas Definition
 
 const brandSchema = new mongoose.Schema({
-  name: { type: String, unique: true, required: true },
-  logo: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
+  name:            { type: String, unique: true, required: true },
+  logo:            { type: String, required: true },
+  referencePrefix: { type: String, trim: true },
+  createdAt:       { type: Date, default: Date.now },
 });
+
+brandSchema.index({ referencePrefix: 1 }, { unique: true, sparse: true });
 
 brandSchema.post('save', function (error, doc, next) {
   if (error.code === 11000) {
@@ -18,23 +21,35 @@ brandSchema.post('save', function (error, doc, next) {
 
 brandSchema.pre('findOneAndDelete', async function (next) {
   const brandId = this.getQuery()._id;
+  // Collect product IDs first so we can cascade through join tables
+  const brandProducts = await Product.find({ brand: brandId }, { _id: 1 }).lean();
+  const productIds = brandProducts.map((p) => p._id);
+  if (productIds.length > 0) {
+    await FeaturedWatch.deleteMany({ productId: { $in: productIds } });
+    await BestSelling.deleteMany({ productId: { $in: productIds } });
+  }
+  await TopBrand.deleteMany({ brand: brandId });
   await Product.deleteMany({ brand: brandId });
   next();
 });
 
 const productSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  brand: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', required: true },
-  MRP: { type: Number, required: true },
-  price: { type: Number, required: true },
-  inStock: { type: Boolean, default: true },
-  color: { type: String },
-  about: { type: String },
-  images: [{ type: String }],
-  orderCount: { type: Number, default: 0 },
-  dateAdded: { type: Date, default: Date.now },
+  name:          { type: String, required: true },
+  brand:         { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', required: true },
+  salePrice:     { type: Number, default: 0 },
+  originalPrice: { type: Number, default: 0 },
+  inStock:       { type: Boolean, default: true },
+  color:         { type: String },
+  about:         { type: String },
+  images:        [{ type: String }],
+  orderCount:    { type: Number, default: 0 },
+  dateAdded:     { type: Date, default: Date.now },
+  reference:     { type: String },
 });
 productSchema.index({ brand: 1 });
+productSchema.index({ reference: 1 }, { unique: true, sparse: true });
+productSchema.index({ dateAdded: -1 });
+productSchema.index({ inStock: 1 });
 
 const cartSchema = new mongoose.Schema({
   cartId: { type: String, unique: true, required: true },
@@ -56,15 +71,25 @@ const orderSchema = new mongoose.Schema({
   cartId: { type: String, required: true },
   items: [
     {
-      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-      name: { type: String, required: true },
-      brand: { type: String, default: '' },
-      price: { type: Number, required: true },
-      quantity: { type: Number, required: true },
-      image: { type: String, default: '' },
+      product:      { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      name:         { type: String, required: true },
+      brand:        { type: String, default: '' },
+      price:        { type: Number, required: true },
+      priceKwd:     { type: Number },
+      lineTotalKwd: { type: Number },
+      currency:     { type: String },
+      priceDisplay: { type: Number },
+      quantity:     { type: Number, required: true },
+      image:        { type: String, default: '' },
+      reference:    { type: String, default: '' },
     },
   ],
   total: { type: Number, required: true },
+  totalKwd:         { type: Number },
+  orderCurrency:    { type: String, default: 'KWD' },
+  exchangeRateUsed: { type: Number, default: 1 },
+  baseKwdAmount:    { type: Number },
+  displayAmount:    { type: Number },
   message: { type: String },
   customer: {
     name: { type: String, default: '' },
@@ -121,6 +146,46 @@ const topBrandSchema = new mongoose.Schema({
   brand: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', required: true },
 });
 
+const exchangeRateSchema = new mongoose.Schema({
+  singleton:    { type: String, default: 'latest', unique: true },
+  base:         { type: String, default: 'KWD' },
+  rates:        { type: Object, default: {} },
+  source:       { type: String, default: 'open.er-api.com' },
+  fetchedAt:    { type: Date },
+  status:       { type: String, enum: ['ok', 'stale', 'error'], default: 'ok' },
+  errorMessage: { type: String, default: '' },
+}, { timestamps: true });
+
+const auditLogSchema = new mongoose.Schema({
+  adminId:       { type: String, required: true },
+  adminUsername: { type: String, required: true },
+  action:        { type: String, required: true },
+  entity:        { type: String, required: true },
+  entityId:      { type: String, default: '' },
+  before:        { type: Object, default: null },
+  after:         { type: Object, default: null },
+  ip:            { type: String, default: '' },
+}, { timestamps: true });
+auditLogSchema.index({ createdAt: -1 });
+auditLogSchema.index({ entity: 1, entityId: 1 });
+
+// Index for the admin orders list (sorted by date)
+orderSchema.index({ createdAt: -1 });
+
+// Indexes for join tables — critical for cascade delete performance
+featuredWatchSchema.index({ productId: 1 });
+bestSellingSchema.index({ productId: 1 });
+topBrandSchema.index({ brand: 1 });
+
+const settingsSchema = new mongoose.Schema({
+  singleton:       { type: String, default: 'global', unique: true },
+  storeName:       { type: String, default: 'Bhatkal Time Luxe' },
+  supportEmail:    { type: String, default: '' },
+  supportPhone:    { type: String, default: '' },
+  whatsappNumber:  { type: String, default: '' },
+  businessAddress: { type: String, default: '' },
+}, { timestamps: true });
+
 // 2. Compile Models (with Next.js cache check)
 export const Brand = mongoose.models.Brand || mongoose.model('Brand', brandSchema);
 export const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
@@ -131,3 +196,6 @@ export const Admin = mongoose.models.Admin || mongoose.model('Admin', adminSchem
 export const FeaturedWatch = mongoose.models.FeaturedWatch || mongoose.model('FeaturedWatch', featuredWatchSchema);
 export const BestSelling = mongoose.models.BestSelling || mongoose.model('BestSelling', bestSellingSchema);
 export const TopBrand = mongoose.models.TopBrand || mongoose.model('TopBrand', topBrandSchema);
+export const Settings = mongoose.models.Settings || mongoose.model('Settings', settingsSchema);
+export const ExchangeRate = mongoose.models.ExchangeRate || mongoose.model('ExchangeRate', exchangeRateSchema);
+export const AuditLog = mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema);

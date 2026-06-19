@@ -6,10 +6,10 @@ import { Search } from 'lucide-react';
 import MobileLayout from '@/components/MobileLayout';
 import { getImageUrl } from '@/lib/image';
 
-function BrandSkeleton() {
+function BrandSkeleton({ count = 6 }) {
   return (
     <>
-      {[1, 2, 3, 4, 5, 6].map((i) => (
+      {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl p-4 flex flex-col items-center gap-3 animate-pulse">
           <div className="w-14 h-14 rounded-xl bg-[#252525]" />
           <div className="h-2.5 bg-[#252525] rounded w-16" />
@@ -62,7 +62,7 @@ export default function MobileBrandsView() {
       </div>
 
       {/* Brand grid */}
-      <div className="grid grid-cols-3 gap-3 px-4 pb-6">
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-4 pb-6 lg:px-8">
         {loading ? (
           <BrandSkeleton />
         ) : filtered.length === 0 ? (

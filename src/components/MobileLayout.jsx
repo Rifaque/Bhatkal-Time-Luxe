@@ -7,6 +7,7 @@ import { Menu, Search, Home, Tag, ShoppingCart } from 'lucide-react';
 import btimehome from '@/assets/images/btimehome.webp';
 import HamburgerMenu from '@/components/HamburgerMenu';
 import { FaWhatsapp } from 'react-icons/fa';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 const NAV_ITEMS = [
   { icon: Home,         label: 'Home',   path: '/'       },
@@ -18,6 +19,7 @@ export default function MobileLayout({ children, hideFAB = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { whatsappNumber } = useStoreSettings();
 
   const isActive = (path) =>
     path === '/' ? pathname === '/' : pathname.startsWith(path);
@@ -38,12 +40,21 @@ export default function MobileLayout({ children, hideFAB = false }) {
             src={btimehome}
             alt="Bhatkal Timeluxe"
             className="h-9 w-auto cursor-pointer"
-            onClick={() => router.push('/')}
+            onClick={() => {
+              if (pathname === '/') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else {
+                router.push('/');
+              }
+            }}
             priority
           />
           <button
             className="p-2 text-[#D1B23E] hover:bg-white/5 rounded-xl transition-colors"
-            onClick={() => router.push('/search')}
+            onClick={() => {
+              if (pathname === '/search') return;
+              router.push('/search');
+            }}
             aria-label="Search"
           >
             <Search size={20} />
@@ -59,7 +70,7 @@ export default function MobileLayout({ children, hideFAB = false }) {
       {/* WhatsApp FAB — sits just above bottom nav */}
       {!hideFAB && (
         <a
-          href="https://wa.me/916364282251"
+          href={whatsappNumber ? `https://wa.me/${whatsappNumber}` : '/contact'}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat on WhatsApp"
@@ -77,7 +88,13 @@ export default function MobileLayout({ children, hideFAB = false }) {
             return (
               <button
                 key={path}
-                onClick={() => router.push(path)}
+                onClick={() => {
+                  if (isActive(path)) {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else {
+                    router.push(path);
+                  }
+                }}
                 className="relative flex flex-col items-center gap-0.5 px-6 py-1.5 min-w-[64px]"
                 aria-label={label}
               >

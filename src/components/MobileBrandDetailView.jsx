@@ -74,7 +74,7 @@ export default function MobileBrandDetailView() {
 
       {/* Products grid */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-3 px-4 pt-5 pb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-4 pt-5 pb-6">
           <ProductSkeleton />
         </div>
       ) : products.length === 0 ? (
@@ -87,7 +87,7 @@ export default function MobileBrandDetailView() {
           <p className="px-5 pt-4 pb-2 text-xs text-gray-600">
             {products.length} {products.length === 1 ? 'timepiece' : 'timepieces'}
           </p>
-          <div className="grid grid-cols-2 gap-3 px-4 pb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-4 pb-6">
             {products.map((product) => (
               <MobileProductCard
                 key={product._id}
