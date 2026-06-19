@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import MobileLayout from '@/components/MobileLayout';
 import { getImageUrl } from '@/lib/image';
+import { Sk } from '@/components/ui/skeleton';
 
 function BrandSkeleton({ count = 6 }) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl p-4 flex flex-col items-center gap-3 animate-pulse">
-          <div className="w-14 h-14 rounded-xl bg-[#252525]" />
-          <div className="h-2.5 bg-[#252525] rounded w-16" />
+        <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl p-4 flex flex-col items-center gap-3">
+          <Sk className="w-14 h-14 !rounded-xl" />
+          <Sk className="h-2.5 w-16" />
         </div>
       ))}
     </>

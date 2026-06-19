@@ -5,18 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import MobileLayout from '@/components/MobileLayout';
 import MobileProductCard from '@/components/MobileProductCard';
 import { getImageUrl } from '@/lib/image';
+import { Sk, ProductCardSk } from '@/components/ui/skeleton';
 
 function ProductSkeleton() {
   return (
     <>
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden animate-pulse">
-          <div className="bg-[#222]" style={{ aspectRatio: '1/1' }} />
-          <div className="px-3 py-2.5 space-y-1.5">
-            <div className="h-2.5 bg-[#222] rounded w-3/4" />
-            <div className="h-3 bg-[#222] rounded w-1/2" />
-          </div>
-        </div>
+        <ProductCardSk key={i} />
       ))}
     </>
   );
@@ -49,7 +44,7 @@ export default function MobileBrandDetailView() {
       {/* Brand header */}
       <div className="px-5 pt-6 pb-6 border-b border-white/5 flex items-center gap-4">
         {loading ? (
-          <div className="w-14 h-14 rounded-2xl bg-[#252525] animate-pulse shrink-0" />
+          <Sk className="w-14 h-14 !rounded-2xl shrink-0" />
         ) : brand?.logo ? (
           <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
             <img
@@ -65,7 +60,7 @@ export default function MobileBrandDetailView() {
             Collection
           </p>
           {loading ? (
-            <div className="h-6 w-32 bg-[#252525] animate-pulse rounded" />
+            <Sk className="h-6 w-32" />
           ) : (
             <h1 className="text-2xl font-serif font-bold text-white">{brand?.name}</h1>
           )}

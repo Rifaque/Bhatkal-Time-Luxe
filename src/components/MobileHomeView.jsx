@@ -8,15 +8,16 @@ import MobileProductCard from '@/components/MobileProductCard';
 import { getImageUrl } from '@/lib/image';
 import { useWishlist } from '@/context/WishlistContext';
 import { useStoreSettings } from '@/context/StoreSettingsContext';
+import { Sk, ProductCardSk } from '@/components/ui/skeleton';
 
 function CardSkeleton() {
   return (
     <div className="w-[42vw] md:w-52 lg:w-64 shrink-0">
       <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
-        <div className="bg-[#222] animate-pulse" style={{ aspectRatio: '1/1' }} />
+        <Sk className="w-full !rounded-none" style={{ aspectRatio: '1/1' }} />
         <div className="px-3 py-2.5 space-y-1.5">
-          <div className="h-2.5 bg-[#222] animate-pulse rounded w-3/4" />
-          <div className="h-3 bg-[#222] animate-pulse rounded w-1/2" />
+          <Sk className="h-2.5 w-3/4" />
+          <Sk className="h-3 w-1/2" />
         </div>
       </div>
     </div>
@@ -28,8 +29,8 @@ function BrandSkeleton() {
     <>
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="flex flex-col items-center gap-2 shrink-0">
-          <div className="w-16 h-16 rounded-2xl bg-[#222] animate-pulse" />
-          <div className="h-2 w-12 bg-[#222] animate-pulse rounded" />
+          <Sk className="w-16 h-16 !rounded-2xl" />
+          <Sk className="h-2 w-12" />
         </div>
       ))}
     </>
@@ -108,11 +109,11 @@ export default function MobileHomeView() {
           {/* Featured watch showcase — lg: tablet landscape only */}
           {loading && (
             <div className="hidden lg:block lg:w-[260px] lg:shrink-0">
-              <div className="bg-[#171717] border border-white/5 rounded-3xl overflow-hidden animate-pulse">
-                <div className="bg-[#252525] aspect-square" />
+              <div className="bg-[#171717] border border-white/5 rounded-3xl overflow-hidden">
+                <Sk className="aspect-square w-full !rounded-none" />
                 <div className="p-4 space-y-2">
-                  <div className="h-2.5 bg-[#252525] rounded w-1/3" />
-                  <div className="h-4 bg-[#252525] rounded w-3/4" />
+                  <Sk className="h-2.5 w-1/3" />
+                  <Sk className="h-4 w-3/4" />
                 </div>
               </div>
             </div>
@@ -304,13 +305,7 @@ export default function MobileHomeView() {
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
-                <div className="bg-[#222] animate-pulse" style={{ aspectRatio: '1/1' }} />
-                <div className="px-3 py-2.5 space-y-1.5">
-                  <div className="h-2.5 bg-[#222] animate-pulse rounded w-3/4" />
-                  <div className="h-3 bg-[#222] animate-pulse rounded w-1/2" />
-                </div>
-              </div>
+              <ProductCardSk key={i} />
             ))}
           </div>
         ) : (

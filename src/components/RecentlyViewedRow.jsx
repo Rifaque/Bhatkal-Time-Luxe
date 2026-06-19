@@ -69,7 +69,7 @@ export default function RecentlyViewedRow({ excludeId, className = '' }) {
   if (displayProducts.length === 0) return null;
 
   return (
-    <section className={className}>
+    <section className={`animate-fade-in ${className}`}>
       <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">
         Recently Viewed
       </h2>

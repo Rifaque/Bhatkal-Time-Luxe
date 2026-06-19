@@ -114,22 +114,27 @@ export default function DesktopHomeView() {
     return (
       <div className="bg-[#1e1e1e] text-white min-h-screen font-sans antialiased flex flex-col">
         <DesktopNavbar />
-        {/* Hero placeholder */}
-        <div className="min-h-[55vh] flex items-center border-b border-white/5 bg-gradient-to-b from-[#222] to-[#1e1e1e]">
-          <div className="mx-auto max-w-7xl px-6 w-full grid grid-cols-12 gap-12 items-center py-16">
-            <div className="col-span-5 space-y-5">
-              <Sk className="h-2.5 w-24" />
-              <Sk className="h-12 w-full" />
-              <Sk className="h-12 w-4/5" />
-              <Sk className="h-3.5 w-full" />
-              <Sk className="h-3.5 w-3/4" />
-              <div className="flex gap-4 pt-3">
-                <Sk className="h-13 w-44 !rounded-2xl" />
-                <Sk className="h-13 w-40 !rounded-2xl" />
+        {/* Hero placeholder — mirrors the 95vh immersive hero to prevent layout shift */}
+        <div className="relative overflow-hidden min-h-[95vh] flex items-center border-b border-white/5 bg-gradient-to-b from-[#222222] to-[#1e1e1e]">
+          <div className="absolute inset-0 bg-ambient-glow opacity-50" />
+          <div className="relative mx-auto max-w-7xl px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center py-16">
+            <div className="lg:col-span-7 space-y-8">
+              <Sk className="h-2.5 w-44" />
+              <div className="space-y-4">
+                <Sk className="h-14 lg:h-16 w-full" />
+                <Sk className="h-14 lg:h-16 w-3/4" />
+              </div>
+              <div className="space-y-2.5">
+                <Sk className="h-4 w-full max-w-xl" />
+                <Sk className="h-4 w-2/3 max-w-xl" />
+              </div>
+              <div className="flex gap-6 pt-2">
+                <Sk className="h-14 w-52 !rounded-full" />
+                <Sk className="h-14 w-44 !rounded-full" />
               </div>
             </div>
-            <div className="col-span-7">
-              <Sk className="aspect-[4/3] w-full !rounded-3xl" />
+            <div className="lg:col-span-5 flex justify-center">
+              <Sk className="w-full max-w-md h-[450px] !rounded-[36px]" />
             </div>
           </div>
         </div>

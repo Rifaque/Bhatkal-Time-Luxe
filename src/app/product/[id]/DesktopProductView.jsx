@@ -7,6 +7,7 @@ import useProductPageLogic from '@/hooks/useProductPageLogic';
 import DesktopNavbar from '@/components/DesktopNavbar';
 import DesktopFooter from '@/components/DesktopFooter';
 import QuickViewModal from '@/components/QuickViewModal';
+import { Sk } from '@/components/ui/skeleton';
 import { getImageUrl } from '@/lib/image';
 import axios from 'axios';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -74,29 +75,31 @@ export default function DesktopProductView() {
     return (
       <div className="bg-[#1e1e1e] text-white min-h-screen flex flex-col">
         <DesktopNavbar />
-        <main className="mx-auto max-w-7xl px-6 py-16 w-full flex-1">
+        <main className="mx-auto max-w-7xl px-6 py-12 md:py-16 w-full flex-1 space-y-20">
+          {/* Breadcrumb placeholder — matches the loaded breadcrumb offset */}
+          <Sk className="h-3.5 w-64 -mb-14" />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             <div className="lg:col-span-6 space-y-4">
-              <div className="bg-[#252525] rounded-3xl animate-pulse" style={{ height: '500px' }} />
+              <Sk className="h-[500px] w-full !rounded-3xl" />
               <div className="flex gap-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-20 h-20 bg-[#252525] rounded-xl animate-pulse" />
+                  <Sk key={i} className="w-20 h-20 !rounded-xl" />
                 ))}
               </div>
             </div>
-            <div className="lg:col-span-6 space-y-5 pt-2">
-              <div className="h-3 bg-[#252525] rounded animate-pulse w-20" />
-              <div className="h-10 bg-[#252525] rounded animate-pulse w-3/4" />
-              <div className="h-5 bg-[#252525] rounded animate-pulse w-1/3" />
-              <div className="h-28 bg-[#252525] rounded-2xl animate-pulse" />
+            <div className="lg:col-span-6 space-y-6">
+              <Sk className="h-3 w-20" />
+              <Sk className="h-10 w-3/4" />
+              <Sk className="h-5 w-1/3" />
+              <Sk className="h-28 w-full !rounded-2xl" />
               <div className="space-y-2 pt-2">
                 {[80, 70, 60, 55].map((w, i) => (
-                  <div key={i} className="h-3 bg-[#252525] rounded animate-pulse" style={{ width: `${w}%` }} />
+                  <Sk key={i} className="h-3" style={{ width: `${w}%` }} />
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="h-14 bg-[#252525] rounded-xl animate-pulse" />
-                <div className="h-14 bg-[#D1B23E]/20 rounded-xl animate-pulse" />
+                <Sk className="h-14 !rounded-xl" />
+                <Sk className="h-14 !rounded-xl" />
               </div>
             </div>
           </div>

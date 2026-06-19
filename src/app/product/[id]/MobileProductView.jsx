@@ -17,17 +17,26 @@ import WishlistSavedSection from '@/components/WishlistSavedSection';
 import ShareModal from '@/components/ShareModal';
 import Lightbox from '@/components/Lightbox';
 import ProductBreadcrumb from '@/components/ProductBreadcrumb';
+import { Sk } from '@/components/ui/skeleton';
 
 function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-[#1e1e1e] flex flex-col md:flex-row md:items-start">
-      <div className="bg-[#f0eeea] animate-pulse md:w-[45%] md:h-screen" style={{ height: '55vw' }} />
-      <div className="flex-1 px-5 pt-5 space-y-3">
-        <div className="h-6 bg-[#252525] animate-pulse rounded w-3/4" />
-        <div className="h-4 bg-[#252525] animate-pulse rounded w-1/3" />
-        <div className="h-3 bg-[#252525] animate-pulse rounded w-full mt-4" />
-        <div className="h-3 bg-[#252525] animate-pulse rounded w-5/6" />
-        <div className="h-3 bg-[#252525] animate-pulse rounded w-4/5" />
+      {/* Gallery stage — cream panel matching the loaded gallery background */}
+      <div
+        className="bg-[#f0eeea] flex items-center justify-center md:w-[45%] md:h-screen"
+        style={{ height: '55vw' }}
+      >
+        <Sk className="w-40 h-56 !rounded-2xl" />
+      </div>
+      <div className="flex-1 px-5 pt-5 md:px-8 md:pt-6 space-y-3">
+        <Sk className="h-6 w-3/4" />
+        <Sk className="h-7 w-1/3 mt-1" />
+        <div className="space-y-2.5 pt-3">
+          <Sk className="h-3 w-full" />
+          <Sk className="h-3 w-5/6" />
+          <Sk className="h-3 w-4/5" />
+        </div>
       </div>
     </div>
   );
