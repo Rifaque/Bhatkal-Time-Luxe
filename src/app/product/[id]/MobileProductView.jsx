@@ -56,9 +56,13 @@ export default function MobileProductView() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  // Scroll-triggered sticky CTA: hide sticky bar while inline CTA buttons are visible
+  // Scroll-triggered sticky CTA.
+  // threshold:0 — sticky appears only after the entire primary CTA section
+  //   has fully left the viewport (not at 10% gone, which was the old bug).
+  // initialValue:true — inline CTAs are visible on mount; prevents a
+  //   single-frame flash of the sticky bar before the observer fires.
   const inlineCTARef = useRef(null);
-  const inlineCTAVisible = useIsVisible(inlineCTARef);
+  const inlineCTAVisible = useIsVisible(inlineCTARef, { threshold: 0, initialValue: true });
 
   // Surface buyNow failures (set by useProductPageLogic) via the mobile toast system
   useEffect(() => {
@@ -305,54 +309,61 @@ export default function MobileProductView() {
           </div>
         </div>
 
-        {/* Inline buy actions — visible on all sizes; triggers scroll-sensitive sticky CTA */}
-        <div ref={inlineCTARef} className="flex gap-3 mt-6">
-          <button
-            onClick={addToCart}
-            disabled={!inStock || addingToCart}
-            className="flex-1 bg-[#D1B23E] text-black font-bold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all hover:bg-[#c1a22e]"
-          >
-            <ShoppingCart size={16} />
-            {addingToCart ? 'Adding…' : inStock ? 'Add to Cart' : 'Out of Stock'}
-          </button>
-          {inStock && (
+        {/* ── Primary CTA section ──
+            The ref wraps ALL purchase actions so the sticky bar only appears
+            after every one of them has fully scrolled off-screen.         */}
+        <div ref={inlineCTARef} className="mt-6">
+
+          {/* Row 1 — primary purchase actions */}
+          <div className="flex gap-3">
             <button
-              onClick={buyNow}
-              disabled={buyingNow}
-              className="shrink-0 bg-[#171717] border border-white/10 text-white font-medium py-3.5 px-4 rounded-2xl text-sm flex items-center justify-center active:scale-[0.98] transition-all hover:border-[#D1B23E]/30 disabled:opacity-50"
-              aria-label="Buy via WhatsApp"
+              onClick={addToCart}
+              disabled={!inStock || addingToCart}
+              className="flex-1 bg-[#D1B23E] text-black font-bold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all hover:bg-[#c1a22e]"
             >
-              <FaWhatsapp size={20} style={{ color: '#25D366' }} />
+              <ShoppingCart size={16} />
+              {addingToCart ? 'Adding…' : inStock ? 'Add to Cart' : 'Out of Stock'}
             </button>
-          )}
-        </div>
+            {inStock && (
+              <button
+                onClick={buyNow}
+                disabled={buyingNow}
+                className="flex-1 bg-[#171717] border border-white/10 text-white font-medium py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:border-[#D1B23E]/30 disabled:opacity-50"
+              >
+                <FaWhatsapp size={16} style={{ color: '#25D366' }} />
+                Buy via WhatsApp
+              </button>
+            )}
+          </div>
 
-        {/* Wishlist + Share + Request Details row */}
-        <div className="flex gap-2 mt-3">
-          <WishlistButton
-            productId={product._id}
-            size={15}
-            showLabel
-            className="flex-1 justify-center bg-[#171717] border border-white/8 rounded-2xl py-3"
-          />
+          {/* Row 2 — secondary actions */}
+          <div className="flex gap-2 mt-3">
+            <WishlistButton
+              productId={product._id}
+              size={15}
+              showLabel
+              className="flex-1 justify-center bg-[#171717] border border-white/8 rounded-2xl py-3"
+            />
+            <button
+              onClick={handleShare}
+              aria-label="Share this product"
+              className="flex items-center gap-1.5 bg-[#171717] border border-white/8 rounded-2xl px-4 py-3 text-gray-400 hover:text-white hover:border-white/20 transition-all active:scale-95"
+            >
+              <Share2 size={15} />
+              <span className="text-xs font-medium">Share</span>
+            </button>
+          </div>
+
+          {/* Row 3 — enquiry action */}
           <button
-            onClick={handleShare}
-            aria-label="Share this product"
-            className="flex items-center gap-1.5 bg-[#171717] border border-white/8 rounded-2xl px-4 py-3 text-gray-400 hover:text-white hover:border-white/20 transition-all active:scale-95"
+            onClick={openRequestDetails}
+            className="w-full mt-2 flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-[#25D366] border border-white/5 hover:border-[#25D366]/20 rounded-2xl py-3 transition-all"
           >
-            <Share2 size={15} />
-            <span className="text-xs font-medium">Share</span>
+            <FaWhatsapp size={14} style={{ color: '#25D366' }} />
+            Request Details via WhatsApp
           </button>
-        </div>
 
-        {/* Request Details via WhatsApp */}
-        <button
-          onClick={openRequestDetails}
-          className="w-full mt-2 flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-[#25D366] border border-white/5 hover:border-[#25D366]/20 rounded-2xl py-3 transition-all"
-        >
-          <FaWhatsapp size={14} style={{ color: '#25D366' }} />
-          Request Details via WhatsApp
-        </button>
+        </div>
 
         {/* Related watches */}
         {relatedProducts.length > 0 && (
@@ -398,11 +409,15 @@ export default function MobileProductView() {
         />
       )}
 
-      {/* ── Sticky CTA — mobile only, slides away when inline CTA is visible ── */}
+      {/* ── Sticky CTA — mobile only, hidden at md: (tablet uses two-column layout) ──
+          Slides in only after the entire primary CTA section has left the viewport.
+          Safe-area inset ensures the bar clears iOS home indicator and Android
+          gesture navigation bar on all devices.                                   */}
       <div
         aria-hidden={inlineCTAVisible || undefined}
         {...(inlineCTAVisible ? { inert: '' } : {})}
-        className={`fixed bottom-0 left-0 right-0 z-30 bg-[#1e1e1e]/95 backdrop-blur-xl border-t border-white/8 px-5 py-4 md:hidden transition-transform duration-300 ${
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+        className={`fixed bottom-0 left-0 right-0 z-30 bg-[#1e1e1e]/95 backdrop-blur-xl border-t border-white/8 px-5 pt-4 md:hidden transition-transform duration-300 ${
           inlineCTAVisible ? 'translate-y-full' : 'translate-y-0'
         }`}
       >
@@ -419,10 +434,10 @@ export default function MobileProductView() {
             <button
               onClick={buyNow}
               disabled={buyingNow}
-              className="shrink-0 bg-[#171717] border border-white/10 text-white font-medium py-3.5 px-4 rounded-2xl text-sm flex items-center justify-center active:scale-[0.98] transition-all hover:border-[#D1B23E]/30 disabled:opacity-50"
-              aria-label="Buy via WhatsApp"
+              className="flex-1 bg-[#171717] border border-white/10 text-white font-medium py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:border-[#D1B23E]/30 disabled:opacity-50"
             >
-              <FaWhatsapp size={20} style={{ color: '#25D366' }} />
+              <FaWhatsapp size={16} style={{ color: '#25D366' }} />
+              Buy via WhatsApp
             </button>
           )}
         </div>

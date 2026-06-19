@@ -1,0 +1,917 @@
+{
+  "createdAt": "2026-06-19T16:05:40.674Z",
+  "mode": "cloudinary-migration",
+  "cloudName": "dnrxzdvkx",
+  "products": [
+    {
+      "_id": "67ecddbd0448be44758d979e",
+      "name": "Audemars Piguet Royal Oak ",
+      "originalImages": [
+        "1743576508859.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf3c30448be44758da173",
+      "name": "ROLEX Datejust 41 - Chocolate Index Dial ",
+      "originalImages": [
+        "1743582146464.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed09940448be44758da82a",
+      "name": "ROLEX GMT Master - men's watch ",
+      "originalImages": [
+        "1743587731900.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0c570448be44758da8fe",
+      "name": "Rolex Mens Gold",
+      "originalImages": [
+        "1743588439093.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ece4190448be44758d9c28",
+      "name": "GEM DIOR - Women's Watch",
+      "originalImages": [
+        "1743578137266.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecedc40448be44758d9e5c",
+      "name": "CASIO EDIFICE Fusion of Digital and Analog Watch",
+      "originalImages": [
+        "1743580611931.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecfaa70448be44758da476",
+      "name": "PHATEK PHILIPPE Skeleton watch for men ",
+      "originalImages": [
+        "1743583911109.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0b410448be44758da8c1",
+      "name": "RADO Luxury square watch ",
+      "originalImages": [
+        "1743588161235.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed138b0448be44758daa8b",
+      "name": "Panerai Luminor Marina Carbotech",
+      "originalImages": [
+        "1743590282726.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecdbdb0448be44758d96c3",
+      "name": "Rolex Submariner Date",
+      "originalImages": [
+        "1743576026966.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecdfef0448be44758d992a",
+      "name": "OMEGA Golden Automatic Watch",
+      "originalImages": [
+        "1743577071086.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf0920448be44758da001",
+      "name": "Verrsace VR",
+      "originalImages": [
+        "1743581330127.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecfa3c0448be44758da45b",
+      "name": "TOMMY HILFIGER Automatic watch ",
+      "originalImages": [
+        "1743583803787.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0dd70448be44758daa23",
+      "name": "FOSSIL Skeleton automatic watch ",
+      "originalImages": [
+        "1743588823308.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed10dc0448be44758daa6a",
+      "name": "Rolex Mens Gold",
+      "originalImages": [
+        "1743589595851.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1ae50448be44758dab1d",
+      "name": "OMEGA Seamaster men's watch ",
+      "originalImages": [
+        "1743592165902.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67eced2c0448be44758d9e4b",
+      "name": "PATEK PHILIPPE - Men's Watch",
+      "originalImages": [
+        "1743580459810.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf4fd0448be44758da1c4",
+      "name": "TAG Heuer Monaco Chronographs Skeleton",
+      "originalImages": [
+        "1743582461305.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf59d0448be44758da1f6",
+      "name": "Men Rado Hyperchrome Chronograph",
+      "originalImages": [
+        "1743582620006.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf7400448be44758da2e7",
+      "name": "PATEK PHILIPPE Automatic Watch for men",
+      "originalImages": [
+        "1743583040113.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf7ac0448be44758da33a",
+      "name": "Men Rado Hyperchrome Chronograph",
+      "originalImages": [
+        "1743583146165.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecfb090448be44758da48c",
+      "name": "Invicta Venom Analog Black Dial Men's Watch",
+      "originalImages": [
+        "1743584009633.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecff6f0448be44758da54e",
+      "name": "Guess Watch For Women",
+      "originalImages": [
+        "1743585135154.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed09f50448be44758da83d",
+      "name": "RADO Hyperchromic men's watch",
+      "originalImages": [
+        "1743587828670.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0ce10448be44758da937",
+      "name": "TISSOT - Men's watch ",
+      "originalImages": [
+        "1743588576438.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1dae0448be44758dacf1",
+      "name": "OMEGA Seamaster CoAxial Chronometer watch ",
+      "originalImages": [
+        "1743592878543.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecec400448be44758d9e2d",
+      "name": "AUDEMARS PIGUET - Men's Watch",
+      "originalImages": [
+        "1743580222944.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecfaac0448be44758da47a",
+      "name": "Invicta Reserve Venom hybrid ",
+      "originalImages": [
+        "1743583916009.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0a7c0448be44758da87d",
+      "name": "TISSOT Chronograph automatic men's watch ",
+      "originalImages": [
+        "1743587963572.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0caf0448be44758da92a",
+      "name": "TISSOT Automatic men's watch ",
+      "originalImages": [
+        "1743588526858.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1c9b0448be44758dabb1",
+      "name": "ROLEX Two Tone Day-Date watch ",
+      "originalImages": [
+        "1743592603776.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1db90448be44758dacfa",
+      "name": "INVICTA RESERVE Mens premium watch",
+      "originalImages": [
+        "1743592889306.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2b93d0b835fcd943706d6",
+      "name": "Rolex Mens Watch ",
+      "originalImages": [
+        "1743960380448.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecee780448be44758d9e8c",
+      "name": "MICHEAL KORS -  Women's Watch",
+      "originalImages": [
+        "1743580792004.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf4530448be44758da192",
+      "name": "Rolex Oyster Perpetual DateJust Men",
+      "originalImages": [
+        "1743582291592.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2b9630b835fcd943706dd",
+      "name": "Rolex Mens Watch ",
+      "originalImages": [
+        "1743960418423.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ece0270448be44758d9941",
+      "name": "OMEGA Golden Automatic Watch",
+      "originalImages": [
+        "1743577126528.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ece5730448be44758d9cf7",
+      "name": "Men Rado Hyperchrome Chronograph",
+      "originalImages": [
+        "1743578483167.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf5a20448be44758da1fa",
+      "name": "Octagon cut - Women's Watch",
+      "originalImages": [
+        "1743582626033.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf61f0448be44758da233",
+      "name": "PATEK PHILIPPE Automatic Watch for men",
+      "originalImages": [
+        "1743582750974.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0acc0448be44758da89c",
+      "name": "RADO Minimalist Watch ",
+      "originalImages": [
+        "1743588044535.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0d6d0448be44758da983",
+      "name": "EMPORIO ARMANI Automatic watch ",
+      "originalImages": [
+        "1743588716831.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1c810448be44758dabaa",
+      "name": "INVICTA RESERVE Mens premium watch",
+      "originalImages": [
+        "1743592576467.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1cb20448be44758dabb9",
+      "name": "INVICTA RESERVE Mens premium watch",
+      "originalImages": [
+        "1743592626347.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ece2870448be44758d9b16",
+      "name": "Men Rado Hyperchrome Chronograph",
+      "originalImages": [
+        "1743577729674.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67eceb480448be44758d9e13",
+      "name": "GEM DIOR -  Women's Watch ",
+      "originalImages": [
+        "1743579975930.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf01e0448be44758d9f79",
+      "name": "DANIEL WELLINGTON Couple Collection",
+      "originalImages": [
+        "1743581214523.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf8e10448be44758da3ed",
+      "name": "Patek Philippe - men's watch",
+      "originalImages": [
+        "1743583457629.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1b470448be44758dab3b",
+      "name": "DANIEL WELLINGTON Couples edition rose gold watch ",
+      "originalImages": [
+        "1743592263049.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf47c0448be44758da1a5",
+      "name": "MONTblanc Luxury men's watch",
+      "originalImages": [
+        "1743582332078.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0d510448be44758da97c",
+      "name": "Rolex Mens Gold",
+      "originalImages": [
+        "1743588689522.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1f550448be44758daeab",
+      "name": "MICHEAL KORS Rosegold watch for women ",
+      "originalImages": [
+        "1743593301390.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2ba0c0b835fcd943706f3",
+      "name": "Rolex Mens Watch ",
+      "originalImages": [
+        "1743960587778.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67eceff40448be44758d9f6c",
+      "name": "AUDEMARS PIGUET - Men's Watch",
+      "originalImages": [
+        "1743581172380.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf4620448be44758da19b",
+      "name": "Men Rado Hyperchrome Chronograph",
+      "originalImages": [
+        "1743582306458.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf5570448be44758da1d2",
+      "name": "CARTIER Santos De Cartier",
+      "originalImages": [
+        "1743582551278.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecfb730448be44758da4ca",
+      "name": "HUBLOT Skeleton automatic watch for men ",
+      "originalImages": [
+        "1743584114441.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed08960448be44758da7e0",
+      "name": "Patek Philippe - Men's Watch",
+      "originalImages": [
+        "1743587478101.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed08be0448be44758da7fc",
+      "name": "Patek Philippe - Men's Watch",
+      "originalImages": [
+        "1743587517900.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed095e0448be44758da80e",
+      "name": "Verrsace-for men's ",
+      "originalImages": [
+        "1743587677848.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0b3b0448be44758da8b9",
+      "name": "Petite Pressed Melrose - For Women",
+      "originalImages": [
+        "1743588154863.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1fb60448be44758daec1",
+      "name": "TISSOT Automatic watch for men ",
+      "originalImages": [
+        "1743593398562.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ece2630448be44758d9af6",
+      "name": "OMEGA Seamaster CoAxial Automatic",
+      "originalImages": [
+        "1743577699096.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf3080448be44758da100",
+      "name": "Patek Philippe - Men's Watch",
+      "originalImages": [
+        "1743581960215.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2b9160b835fcd943706cf",
+      "name": "Rolex Mens Watch ",
+      "originalImages": [
+        "1743960341716.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ece1a60448be44758d9a32",
+      "name": "OMEGA Seamaster CoAxial Automatic",
+      "originalImages": [
+        "1743577510228.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecef6a0448be44758d9f42",
+      "name": "ROLEX - Rosegold with green dial",
+      "originalImages": [
+        "1743581033311.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf7ef0448be44758da353",
+      "name": "Men Rado Hyperchrome Chronograph",
+      "originalImages": [
+        "1743583214267.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed08230448be44758da7c0",
+      "name": "Patek Philippe - Men's Watch",
+      "originalImages": [
+        "1743587362695.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ece36f0448be44758d9b81",
+      "name": "GEM DIOR - Women's Watch",
+      "originalImages": [
+        "1743577967223.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ece4630448be44758d9c76",
+      "name": "GEM DIOR - Women's Watch ",
+      "originalImages": [
+        "1743578211104.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf7120448be44758da2d3",
+      "name": "Men Rado Hyperchrome Chronograph",
+      "originalImages": [
+        "1743582993502.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed11ac0448be44758daa83",
+      "name": "Rolex Mens Watch",
+      "originalImages": [
+        "1743589800083.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1cde0448be44758dabd1",
+      "name": "OMEGA Seamaster black edition ",
+      "originalImages": [
+        "1743592670572.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2b9990b835fcd943706e4",
+      "name": "Rolex Mens Watch ",
+      "originalImages": [
+        "1743960473243.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecf9630448be44758da3fd",
+      "name": "TISSOT - Men's watch",
+      "originalImages": [
+        "1743583585828.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed07ee0448be44758da7b6",
+      "name": "Patek Philippe - Men's Watch",
+      "originalImages": [
+        "1743587309599.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1e100448be44758dad53",
+      "name": "OMEGA Seamaster CoAxial Chronometer watch ",
+      "originalImages": [
+        "1743592975763.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1ea70448be44758dae61",
+      "name": "ARMANI EXCHANGE Hampton Analog Multi-Colour Dial Men's Watch",
+      "originalImages": [
+        "1743593127655.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2b8e30b835fcd943706c8",
+      "name": "Rolex Mens watch ",
+      "originalImages": [
+        "1743960291133.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2b9d00b835fcd943706eb",
+      "name": "Rolex Mens Watch ",
+      "originalImages": [
+        "1743960528264.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecfbb90448be44758da4e7",
+      "name": "TISSOT - Watch for men",
+      "originalImages": [
+        "1743584183858.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed00470448be44758da587",
+      "name": "Guess Watch For Women",
+      "originalImages": [
+        "1743585351213.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecd9a00448be44758d94e0",
+      "name": "ROLEX - Girls Limited Edition",
+      "originalImages": [
+        "1743575455778.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecee280448be44758d9e76",
+      "name": "Men Rado Hyperchrome Chronograph",
+      "originalImages": [
+        "1743580711614.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ecfc500448be44758da4fb",
+      "name": "TAG Heuer Carrera",
+      "originalImages": [
+        "1743584336003.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed077b0448be44758da796",
+      "name": "Patek Philippe - Men's Watch",
+      "originalImages": [
+        "1743587195149.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed08610448be44758da7c7",
+      "name": "Patek Philippe - Men's Watch",
+      "originalImages": [
+        "1743587425492.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0c4c0448be44758da8fa",
+      "name": "HUBLOT Automatic Men's Watch ",
+      "originalImages": [
+        "1743588428184.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed0d250448be44758da93b",
+      "name": "CASIO Alarm Chrono watch ",
+      "originalImages": [
+        "1743588644543.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed14330448be44758daaba",
+      "name": "Daniel Wellington Womens Rose Gold",
+      "originalImages": [
+        "1743590450764.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1b350448be44758dab37",
+      "name": "INVICTA RESERVE Mens premium watch",
+      "originalImages": [
+        "1743592244317.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67ed1f110448be44758dae92",
+      "name": "MICHAEL KORS Rosegold watch for women ",
+      "originalImages": [
+        "1743593233012.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2b86e0b835fcd943706b9",
+      "name": "Rolex Mens watch ",
+      "originalImages": [
+        "1743960174445.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "67f2b8af0b835fcd943706c1",
+      "name": "Rolex Mens watch ",
+      "originalImages": [
+        "1743960239570.webp"
+      ],
+      "originalImage": null
+    },
+    {
+      "_id": "6a3564136da7cb088ff45b1e",
+      "name": "test",
+      "originalImages": [
+        "https://res.cloudinary.com/dnrxzdvkx/image/upload/v1781883923/products/blx4txfj1hcbao0b0xcr.png"
+      ],
+      "originalImage": null
+    }
+  ],
+  "brands": [
+    {
+      "_id": "67eccd5e0448be44758d90ab",
+      "name": "Cartier",
+      "originalLogo": "1743572318271.jpg"
+    },
+    {
+      "_id": "67eccda00448be44758d90b3",
+      "name": "Omega",
+      "originalLogo": "1743572384632.png"
+    },
+    {
+      "_id": "67ecceb50448be44758d90d7",
+      "name": "Michael Kors",
+      "originalLogo": "1743572661838.png"
+    },
+    {
+      "_id": "67ecd0040448be44758d9195",
+      "name": "Invicta",
+      "originalLogo": "1743572996741.png"
+    },
+    {
+      "_id": "67eccf810448be44758d90ef",
+      "name": "Rado",
+      "originalLogo": "1743572865168.png"
+    },
+    {
+      "_id": "67ecf4f00448be44758da1bb",
+      "name": "Swarovski",
+      "originalLogo": "1743582448399.png"
+    },
+    {
+      "_id": "67ecf9b50448be44758da427",
+      "name": "Tommy Hilfiger",
+      "originalLogo": "1743583669988.png"
+    },
+    {
+      "_id": "67eccfd00448be44758d9112",
+      "name": "Dior",
+      "originalLogo": "1743572944706.png"
+    },
+    {
+      "_id": "67ecce850448be44758d90c1",
+      "name": "Armani Exchange",
+      "originalLogo": "1743572613842.png"
+    },
+    {
+      "_id": "67ecf0050448be44758d9f72",
+      "name": "Verrsace",
+      "originalLogo": "1743581189221.png"
+    },
+    {
+      "_id": "67ecccc90448be44758d906a",
+      "name": "Audemars Piguet",
+      "originalLogo": "1743572169128.png"
+    },
+    {
+      "_id": "67eccfee0448be44758d9161",
+      "name": "Daniel Wellington",
+      "originalLogo": "1743572974121.png"
+    },
+    {
+      "_id": "67ecf8430448be44758da391",
+      "name": "Guess",
+      "originalLogo": "1743583299754.png"
+    },
+    {
+      "_id": "67e6fcd77bb123efc29cc1bb",
+      "name": "Tissot",
+      "originalLogo": "1743191255134.svg"
+    },
+    {
+      "_id": "67eccb620448be44758d900b",
+      "name": "Casio",
+      "originalLogo": "1743571810737.png"
+    },
+    {
+      "_id": "67ecccf20448be44758d907a",
+      "name": "Montblanc",
+      "originalLogo": "1743572210815.png"
+    },
+    {
+      "_id": "67eccd320448be44758d909b",
+      "name": "Lamborghini",
+      "originalLogo": "1743572274011.png"
+    },
+    {
+      "_id": "67ecce2f0448be44758d90ba",
+      "name": "Emporio Armani",
+      "originalLogo": "1743572527783.png"
+    },
+    {
+      "_id": "67e6a9cc8fe2e4e488a0da56",
+      "name": "Rolex",
+      "originalLogo": "1743169996785.jpg"
+    },
+    {
+      "_id": "67ecfae90448be44758da485",
+      "name": "Hublot",
+      "originalLogo": "1743583977247.png"
+    },
+    {
+      "_id": "67eccfb10448be44758d90f9",
+      "name": "Boss",
+      "originalLogo": "1743572913367.png"
+    },
+    {
+      "_id": "67eccbd70448be44758d903b",
+      "name": "Fossil",
+      "originalLogo": "1743571927748.png"
+    },
+    {
+      "_id": "67ecd0320448be44758d91c0",
+      "name": "TAG Heuer",
+      "originalLogo": "1743573042796.png"
+    },
+    {
+      "_id": "67ecd0690448be44758d9218",
+      "name": "Panerai",
+      "originalLogo": "1743573097675.png"
+    },
+    {
+      "_id": "67eccf520448be44758d90e7",
+      "name": "G-Shock",
+      "originalLogo": "1743572818226.png"
+    },
+    {
+      "_id": "67ecd2770448be44758d92f6",
+      "name": "Franck Muller",
+      "originalLogo": "1743573623629.jpg"
+    },
+    {
+      "_id": "67eccc2b0448be44758d905d",
+      "name": "Patek Philippe",
+      "originalLogo": "1743572011522.png"
+    },
+    {
+      "_id": "6a3563f46da7cb088ff45b15",
+      "name": "test",
+      "originalLogo": "https://res.cloudinary.com/dnrxzdvkx/image/upload/v1781883892/brands/eqa8ii2ejgwvu5ftminm.png"
+    }
+  ]
+}
