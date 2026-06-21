@@ -202,7 +202,7 @@ export default function AdminDashboard() {
           )}
         </AdminPanel>
 
-        {/* Top Selling Products + Orders Last 7 Days */}
+        {/* Top Selling Products + Orders Last 7 Days + Popular Brands */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Top Selling Products */}
@@ -266,6 +266,30 @@ export default function AdminDashboard() {
           </AdminPanel>
 
         </div>
+
+        {/* Popular Brands by Revenue */}
+        <AdminPanel title="Top Brands by Revenue" description="Brands ranked by order revenue.">
+          {!analytics || !analytics.popularBrands || analytics.popularBrands.length === 0 ? (
+            <AdminEmptyState title="No data" description="Brand revenue data will appear here once orders are placed." />
+          ) : (
+            <ol className="space-y-3">
+              {analytics.popularBrands.map((brand, idx) => (
+                <li key={brand._id} className="flex items-center gap-3">
+                  <span className="shrink-0 w-6 text-[11px] font-bold text-gray-600 text-right">{idx + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{brand._id || 'Unknown'}</p>
+                    <p className="text-[11px] text-gray-500">
+                      {brand.orderCount} order{brand.orderCount !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs font-semibold text-[#D1B23E]">
+                    {formatKWD(brand.revenue)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </AdminPanel>
 
         {/* Quick Actions */}
         <AdminPanel

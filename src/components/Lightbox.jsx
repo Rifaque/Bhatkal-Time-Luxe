@@ -81,9 +81,10 @@ export default function Lightbox({ images, currentIndex, onChange, onClose }) {
       >
         <img
           key={currentIndex}
-          src={getImageUrl(images[currentIndex])}
+          src={getImageUrl(images[currentIndex], 'product', 'desktop')}
           alt={`View ${currentIndex + 1}`}
           className="max-w-full max-h-full object-contain select-none"
+          sizes="100vw"
           onError={(e) => { e.target.src = '/assets/images/fallback-image.webp'; }}
           draggable={false}
         />

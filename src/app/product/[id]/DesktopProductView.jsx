@@ -164,9 +164,10 @@ export default function DesktopProductView() {
             >
               <img
                 key={activeImageIdx}
-                src={getImageUrl(imagesList[activeImageIdx])}
+                src={getImageUrl(imagesList[activeImageIdx], 'product', 'desktop')}
                 alt={product.name}
                 className="max-h-full max-w-full object-contain mx-auto animate-fade-in"
+                sizes="(max-width: 1024px) 90vw, 50vw"
                 style={activeImageIdx === 0 ? { viewTransitionName: `pimg-${product._id}` } : undefined}
                 onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
               />
@@ -189,9 +190,10 @@ export default function DesktopProductView() {
                     }`}
                   >
                     <img
-                      src={getImageUrl(img)}
+                      src={getImageUrl(img, 'product', 'thumb')}
                       alt="Thumbnail"
                       className="max-h-full max-w-full object-contain mix-blend-multiply"
+                      sizes="88px"
                       onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                     />
                   </button>

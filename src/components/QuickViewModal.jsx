@@ -149,9 +149,10 @@ export default function QuickViewModal({ productId, onClose }) {
                     </>
                   )}
                   <img
-                    src={getImageUrl(images[activeImg])}
+                    src={getImageUrl(images[activeImg], 'product', 'tablet')}
                     alt={product.name}
                     className="max-h-[300px] max-w-full object-contain mx-auto rounded-lg cursor-pointer"
+                    sizes="(max-width: 768px) 90vw, 480px"
                     onClick={goToProduct}
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
@@ -175,9 +176,10 @@ export default function QuickViewModal({ productId, onClose }) {
                         }`}
                       >
                         <img
-                          src={getImageUrl(img)}
+                          src={getImageUrl(img, 'product', 'thumb')}
                           alt=""
                           className="w-full h-full object-contain p-1"
+                          sizes="88px"
                           onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                         />
                       </button>

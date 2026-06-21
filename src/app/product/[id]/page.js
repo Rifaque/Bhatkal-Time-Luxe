@@ -1,6 +1,8 @@
 import ProductPageClient from './ProductPageClient';
 import { connectToDatabase } from '@/lib/mongodb';
 
+export const revalidate = 3600; // ISR: regenerate at most every 1 hour
+
 async function getProduct(id) {
   try {
     await connectToDatabase();
@@ -53,7 +55,9 @@ export default async function ProductPage({ params }) {
   const { id } = await params;
   const product = await getProduct(id);
 
-  const jsonLd = product
+  const BASE_URL = 'https://bhatkaltimeluxe.in';
+
+  const productSchema = product
     ? {
         '@context': 'https://schema.org',
         '@type': 'Product',
@@ -64,24 +68,46 @@ export default async function ProductPage({ params }) {
           : undefined,
         sku: product.reference || undefined,
         image: product.images?.length > 0 ? product.images : undefined,
+        itemCondition: 'https://schema.org/NewCondition',
         offers: {
           '@type': 'Offer',
           priceCurrency: 'KWD',
-          price: product.priceKwd ?? 0,
-          availability: product.inStock
+          price: product.salePrice ?? product.priceKwd ?? 0,
+          availability: product.inStock !== false
             ? 'https://schema.org/InStock'
             : 'https://schema.org/OutOfStock',
-          url: `https://bhatkaltimeluxe.in/product/${product._id}`,
+          url: `${BASE_URL}/product/${id}`,
+          seller: { '@type': 'Organization', name: 'Bhatkal Time Luxe' },
         },
+      }
+    : null;
+
+  const breadcrumbSchema = product
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+          ...(product.brand?.name
+            ? [{ '@type': 'ListItem', position: 2, name: product.brand.name, item: `${BASE_URL}/brands` }]
+            : []),
+          { '@type': 'ListItem', position: product.brand?.name ? 3 : 2, name: product.name },
+        ],
       }
     : null;
 
   return (
     <>
-      {jsonLd && (
+      {productSchema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+      )}
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
       <ProductPageClient />

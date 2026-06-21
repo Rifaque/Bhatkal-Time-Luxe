@@ -23,6 +23,7 @@ export async function GET(req) {
       recentOrders,
       topProducts,
       dailyOrders,
+      popularBrands,
     ] = await Promise.all([
       Order.countDocuments(),
       Order.countDocuments({ orderStatus: 'pending' }),
@@ -52,6 +53,19 @@ export async function GET(req) {
         },
         { $sort: { _id: 1 } },
       ]),
+      Order.aggregate([
+        { $unwind: '$items' },
+        {
+          $group: {
+            _id: '$items.brand',
+            orderCount: { $sum: 1 },
+            revenue: { $sum: { $ifNull: ['$items.lineTotalKwd', '$items.price'] } },
+          },
+        },
+        { $match: { _id: { $ne: null, $ne: '' } } },
+        { $sort: { revenue: -1 } },
+        { $limit: 5 },
+      ]),
     ]);
 
     return NextResponse.json({
@@ -62,6 +76,7 @@ export async function GET(req) {
       recentOrders,
       topProducts,
       dailyOrders,
+      popularBrands,
     });
   } catch {
     return NextResponse.json({ error: 'Analytics unavailable' }, { status: 500 });
