@@ -185,9 +185,10 @@ export default function MobileProductView() {
           >
             <img
               key={currentImage}
-              src={getImageUrl(images[currentImage] || product.image)}
+              src={getImageUrl(images[currentImage] || product.image, 'product', 'tablet')}
               alt={product.name}
               className="w-full object-contain p-5 max-h-[70vw] md:max-h-full animate-fade-in"
+              sizes="90vw"
               style={currentImage === 0 ? { viewTransitionName: `pimg-${product._id}` } : undefined}
               onError={(e) => (e.currentTarget.src = '/assets/images/fallback-image.webp')}
             />
@@ -232,9 +233,10 @@ export default function MobileProductView() {
                 }`}
               >
                 <img
-                  src={getImageUrl(img)}
+                  src={getImageUrl(img, 'product', 'thumb')}
                   alt=""
                   className="w-full h-full object-contain bg-[#f0eeea] p-1"
+                  sizes="88px"
                 />
               </button>
             ))}

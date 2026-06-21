@@ -32,10 +32,11 @@ export default function MobileProductCard({ product, onClick }) {
             />
           </div>
           <img
-            src={getImageUrl(product.images?.[0] || product.image)}
+            src={getImageUrl(product.images?.[0] || product.image, 'product', 'mobile')}
             alt={product.name}
             className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
             style={{ viewTransitionName: `pimg-${product._id}` }}
+            sizes="(max-width: 768px) 42vw, (max-width: 1024px) 200px, 280px"
             onError={(e) => { e.target.src = '/assets/images/fallback-image.webp'; }}
             loading="lazy"
           />
