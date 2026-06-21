@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ShieldCheck, Clock, Award } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Clock, Truck } from 'lucide-react';
 import MobileLayout from '@/components/MobileLayout';
 import MobileProductCard from '@/components/MobileProductCard';
 import { getImageUrl } from '@/lib/image';
@@ -45,7 +45,8 @@ export default function MobileHomeView() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { wishlistIds, count: wishlistCount } = useWishlist();
-  const { storeName } = useStoreSettings();
+  const { storeName, homepageContent } = useStoreSettings();
+  const hpc = homepageContent || {};
 
   useEffect(() => {
     Promise.all([
@@ -80,6 +81,29 @@ export default function MobileHomeView() {
     return allProducts.filter((p) => idSet.has(String(p._id))).slice(0, 8);
   }, [wishlistIds, wishlistCount, allProducts]);
 
+  // Scroll-reveal: one-shot IntersectionObserver for mobile sections
+  useEffect(() => {
+    if (loading) return;
+    const els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      els.forEach((el) => el.classList.add('reveal-in'));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-in');
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -5% 0px' }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [loading]);
+
   return (
     <MobileLayout>
       {/* ── Hero ── */}
@@ -92,16 +116,16 @@ export default function MobileHomeView() {
               Premium Timepieces
             </p>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-tight text-white mb-3">
-              Discover Luxury<br />Watch Collection
+              {hpc.heroHeading || <>Timeless Timepieces.<br />Curated for You.</>}
             </h1>
             <p className="text-sm text-gray-400 leading-relaxed mb-6 max-w-[280px] md:max-w-sm lg:max-w-md">
-              Certified authentic timepieces from the world&apos;s finest horological houses.
+              {hpc.heroSubheading || "Certified authentic timepieces from the world's finest horological houses."}
             </p>
             <button
-              onClick={() => router.push('/brands')}
+              onClick={() => router.push('/new-arrivals')}
               className="inline-flex items-center gap-2 bg-[#D1B23E] text-black text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#c1a22e] active:scale-[0.97] transition-all"
             >
-              Shop Collection
+              {hpc.primaryCta || 'Shop Collection'}
               <ArrowRight size={15} />
             </button>
           </div>
@@ -150,13 +174,14 @@ export default function MobileHomeView() {
       {/* ── Trust strip ── */}
       <div className="flex gap-2 px-5 mb-8">
         {[
-          { icon: ShieldCheck, text: 'Certified' },
-          { icon: Award,       text: 'Authentic' },
-          { icon: Clock,       text: 'Verified'  },
-        ].map(({ icon: Icon, text }) => (
+          { icon: ShieldCheck, text: 'Certified Authentic' },
+          { icon: Truck,       text: 'Free Insured Shipping' },
+          { icon: Clock,       text: 'WhatsApp Support' },
+        ].map(({ icon: Icon, text }, i) => (
           <div
             key={text}
-            className="flex-1 flex flex-col items-center gap-1.5 bg-[#171717] border border-white/5 rounded-2xl py-3"
+            className="flex-1 flex flex-col items-center gap-1.5 bg-[#171717] border border-white/5 rounded-2xl py-3 animate-fade-in"
+            style={{ animationDelay: `${i * 80}ms` }}
           >
             <Icon size={16} className="text-[#D1B23E]" />
             <span className="text-[10px] text-gray-400 font-medium">{text}</span>
@@ -166,7 +191,7 @@ export default function MobileHomeView() {
 
       {/* ── Top Brands ── */}
       {(loading || topCategories.length > 0) && (
-        <section className="mb-8">
+        <section className="reveal mb-8">
           <div className="flex justify-between items-center mb-4 px-5">
             <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
               Top Brands
@@ -182,7 +207,7 @@ export default function MobileHomeView() {
             {loading ? (
               <BrandSkeleton />
             ) : (
-              topCategories.map((item) => (
+              topCategories.filter((item) => item.brand).map((item) => (
                 <button
                   key={item._id}
                   onClick={() => router.push(`/brands/${item.brand._id}`)}
@@ -209,37 +234,37 @@ export default function MobileHomeView() {
       <div className="mx-5 h-px bg-white/5 mb-8" />
 
       {/* ── Featured ── */}
-      <section className="mb-8">
-        <div className="flex justify-between items-center mb-4 px-5">
-          <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
-            Featured
-          </h2>
-        </div>
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1">
-          {loading ? (
-            <>
-              <CardSkeleton />
-              <CardSkeleton />
-              <CardSkeleton />
-            </>
-          ) : featuredProducts.length > 0 ? (
-            featuredProducts.map((product) => (
-              <div key={product._id} className="w-[42vw] md:w-52 lg:w-64 shrink-0">
-                <MobileProductCard
-                  product={product}
-                  onClick={() => router.push(`/product/${product._id}`)}
-                />
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-600 px-1">No featured products yet.</p>
-          )}
-        </div>
-      </section>
+      {(loading || featuredProducts.length > 0) && (
+        <section className="reveal mb-8">
+          <div className="flex justify-between items-center mb-4 px-5">
+            <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
+              Featured
+            </h2>
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1">
+            {loading ? (
+              <>
+                <CardSkeleton />
+                <CardSkeleton />
+                <CardSkeleton />
+              </>
+            ) : (
+              featuredProducts.map((product) => (
+                <div key={product._id} className="w-[42vw] md:w-52 lg:w-64 shrink-0">
+                  <MobileProductCard
+                    product={product}
+                    onClick={() => router.push(`/product/${product._id}`)}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── Your Saved Collection — shown when wishlist >= 4 items ── */}
       {!loading && wishlistProducts.length >= 4 && (
-        <section className="mb-8">
+        <section className="reveal mb-8">
           <div className="flex justify-between items-center mb-4 px-5">
             <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
               Your Saved Collection
@@ -259,38 +284,38 @@ export default function MobileHomeView() {
       )}
 
       {/* ── Best Selling ── */}
-      <section className="mb-8">
-        <div className="flex justify-between items-center mb-4 px-5">
-          <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
-            Best Selling
-          </h2>
-        </div>
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1">
-          {loading ? (
-            <>
-              <CardSkeleton />
-              <CardSkeleton />
-              <CardSkeleton />
-            </>
-          ) : bestSellingProducts.length > 0 ? (
-            bestSellingProducts.map((product) => (
-              <div key={product._id} className="w-[42vw] md:w-52 lg:w-64 shrink-0">
-                <MobileProductCard
-                  product={product}
-                  onClick={() => router.push(`/product/${product._id}`)}
-                />
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-600 px-1">No best sellers yet.</p>
-          )}
-        </div>
-      </section>
+      {(loading || bestSellingProducts.length > 0) && (
+        <section className="reveal mb-8">
+          <div className="flex justify-between items-center mb-4 px-5">
+            <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
+              Best Selling
+            </h2>
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1">
+            {loading ? (
+              <>
+                <CardSkeleton />
+                <CardSkeleton />
+                <CardSkeleton />
+              </>
+            ) : (
+              bestSellingProducts.map((product) => (
+                <div key={product._id} className="w-[42vw] md:w-52 lg:w-64 shrink-0">
+                  <MobileProductCard
+                    product={product}
+                    onClick={() => router.push(`/product/${product._id}`)}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="mx-5 h-px bg-white/5 mb-8" />
 
       {/* ── New Arrivals ── */}
-      <section className="px-5 lg:px-8 mb-8">
+      <section className="reveal px-5 lg:px-8 mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-sm font-semibold text-white uppercase tracking-wide">
             New Arrivals
@@ -310,7 +335,10 @@ export default function MobileHomeView() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {allProducts.slice(0, 12).map((product) => (
+            {[...allProducts]
+              .sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0))
+              .slice(0, 12)
+              .map((product) => (
               <MobileProductCard
                 key={product._id}
                 product={product}

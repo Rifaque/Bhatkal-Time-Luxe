@@ -54,7 +54,7 @@ export default function HamburgerMenu({ isOpen, onClose, currentPath = '' }) {
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/6">
           <Image
             src={btime}
-            alt="Bhatkal Timeluxe"
+            alt="Bhatkal Time Luxe"
             className="h-10 w-auto cursor-pointer"
             onClick={() => handleNavigation('/')}
           />

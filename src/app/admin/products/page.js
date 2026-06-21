@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { getImageUrl } from '@/lib/image';
-import { Plus, Trash2, Pencil, X, Search, Tag } from 'lucide-react';
+import { Plus, Trash2, Pencil, X, Search } from 'lucide-react';
 import {
   AdminShell,
   AdminPanel,
@@ -38,7 +38,6 @@ export default function ProductsManager() {
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name_az');
-  const [generatingRefs, setGeneratingRefs] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [savingAvailability, setSavingAvailability] = useState(new Set());
 
@@ -204,20 +203,6 @@ export default function ProductsManager() {
     }
   };
 
-  const handleGenerateReferences = async () => {
-    setGeneratingRefs(true);
-    try {
-      const { data } = await axios.post('/api/admin/generate-references');
-      toast({ message: data.message || 'References generated.', type: data.updated > 0 ? 'success' : 'info' });
-      if (data.updated > 0) fetchProducts();
-    } catch (err) {
-      const msg = err.response?.data?.error || `Error: ${err.message}`;
-      toast({ message: msg, type: 'error' });
-    } finally {
-      setGeneratingRefs(false);
-    }
-  };
-
   const labelClasses = 'block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2';
 
   return (
@@ -322,15 +307,6 @@ export default function ProductsManager() {
           description={`${filteredProducts.length} of ${products.length} timepieces`}
           action={
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
-              <button
-                onClick={handleGenerateReferences}
-                disabled={generatingRefs}
-                className={`${adminSecondaryButtonClasses} shrink-0`}
-                title="Assign BTL-XXX-000 reference codes to all products that don't have one"
-              >
-                <Tag size={14} />
-                {generatingRefs ? 'Generating…' : 'Generate References'}
-              </button>
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <input

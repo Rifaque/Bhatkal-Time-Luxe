@@ -35,6 +35,7 @@ export default function MobileProductCard({ product, onClick }) {
             src={getImageUrl(product.images?.[0] || product.image)}
             alt={product.name}
             className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+            style={{ viewTransitionName: `pimg-${product._id}` }}
             onError={(e) => { e.target.src = '/assets/images/fallback-image.webp'; }}
             loading="lazy"
           />

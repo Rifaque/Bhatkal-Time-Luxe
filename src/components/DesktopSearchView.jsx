@@ -295,7 +295,7 @@ export default function DesktopSearchView() {
                           className="font-semibold text-xs py-1.5 px-3.5 rounded-lg"
                           aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                         >
-                          {product.inStock ? '+ Add' : 'OOS'}
+                          {product.inStock ? '+ Add' : 'Sold Out'}
                         </Button>
                       </div>
                     </div>

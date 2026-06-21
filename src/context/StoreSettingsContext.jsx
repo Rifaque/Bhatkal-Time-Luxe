@@ -8,6 +8,7 @@ const DEFAULTS = {
   supportPhone: '',
   whatsappNumber: '',
   businessAddress: '',
+  homepageContent: {},
 };
 
 const StoreSettingsContext = createContext(DEFAULTS);

@@ -8,8 +8,8 @@ import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 const faqs = [
   {
-    question: 'What is Bhatkal Timeluxe?',
-    answer: 'Bhatkal Timeluxe is a premier luxury store offering certified pre-owned and new timepieces from the world\'s most distinguished houses.',
+    question: 'What is Bhatkal Time Luxe?',
+    answer: 'Bhatkal Time Luxe is a premier luxury watch marketplace offering certified pre-owned and new timepieces from the world\'s most distinguished houses — including Rolex, Omega, Seiko, Tissot, and Casio.',
   },
   {
     question: 'Do you offer international shipping?',

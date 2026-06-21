@@ -74,7 +74,7 @@ export default function MobileLayout({ children, hideFAB = false }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat on WhatsApp"
-          className="fixed bottom-[72px] right-4 z-50 bg-[#171717] border border-white/10 p-3.5 rounded-full shadow-xl"
+          className="fixed bottom-[72px] right-4 z-50 bg-[#171717] border border-white/10 p-3.5 rounded-full shadow-xl fab-pulse"
         >
           <FaWhatsapp size={20} style={{ color: '#D1B23E' }} />
         </a>
@@ -95,7 +95,7 @@ export default function MobileLayout({ children, hideFAB = false }) {
                     router.push(path);
                   }
                 }}
-                className="relative flex flex-col items-center gap-0.5 px-6 py-1.5 min-w-[64px]"
+                className="relative flex flex-col items-center gap-0.5 px-6 py-1.5 min-w-[64px] active:scale-[0.92]"
                 aria-label={label}
               >
                 {/* Active indicator bar */}

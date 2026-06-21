@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { X, Copy, Check, Share2 } from 'lucide-react';
 import { FaWhatsapp, FaTwitter, FaTelegram, FaFacebook, FaEnvelope } from 'react-icons/fa';
 import { getImageUrl } from '@/lib/image';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useFocusRestoration } from '@/hooks/useFocusRestoration';
 
 const SHARE_OPTS = [
   {
@@ -48,6 +50,9 @@ export default function ShareModal({ product, onClose }) {
   const [copied, setCopied] = useState(false);
   const [url, setUrl] = useState('');
 
+  useFocusRestoration(true);
+  const dialogRef = useFocusTrap(true);
+
   useEffect(() => {
     const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
     if (configuredOrigin) {
@@ -90,6 +95,7 @@ export default function ShareModal({ product, onClose }) {
 
       {/* Modal — bottom sheet on mobile, centered on md+ */}
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="Share this product"

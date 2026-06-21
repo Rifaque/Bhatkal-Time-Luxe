@@ -74,7 +74,7 @@ export default function DesktopContactView() {
                   <div>
                     <h3 className="text-sm font-semibold text-white font-serif group-hover:text-[#D1B23E] transition-colors">WhatsApp Concierge</h3>
                     <p className="text-xs text-gray-500 mt-0.5">{supportPhone || whatsappNumber}</p>
-                    <p className="text-xs text-gray-600 mt-1 font-serif">Fastest response. Available 9 AM – 8 PM daily.</p>
+                    <p className="text-xs text-gray-600 mt-1 font-serif">Fastest response. Available 9 AM – 9 PM AST daily.</p>
                   </div>
                 </a>
 
@@ -113,24 +113,22 @@ export default function DesktopContactView() {
 
               {/* Location + Hours */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {businessAddress && (
-                  <div className="bg-[#141414] border border-white/5 rounded-2xl p-5 space-y-2">
-                    <div className="flex items-center gap-2 text-[#D1B23E]">
-                      <MapPin size={16} />
-                      <span className="text-xs font-semibold uppercase tracking-wider">Location</span>
-                    </div>
-                    <p className="text-sm text-gray-300 font-serif leading-relaxed whitespace-pre-line">
-                      {businessAddress}
-                    </p>
+                <div className="bg-[#141414] border border-white/5 rounded-2xl p-5 space-y-2">
+                  <div className="flex items-center gap-2 text-[#D1B23E]">
+                    <MapPin size={16} />
+                    <span className="text-xs font-semibold uppercase tracking-wider">Location</span>
                   </div>
-                )}
+                  <p className="text-sm text-gray-300 font-serif leading-relaxed whitespace-pre-line">
+                    {businessAddress || 'Bhatkal, Karnataka\nIndia — 581320'}
+                  </p>
+                </div>
                 <div className="bg-[#141414] border border-white/5 rounded-2xl p-5 space-y-2">
                   <div className="flex items-center gap-2 text-[#D1B23E]">
                     <Clock size={16} />
                     <span className="text-xs font-semibold uppercase tracking-wider">Hours</span>
                   </div>
                   <p className="text-sm text-gray-300 font-serif leading-relaxed">
-                    Mon – Sun<br />9:00 AM – 8:00 PM IST
+                    Mon – Sun<br />9:00 AM – 9:00 PM AST
                   </p>
                 </div>
               </div>
