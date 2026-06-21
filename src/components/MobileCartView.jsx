@@ -78,6 +78,7 @@ export default function MobileCartView() {
       router.push(`/order-confirmation?orderId=${response.data.orderId}&total=${response.data.total}`);
     } catch (err) {
       console.error('Checkout failed', err);
+      toast({ message: 'Checkout failed. Please try again.', type: 'error' });
       setCheckingOut(false);
     }
   };
@@ -317,6 +318,9 @@ export default function MobileCartView() {
             >
               {checkingOut ? 'Processing…' : 'Place Order via WhatsApp'}
             </button>
+            <p className="text-[10px] text-center text-gray-600 mt-2">
+              Team confirms via WhatsApp · 7-day returns · Cancel within 12 hours
+            </p>
           </div>
         </>
       )}

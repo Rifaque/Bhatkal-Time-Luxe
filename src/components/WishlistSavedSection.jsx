@@ -61,7 +61,7 @@ function WishlistCard({ product, onAddToCart, onWhatsapp, onRemove }) {
             className="flex-1 flex items-center justify-center gap-1 bg-[#D1B23E] hover:bg-[#c1a22e] text-black text-[9px] font-bold py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <ShoppingCart size={9} />
-            {product.inStock ? 'Add' : 'OOS'}
+            {product.inStock ? 'Add' : 'Sold Out'}
           </button>
           {product.inStock && (
             <button

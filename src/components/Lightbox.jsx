@@ -4,9 +4,14 @@ import { useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
 import { getImageUrl } from '@/lib/image';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useFocusRestoration } from '@/hooks/useFocusRestoration';
 
 export default function Lightbox({ images, currentIndex, onChange, onClose }) {
   const total = images?.length ?? 0;
+
+  useFocusRestoration(true);
+  const dialogRef = useFocusTrap(true);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -34,6 +39,7 @@ export default function Lightbox({ images, currentIndex, onChange, onClose }) {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label="Image lightbox"

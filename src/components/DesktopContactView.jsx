@@ -74,7 +74,7 @@ export default function DesktopContactView() {
                   <div>
                     <h3 className="text-sm font-semibold text-white font-serif group-hover:text-[#D1B23E] transition-colors">WhatsApp Concierge</h3>
                     <p className="text-xs text-gray-500 mt-0.5">{supportPhone || whatsappNumber}</p>
-                    <p className="text-xs text-gray-600 mt-1 font-serif">Fastest response. Available 9 AM – 8 PM daily.</p>
+                    <p className="text-xs text-gray-600 mt-1 font-serif">Fastest response. Available 9 AM – 9 PM AST daily.</p>
                   </div>
                 </a>
 
@@ -128,7 +128,7 @@ export default function DesktopContactView() {
                     <span className="text-xs font-semibold uppercase tracking-wider">Hours</span>
                   </div>
                   <p className="text-sm text-gray-300 font-serif leading-relaxed">
-                    Mon – Sun<br />9:00 AM – 8:00 PM IST
+                    Mon – Sun<br />9:00 AM – 9:00 PM AST
                   </p>
                 </div>
               </div>

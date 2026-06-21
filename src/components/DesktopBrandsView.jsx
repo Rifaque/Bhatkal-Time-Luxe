@@ -17,7 +17,7 @@ export default function DesktopBrandsView() {
     fetch('/api/brands')
       .then((res) => res.json())
       .then((data) => {
-        const sortedBrands = data.sort((a, b) => a.name.localeCompare(b.name));
+        const sortedBrands = Array.isArray(data) ? data.sort((a, b) => a.name.localeCompare(b.name)) : [];
         setBrands(sortedBrands);
         setLoading(false);
       })
@@ -113,7 +113,7 @@ export default function DesktopBrandsView() {
             </div>
             <h3 className="text-base font-bold font-serif text-white">Insured Delivery</h3>
             <p className="text-xs text-gray-400 font-serif leading-relaxed">
-              We ship fully insured packages throughout Karnataka and major cities in India to secure your high-end watch delivery.
+              We ship fully insured packages throughout Kuwait and the GCC region to secure your high-end watch delivery.
             </p>
           </div>
 

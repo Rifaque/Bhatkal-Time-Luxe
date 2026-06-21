@@ -157,7 +157,7 @@ export default function MobileProductView() {
   const images = product.images?.length > 0 ? product.images : (product.image ? [product.image] : []);
 
   return (
-    <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col md:flex-row md:items-start">
+    <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col md:flex-row md:items-start animate-fade-in">
 
       {/* ── Gallery block ── */}
       <div className="md:w-[45%] md:sticky md:top-0 md:h-screen md:flex md:flex-col md:overflow-hidden">
@@ -184,9 +184,11 @@ export default function MobileProductView() {
             className="flex items-center justify-center min-h-[55vw] max-h-[70vw] md:flex-1 md:min-h-0 md:max-h-none cursor-zoom-in"
           >
             <img
+              key={currentImage}
               src={getImageUrl(images[currentImage] || product.image)}
               alt={product.name}
-              className="w-full object-contain p-5 max-h-[70vw] md:max-h-full"
+              className="w-full object-contain p-5 max-h-[70vw] md:max-h-full animate-fade-in"
+              style={currentImage === 0 ? { viewTransitionName: `pimg-${product._id}` } : undefined}
               onError={(e) => (e.currentTarget.src = '/assets/images/fallback-image.webp')}
             />
           </div>
@@ -306,7 +308,7 @@ export default function MobileProductView() {
         <div className="mt-6 bg-[#171717] border border-white/5 rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <ShieldCheck size={14} className="text-[#D1B23E] shrink-0" />
-            <span>Certified authenticity on every timepiece</span>
+            <span>Authenticated timepiece — certificate included</span>
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <Truck size={14} className="text-[#D1B23E] shrink-0" />
@@ -314,7 +316,7 @@ export default function MobileProductView() {
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <FaWhatsapp size={14} style={{ color: '#D1B23E' }} className="shrink-0" />
-            <span>WhatsApp concierge support available</span>
+            <span>7-day returns · No-cost instalments available</span>
           </div>
         </div>
 
@@ -344,6 +346,10 @@ export default function MobileProductView() {
               </button>
             )}
           </div>
+
+          <p className="text-[10px] text-center text-gray-600 mt-2">
+            Responds within 2 hours · 9AM–9PM AST, 7 days
+          </p>
 
           {/* Row 2 — secondary actions */}
           <div className="flex gap-2 mt-3">

@@ -1,15 +1,22 @@
 'use client';
 
+import { useState } from 'react';
 import { Heart } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
 
 export default function WishlistButton({ productId, className = '', size = 16, showLabel = false }) {
   const { isWishlisted, toggle } = useWishlist();
+  const [justSaved, setJustSaved] = useState(false);
   const saved = isWishlisted(productId);
 
   const handleClick = (e) => {
     e.stopPropagation();
+    const wasSaved = isWishlisted(productId);
     toggle(productId);
+    if (!wasSaved) {
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 500);
+    }
   };
 
   if (showLabel) {
@@ -21,7 +28,7 @@ export default function WishlistButton({ productId, className = '', size = 16, s
       >
         <Heart
           size={size}
-          className={saved ? 'text-[#D1B23E]' : 'text-gray-500'}
+          className={`transition-colors duration-200 ${saved ? 'text-[#D1B23E]' : 'text-gray-500'} ${justSaved ? 'heart-pop' : ''}`}
           fill={saved ? '#D1B23E' : 'none'}
         />
         <span className={`text-xs font-medium ${saved ? 'text-[#D1B23E]' : 'text-gray-500'}`}>
@@ -39,7 +46,7 @@ export default function WishlistButton({ productId, className = '', size = 16, s
     >
       <Heart
         size={size}
-        className={saved ? 'text-[#D1B23E]' : 'text-white/50 hover:text-white/70'}
+        className={`transition-colors duration-200 ${saved ? 'text-[#D1B23E]' : 'text-white/50 hover:text-white/70'} ${justSaved ? 'heart-pop' : ''}`}
         fill={saved ? '#D1B23E' : 'none'}
       />
     </button>

@@ -4,7 +4,6 @@ import { Phone, Mail, MapPin, Clock, ShieldCheck, Package, Star, MessageSquare, 
 import { FaWhatsapp } from 'react-icons/fa';
 import MobileLayout from '@/components/MobileLayout';
 import { useStoreSettings } from '@/context/StoreSettingsContext';
-
 const SERVICES = [
   { icon: Star, label: 'Watch Consultation', desc: 'Expert guidance on selecting your perfect timepiece.' },
   { icon: Package, label: 'Order Assistance', desc: 'Track, modify, or resolve any order-related concern.' },
@@ -87,16 +86,18 @@ export default function MobileContactView() {
 
       {/* Store Info Grid */}
       <section className="px-5 pt-5">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#171717] border border-white/5 rounded-2xl p-4 space-y-2">
-            <div className="flex items-center gap-1.5 text-[#D1B23E]">
-              <MapPin size={13} />
-              <span className="text-[10px] font-semibold uppercase tracking-wider">Location</span>
+        <div className={`grid gap-3 ${businessAddress ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          {businessAddress && (
+            <div className="bg-[#171717] border border-white/5 rounded-2xl p-4 space-y-2">
+              <div className="flex items-center gap-1.5 text-[#D1B23E]">
+                <MapPin size={13} />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Location</span>
+              </div>
+              <p className="text-xs text-gray-300 font-serif leading-relaxed whitespace-pre-line">
+                {businessAddress}
+              </p>
             </div>
-            <p className="text-xs text-gray-300 font-serif leading-relaxed whitespace-pre-line">
-              {businessAddress || 'Bhatkal, Karnataka\nIndia — 581320'}
-            </p>
-          </div>
+          )}
           <div className="bg-[#171717] border border-white/5 rounded-2xl p-4 space-y-2">
             <div className="flex items-center gap-1.5 text-[#D1B23E]">
               <Clock size={13} />
@@ -137,16 +138,6 @@ export default function MobileContactView() {
         </div>
       </section>
 
-      {/* APK Download */}
-      <section className="px-5 pt-4 pb-8">
-        <a
-          href="/apk/btimeluxe.apk"
-          download="btimeluxe.apk"
-          className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 text-white font-semibold py-3 rounded-2xl text-sm active:scale-[0.98] transition-all hover:border-[#D1B23E]/20"
-        >
-          Download App (APK)
-        </a>
-      </section>
     </MobileLayout>
   );
 }

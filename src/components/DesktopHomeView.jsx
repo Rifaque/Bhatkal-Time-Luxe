@@ -63,6 +63,12 @@ export default function DesktopHomeView() {
     return allProducts.filter((p) => idSet.has(String(p._id))).slice(0, 8);
   }, [wishlistIds, wishlistCount, allProducts]);
 
+  const newArrivals = useMemo(() => {
+    return [...allProducts]
+      .sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0))
+      .slice(0, 8);
+  }, [allProducts]);
+
   const heroWatch = useMemo(() => {
     if (allProducts.length === 0) return null;
     return allProducts.find(p => p.brand?.name?.toLowerCase().includes('rolex')) || allProducts[0];
@@ -87,7 +93,7 @@ export default function DesktopHomeView() {
   };
 
   const getBrandStory = (brandName) => {
-    const key = brandName.toLowerCase();
+    const key = (brandName || '').toLowerCase();
     return brandStories[key] || `A curated collection of distinguished watchmaking references from the House of ${brandName}, built on precision engineering, design, and structural durability.`;
   };
 
@@ -240,6 +246,7 @@ export default function DesktopHomeView() {
                     <img
                       src={getImageUrl(heroWatch.images?.[0] || heroWatch.image)}
                       alt={heroWatch.name}
+                      fetchPriority="high"
                       className="max-h-full object-contain mx-auto drop-shadow-[0_20px_35px_rgba(0,0,0,0.15)]"
                     />
                   </div>
@@ -271,7 +278,7 @@ export default function DesktopHomeView() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {topCategories.slice(0, 3).map((item) => (
+            {topCategories.filter((item) => item.brand).slice(0, 3).map((item) => (
               <div
                 key={item._id}
                 onClick={() => router.push(`/brands/${item.brand._id}`)}
@@ -285,6 +292,7 @@ export default function DesktopHomeView() {
                         src={getImageUrl(item.brand.logo, 'brand')}
                         alt={item.brand.name}
                         className="max-h-full object-contain"
+                        loading="lazy"
                         onError={(e) => (e.target.src = '/assets/images/fallback-brand.png')}
                       />
                     </div>
@@ -310,7 +318,7 @@ export default function DesktopHomeView() {
       </section>
 
       {/* Chapter 3: Featured Collection ("Curated Spotlight") */}
-      <section className="reveal py-28 bg-[#1e1e1e]">
+      {featuredProducts.length > 0 && <section className="reveal py-28 bg-[#1e1e1e]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex justify-between items-end mb-20">
             <div className="text-left space-y-2">
@@ -349,6 +357,7 @@ export default function DesktopHomeView() {
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
                     className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
                   {/* Hover Quick View Overlay */}
@@ -393,7 +402,7 @@ export default function DesktopHomeView() {
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
                       aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
-                      {product.inStock ? '+ Add' : 'OOS'}
+                      {product.inStock ? 'Add to Cart' : 'Enquire'}
                     </Button>
                   </div>
                 </div>
@@ -401,7 +410,7 @@ export default function DesktopHomeView() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Your Saved Collection — shown when wishlist >= 4 items */}
       {wishlistProducts.length >= 4 && (
@@ -461,7 +470,7 @@ export default function DesktopHomeView() {
                         disabled={!product.inStock}
                         className="font-semibold text-[9px] py-1 px-3 rounded-lg"
                       >
-                        {product.inStock ? '+ Add' : 'OOS'}
+                        {product.inStock ? 'Add to Cart' : 'Enquire'}
                       </Button>
                     </div>
                   </div>
@@ -491,7 +500,7 @@ export default function DesktopHomeView() {
             </div>
             <h3 className="text-lg font-bold font-serif text-white">Insured Free Transit</h3>
             <p className="text-sm text-gray-400 font-serif leading-relaxed">
-              We provide free secure shipping channels throughout India, keeping every luxury shipment covered via full insurance policies.
+              We provide free secure shipping across Kuwait and the GCC region, keeping every luxury shipment fully covered with comprehensive insurance.
             </p>
           </div>
 
@@ -547,6 +556,7 @@ export default function DesktopHomeView() {
                     src={getImageUrl(executiveWatch.images?.[0] || executiveWatch.image)}
                     alt={executiveWatch.name}
                     className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                   />
                 </div>
                 <div className="mt-5 flex justify-between items-center text-xs">
@@ -563,7 +573,7 @@ export default function DesktopHomeView() {
       )}
 
       {/* Chapter 5: Best Sellers Section */}
-      <section className="reveal py-28 bg-[#1a1a1a] border-b border-white/5">
+      {bestSellingProducts.length > 0 && <section className="reveal py-28 bg-[#1a1a1a] border-b border-white/5">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-2xl mx-auto mb-20 space-y-2">
             <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
@@ -593,6 +603,7 @@ export default function DesktopHomeView() {
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
                     className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
                   <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
@@ -635,7 +646,7 @@ export default function DesktopHomeView() {
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
                       aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
-                      {product.inStock ? '+ Add' : 'OOS'}
+                      {product.inStock ? 'Add to Cart' : 'Enquire'}
                     </Button>
                   </div>
                 </div>
@@ -643,7 +654,7 @@ export default function DesktopHomeView() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Chapter 6: Sport Collection (Editorial Showcase) */}
       {sportWatch && (
@@ -661,6 +672,7 @@ export default function DesktopHomeView() {
                     src={getImageUrl(sportWatch.images?.[0] || sportWatch.image)}
                     alt={sportWatch.name}
                     className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                   />
                 </div>
                 <div className="mt-5 flex justify-between items-center text-xs">
@@ -712,7 +724,7 @@ export default function DesktopHomeView() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {allProducts.slice(0, 8).map((product) => (
+            {newArrivals.map((product) => (
               <div
                 key={product._id}
                 className="relative group bg-[#151515] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
@@ -731,6 +743,7 @@ export default function DesktopHomeView() {
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
                     className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
                   <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
@@ -773,7 +786,7 @@ export default function DesktopHomeView() {
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
                       aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
-                      {product.inStock ? '+ Add' : 'OOS'}
+                      {product.inStock ? 'Add to Cart' : 'Enquire'}
                     </Button>
                   </div>
                 </div>

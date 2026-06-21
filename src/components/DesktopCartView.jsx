@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Trash2, ArrowLeft, ShieldCheck, Truck, MessageCircle, Heart, X } from 'lucide-react';
+import { ShoppingCart, Trash2, ArrowLeft, ShieldCheck, Truck, MessageCircle, Heart, X, RotateCcw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import axios from 'axios';
 import DesktopNavbar from './DesktopNavbar';
@@ -71,6 +71,7 @@ export default function DesktopCartView() {
       router.push(`/order-confirmation?orderId=${response.data.orderId}&total=${response.data.total}`);
     } catch (error) {
       console.error('Checkout failed', error);
+      toast({ message: 'Checkout failed. Please try again.', type: 'error' });
     } finally {
       setCheckingOut(false);
     }
@@ -352,15 +353,22 @@ export default function DesktopCartView() {
               >
                 <MessageCircle size={18} /> {checkingOut ? 'Checking out...' : 'Checkout with WhatsApp'}
               </Button>
+              <p className="text-[11px] text-center text-gray-500">
+                Our team confirms via WhatsApp with payment options (KNET, bank transfer)
+              </p>
 
               <div className="space-y-3 pt-4 border-t border-white/5 text-xs text-gray-400">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={16} className="text-[#D1B23E]" />
-                  <span>Certified pre-owned authenticity guarantee.</span>
+                  <span>Authenticity certificate included with every timepiece</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Truck size={16} className="text-[#D1B23E]" />
-                  <span>Free fully insured transit package cover.</span>
+                  <span>Free fully insured transit — 1–3 days within Kuwait</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RotateCcw size={16} className="text-[#D1B23E]" />
+                  <span>Orders may be modified or cancelled within 12 hours</span>
                 </div>
               </div>
             </div>

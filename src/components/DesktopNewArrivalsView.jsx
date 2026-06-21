@@ -26,7 +26,7 @@ export default function DesktopNewArrivalsView() {
     fetch('/api/products/new-arrivals')
       .then((res) => res.json())
       .then((data) => {
-        setProducts(data);
+        setProducts(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
@@ -184,7 +184,7 @@ export default function DesktopNewArrivalsView() {
             </div>
             <h3 className="text-base font-bold font-serif text-white">Insured Free Transit</h3>
             <p className="text-xs text-gray-400 font-serif leading-relaxed">
-              We ship fully insured packages throughout major cities in India to secure your high-end watch delivery.
+              We ship fully insured packages throughout Kuwait and the GCC region to secure your high-end watch delivery.
             </p>
           </div>
 
