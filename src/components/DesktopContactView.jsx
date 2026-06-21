@@ -113,15 +113,17 @@ export default function DesktopContactView() {
 
               {/* Location + Hours */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-[#141414] border border-white/5 rounded-2xl p-5 space-y-2">
-                  <div className="flex items-center gap-2 text-[#D1B23E]">
-                    <MapPin size={16} />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Location</span>
+                {businessAddress && (
+                  <div className="bg-[#141414] border border-white/5 rounded-2xl p-5 space-y-2">
+                    <div className="flex items-center gap-2 text-[#D1B23E]">
+                      <MapPin size={16} />
+                      <span className="text-xs font-semibold uppercase tracking-wider">Location</span>
+                    </div>
+                    <p className="text-sm text-gray-300 font-serif leading-relaxed whitespace-pre-line">
+                      {businessAddress}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-300 font-serif leading-relaxed whitespace-pre-line">
-                    {businessAddress || 'Bhatkal, Karnataka\nIndia — 581320'}
-                  </p>
-                </div>
+                )}
                 <div className="bg-[#141414] border border-white/5 rounded-2xl p-5 space-y-2">
                   <div className="flex items-center gap-2 text-[#D1B23E]">
                     <Clock size={16} />

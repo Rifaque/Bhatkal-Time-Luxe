@@ -167,7 +167,7 @@ export default function ProductsManager() {
     setProductToUpdate(product);
     setUpdateData({
       name:          product.name,
-      brand:         product.brand,
+      brand:         product.brand?._id ?? product.brand,
       salePrice:     product.salePrice ?? product.priceKwd ?? 0,
       originalPrice: product.originalPrice ?? product.originalPriceKwd ?? 0,
       inStock:       product.inStock ?? true,
