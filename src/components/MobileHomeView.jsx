@@ -45,8 +45,7 @@ export default function MobileHomeView() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { wishlistIds, count: wishlistCount } = useWishlist();
-  const { storeName, homepageContent } = useStoreSettings();
-  const hpc = homepageContent || {};
+  const { storeName } = useStoreSettings();
 
   useEffect(() => {
     Promise.all([
@@ -116,16 +115,16 @@ export default function MobileHomeView() {
               Premium Timepieces
             </p>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-tight text-white mb-3">
-              {hpc.heroHeading || <>Timeless Timepieces.<br />Curated for You.</>}
+              Timeless Timepieces.<br />Curated for You.
             </h1>
             <p className="text-sm text-gray-400 leading-relaxed mb-6 max-w-[280px] md:max-w-sm lg:max-w-md">
-              {hpc.heroSubheading || "Certified authentic timepieces from the world's finest horological houses."}
+              Certified authentic timepieces from the world&apos;s finest horological houses.
             </p>
             <button
               onClick={() => router.push('/new-arrivals')}
               className="inline-flex items-center gap-2 bg-[#D1B23E] text-black text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#c1a22e] active:scale-[0.97] transition-all"
             >
-              {hpc.primaryCta || 'Shop Collection'}
+              Shop Collection
               <ArrowRight size={15} />
             </button>
           </div>

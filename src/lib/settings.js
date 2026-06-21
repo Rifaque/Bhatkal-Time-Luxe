@@ -31,7 +31,6 @@ export async function getSettings() {
       supportPhone: doc.supportPhone || DEFAULTS.supportPhone,
       whatsappNumber: doc.whatsappNumber || process.env.WHATSAPP_NUMBER || DEFAULTS.whatsappNumber,
       businessAddress: doc.businessAddress || DEFAULTS.businessAddress,
-      homepageContent: doc.homepageContent || {},
     };
 
     cache.set('settings', { data, ts: now });

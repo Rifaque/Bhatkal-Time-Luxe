@@ -21,7 +21,6 @@ import {
   TrendingUp,
   Clock,
   DollarSign,
-  BarChart3,
 } from 'lucide-react';
 
 const quickActions = [
@@ -30,7 +29,6 @@ const quickActions = [
   { label: 'Featured Items', href: '/admin/featured', icon: Sparkles },
   { label: 'Best Selling', href: '/admin/best-selling', icon: Star },
   { label: 'Top Brands', href: '/admin/top-brands', icon: Shield },
-  { label: 'Homepage Content', href: '/admin/homepage', icon: BarChart3 },
 ];
 
 const STATUS_TONE = {

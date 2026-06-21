@@ -20,8 +20,7 @@ export default function DesktopHomeView() {
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
   const { wishlistIds, count: wishlistCount } = useWishlist();
-  const { storeName, homepageContent } = useStoreSettings();
-  const hpc = homepageContent || {};
+  const { storeName } = useStoreSettings();
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [topCategories, setTopCategories] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
@@ -210,32 +209,26 @@ export default function DesktopHomeView() {
               <span className="text-xs uppercase tracking-[0.25em] text-[#D1B23E] font-bold block animate-fade-in luxury-text-spacing">
                 The Bhatkal Luxury Vault
               </span>
-              {hpc.heroHeading ? (
-                <h1 className="text-5xl lg:text-7xl font-serif font-extrabold tracking-tight text-white leading-[1.1]">
-                  {hpc.heroHeading}
-                </h1>
-              ) : (
-                <h1 className="text-5xl lg:text-7xl font-serif font-extrabold tracking-tight text-white leading-[1.1]">
-                  Timeless Design. <br />
-                  Modern <span className="text-[#D1B23E] font-normal italic">Presence.</span>
-                </h1>
-              )}
+              <h1 className="text-5xl lg:text-7xl font-serif font-extrabold tracking-tight text-white leading-[1.1]">
+                Timeless Design. <br />
+                Modern <span className="text-[#D1B23E] font-normal italic">Presence.</span>
+              </h1>
             </div>
             <p className="text-base md:text-lg text-gray-400 font-serif max-w-xl leading-relaxed">
-              {hpc.heroSubheading || 'Experience visual and mechanical perfection. We curate an elite catalog of certified luxury watches, celebrating prestigious horology and precision movements.'}
+              Experience visual and mechanical perfection. We curate an elite catalog of certified luxury watches, celebrating prestigious horology and precision movements.
             </p>
             <div className="flex items-center gap-6 pt-2">
               <Button
                 onClick={() => catalogRef.current?.scrollIntoView({ behavior: 'smooth' })}
                 className="!bg-[#D1B23E] hover:bg-[#c1a22e] text-black font-bold px-10 py-6 rounded-full text-base flex items-center gap-2 group transition-all duration-300 shadow-[0_4px_20px_rgba(209,178,62,0.25)] hover:shadow-[0_4px_30px_rgba(209,178,62,0.4)]"
               >
-                {hpc.primaryCta || 'Explore Collection'} <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
+                Explore Collection <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
               </Button>
               <Button
                 onClick={() => router.push('/brands')}
                 className="!bg-white/5 hover:bg-white/10 text-white font-semibold px-9 py-6 rounded-full text-base border border-white/10 transition-all duration-300"
               >
-                {hpc.secondaryCta || 'Watch Houses'}
+                Watch Houses
               </Button>
             </div>
           </div>
@@ -280,10 +273,7 @@ export default function DesktopHomeView() {
             <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
               Distinguished Curation
             </span>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight">{hpc.brandSpotlightTitle || 'Luxury Watch Houses'}</h2>
-            {hpc.brandSpotlightDescription && (
-              <p className="text-sm text-gray-400 font-serif leading-relaxed mt-2">{hpc.brandSpotlightDescription}</p>
-            )}
+            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight">Luxury Watch Houses</h2>
             <div className="h-0.5 w-16 bg-[#D1B23E] mx-auto mt-4" />
           </div>
 
@@ -498,9 +488,9 @@ export default function DesktopHomeView() {
             <div className="p-4 bg-[#D1B23E]/10 rounded-full text-[#D1B23E]">
               <ShieldCheck size={32} />
             </div>
-            <h3 className="text-lg font-bold font-serif text-white">{hpc.trust1Title || 'Certified Authenticity'}</h3>
+            <h3 className="text-lg font-bold font-serif text-white">Certified Authenticity</h3>
             <p className="text-sm text-gray-400 font-serif leading-relaxed">
-              {hpc.trust1Description || 'Every timepiece in our selection is backed by absolute serial-number credentials and manual movement calibration tests.'}
+              Every timepiece in our selection is backed by absolute serial-number credentials and manual movement calibration tests.
             </p>
           </div>
 
@@ -508,9 +498,9 @@ export default function DesktopHomeView() {
             <div className="p-4 bg-[#D1B23E]/10 rounded-full text-[#D1B23E]">
               <Truck size={32} />
             </div>
-            <h3 className="text-lg font-bold font-serif text-white">{hpc.trust2Title || 'Insured Free Transit'}</h3>
+            <h3 className="text-lg font-bold font-serif text-white">Insured Free Transit</h3>
             <p className="text-sm text-gray-400 font-serif leading-relaxed">
-              {hpc.trust2Description || 'We provide free secure shipping across Kuwait and the GCC region, keeping every luxury shipment fully covered with comprehensive insurance.'}
+              We provide free secure shipping across Kuwait and the GCC region, keeping every luxury shipment fully covered with comprehensive insurance.
             </p>
           </div>
 
@@ -518,9 +508,9 @@ export default function DesktopHomeView() {
             <div className="p-4 bg-[#D1B23E]/10 rounded-full text-[#D1B23E]">
               <RefreshCw size={32} />
             </div>
-            <h3 className="text-lg font-bold font-serif text-white">{hpc.trust3Title || 'Concierge Assurances'}</h3>
+            <h3 className="text-lg font-bold font-serif text-white">Concierge Assurances</h3>
             <p className="text-sm text-gray-400 font-serif leading-relaxed">
-              {hpc.trust3Description || 'Direct consultations on watch specifications, dials, references, and movements are available 24/7 via our WhatsApp concierge line.'}
+              Direct consultations on watch specifications, dials, references, and movements are available 24/7 via our WhatsApp concierge line.
             </p>
           </div>
         </div>
@@ -537,19 +527,13 @@ export default function DesktopHomeView() {
                 <span className="text-xs uppercase tracking-widest text-[#D1B23E] font-bold block luxury-text-spacing">
                   The Executive Showcase
                 </span>
-                {hpc.executiveTitle ? (
-                  <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
-                    {hpc.executiveTitle}
-                  </h2>
-                ) : (
-                  <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
-                    The Mark of Leadership. <br />
-                    Refined Boardroom Chronometers.
-                  </h2>
-                )}
+                <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
+                  The Mark of Leadership. <br />
+                  Refined Boardroom Chronometers.
+                </h2>
               </div>
               <p className="text-base lg:text-lg text-gray-400 font-serif leading-relaxed max-w-xl">
-                {hpc.executiveDescription || 'Exude authority in every setting. Our Executive Collection brings together exceptional automatic models from Tissot and Rolex, detailed with premium stainless steel, gold bezels, and calibrated dial references.'}
+                Exude authority in every setting. Our Executive Collection brings together exceptional automatic models from Tissot and Rolex, detailed with premium stainless steel, gold bezels, and calibrated dial references.
               </p>
               <div className="pt-2">
                 <Button
@@ -707,19 +691,13 @@ export default function DesktopHomeView() {
                 <span className="text-xs uppercase tracking-widest text-[#D1B23E] font-bold block luxury-text-spacing">
                   The Sport Showcase
                 </span>
-                {hpc.sportTitle ? (
-                  <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
-                    {hpc.sportTitle}
-                  </h2>
-                ) : (
-                  <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
-                    Engineered for Adventure. <br />
-                    Robust Outdoor Chronographs.
-                  </h2>
-                )}
+                <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
+                  Engineered for Adventure. <br />
+                  Robust Outdoor Chronographs.
+                </h2>
               </div>
               <p className="text-base lg:text-lg text-gray-400 font-serif leading-relaxed max-w-xl">
-                {hpc.sportDescription || 'Built to resist the elements without compromising on aesthetic prestige. Sourced from Seiko and Casio, these references feature hardened steel cases, scratch-resistant crystal dials, and advanced chronographic movements.'}
+                Built to resist the elements without compromising on aesthetic prestige. Sourced from Seiko and Casio, these references feature hardened steel cases, scratch-resistant crystal dials, and advanced chronographic movements.
               </p>
               <div className="pt-2">
                 <Button

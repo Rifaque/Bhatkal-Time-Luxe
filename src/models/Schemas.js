@@ -184,24 +184,6 @@ const settingsSchema = new mongoose.Schema({
   supportPhone:    { type: String, default: '' },
   whatsappNumber:  { type: String, default: '' },
   businessAddress: { type: String, default: '' },
-  homepageContent: {
-    heroHeading:               { type: String, default: '' },
-    heroSubheading:            { type: String, default: '' },
-    primaryCta:                { type: String, default: '' },
-    secondaryCta:              { type: String, default: '' },
-    executiveTitle:            { type: String, default: '' },
-    executiveDescription:      { type: String, default: '' },
-    sportTitle:                { type: String, default: '' },
-    sportDescription:          { type: String, default: '' },
-    brandSpotlightTitle:       { type: String, default: '' },
-    brandSpotlightDescription: { type: String, default: '' },
-    trust1Title:               { type: String, default: '' },
-    trust1Description:         { type: String, default: '' },
-    trust2Title:               { type: String, default: '' },
-    trust2Description:         { type: String, default: '' },
-    trust3Title:               { type: String, default: '' },
-    trust3Description:         { type: String, default: '' },
-  },
 }, { timestamps: true });
 
 // 2. Compile Models (with Next.js cache check)

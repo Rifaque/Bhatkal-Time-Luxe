@@ -58,22 +58,6 @@ export async function PATCH(req) {
       }
     }
 
-    if ('homepageContent' in body && body.homepageContent && typeof body.homepageContent === 'object') {
-      const hpc = body.homepageContent;
-      const HPC_FIELDS = [
-        'heroHeading', 'heroSubheading', 'primaryCta', 'secondaryCta',
-        'executiveTitle', 'executiveDescription', 'sportTitle', 'sportDescription',
-        'brandSpotlightTitle', 'brandSpotlightDescription',
-        'trust1Title', 'trust1Description', 'trust2Title', 'trust2Description',
-        'trust3Title', 'trust3Description',
-      ];
-      const hpcUpdate = {};
-      for (const field of HPC_FIELDS) {
-        hpcUpdate[field] = String(hpc[field] ?? '').trim().slice(0, 500);
-      }
-      update.homepageContent = hpcUpdate;
-    }
-
     await connectToDatabase();
     const settings = await Settings.findOneAndUpdate(
       SINGLETON_QUERY,
