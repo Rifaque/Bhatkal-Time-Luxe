@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import WishlistButton from '@/components/WishlistButton';
 import ShareModal from '@/components/ShareModal';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useFocusRestoration } from '@/hooks/useFocusRestoration';
 
 export default function QuickViewModal({ productId, onClose }) {
   const [product, setProduct] = useState(null);
@@ -20,6 +22,10 @@ export default function QuickViewModal({ productId, onClose }) {
   const [showShare, setShowShare] = useState(false);
   const { formatPrice, currency } = useCurrency();
   const router = useRouter();
+
+  const isOpen = !!productId;
+  useFocusRestoration(isOpen);
+  const dialogRef = useFocusTrap(isOpen);
 
   useEffect(() => {
     if (!productId) return;
@@ -67,6 +73,7 @@ export default function QuickViewModal({ productId, onClose }) {
     try {
       const res = await axios.post(`/api/product/${product._id}/checkout`, { currency });
       if (res.data.whatsappUrl) window.open(res.data.whatsappUrl, '_blank');
+      if (res.data.orderId) router.push(`/order-confirmation?orderId=${res.data.orderId}&total=${res.data.total}`);
     } catch {
       // silent
     }
@@ -99,6 +106,7 @@ export default function QuickViewModal({ productId, onClose }) {
         onClick={onClose}
       >
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="quick-view-title"
@@ -141,9 +149,10 @@ export default function QuickViewModal({ productId, onClose }) {
                     </>
                   )}
                   <img
-                    src={getImageUrl(images[activeImg])}
+                    src={getImageUrl(images[activeImg], 'product', 'tablet')}
                     alt={product.name}
                     className="max-h-[300px] max-w-full object-contain mx-auto rounded-lg cursor-pointer"
+                    sizes="(max-width: 768px) 90vw, 480px"
                     onClick={goToProduct}
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
@@ -167,9 +176,10 @@ export default function QuickViewModal({ productId, onClose }) {
                         }`}
                       >
                         <img
-                          src={getImageUrl(img)}
+                          src={getImageUrl(img, 'product', 'thumb')}
                           alt=""
                           className="w-full h-full object-contain p-1"
+                          sizes="88px"
                           onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                         />
                       </button>

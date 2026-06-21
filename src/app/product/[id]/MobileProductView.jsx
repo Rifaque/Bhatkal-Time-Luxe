@@ -17,17 +17,26 @@ import WishlistSavedSection from '@/components/WishlistSavedSection';
 import ShareModal from '@/components/ShareModal';
 import Lightbox from '@/components/Lightbox';
 import ProductBreadcrumb from '@/components/ProductBreadcrumb';
+import { Sk } from '@/components/ui/skeleton';
 
 function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-[#1e1e1e] flex flex-col md:flex-row md:items-start">
-      <div className="bg-[#f0eeea] animate-pulse md:w-[45%] md:h-screen" style={{ height: '55vw' }} />
-      <div className="flex-1 px-5 pt-5 space-y-3">
-        <div className="h-6 bg-[#252525] animate-pulse rounded w-3/4" />
-        <div className="h-4 bg-[#252525] animate-pulse rounded w-1/3" />
-        <div className="h-3 bg-[#252525] animate-pulse rounded w-full mt-4" />
-        <div className="h-3 bg-[#252525] animate-pulse rounded w-5/6" />
-        <div className="h-3 bg-[#252525] animate-pulse rounded w-4/5" />
+      {/* Gallery stage — cream panel matching the loaded gallery background */}
+      <div
+        className="bg-[#f0eeea] flex items-center justify-center md:w-[45%] md:h-screen"
+        style={{ height: '55vw' }}
+      >
+        <Sk className="w-40 h-56 !rounded-2xl" />
+      </div>
+      <div className="flex-1 px-5 pt-5 md:px-8 md:pt-6 space-y-3">
+        <Sk className="h-6 w-3/4" />
+        <Sk className="h-7 w-1/3 mt-1" />
+        <div className="space-y-2.5 pt-3">
+          <Sk className="h-3 w-full" />
+          <Sk className="h-3 w-5/6" />
+          <Sk className="h-3 w-4/5" />
+        </div>
       </div>
     </div>
   );
@@ -148,7 +157,7 @@ export default function MobileProductView() {
   const images = product.images?.length > 0 ? product.images : (product.image ? [product.image] : []);
 
   return (
-    <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col md:flex-row md:items-start">
+    <div className="min-h-screen bg-[#1e1e1e] text-white flex flex-col md:flex-row md:items-start animate-fade-in">
 
       {/* ── Gallery block ── */}
       <div className="md:w-[45%] md:sticky md:top-0 md:h-screen md:flex md:flex-col md:overflow-hidden">
@@ -175,9 +184,12 @@ export default function MobileProductView() {
             className="flex items-center justify-center min-h-[55vw] max-h-[70vw] md:flex-1 md:min-h-0 md:max-h-none cursor-zoom-in"
           >
             <img
-              src={getImageUrl(images[currentImage] || product.image)}
+              key={currentImage}
+              src={getImageUrl(images[currentImage] || product.image, 'product', 'tablet')}
               alt={product.name}
-              className="w-full object-contain p-5 max-h-[70vw] md:max-h-full"
+              className="w-full object-contain p-5 max-h-[70vw] md:max-h-full animate-fade-in"
+              sizes="90vw"
+              style={currentImage === 0 ? { viewTransitionName: `pimg-${product._id}` } : undefined}
               onError={(e) => (e.currentTarget.src = '/assets/images/fallback-image.webp')}
             />
           </div>
@@ -221,9 +233,10 @@ export default function MobileProductView() {
                 }`}
               >
                 <img
-                  src={getImageUrl(img)}
+                  src={getImageUrl(img, 'product', 'thumb')}
                   alt=""
                   className="w-full h-full object-contain bg-[#f0eeea] p-1"
+                  sizes="88px"
                 />
               </button>
             ))}
@@ -297,7 +310,7 @@ export default function MobileProductView() {
         <div className="mt-6 bg-[#171717] border border-white/5 rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <ShieldCheck size={14} className="text-[#D1B23E] shrink-0" />
-            <span>Certified authenticity on every timepiece</span>
+            <span>Authenticated timepiece — certificate included</span>
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <Truck size={14} className="text-[#D1B23E] shrink-0" />
@@ -305,7 +318,7 @@ export default function MobileProductView() {
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <FaWhatsapp size={14} style={{ color: '#D1B23E' }} className="shrink-0" />
-            <span>WhatsApp concierge support available</span>
+            <span>7-day returns · No-cost instalments available</span>
           </div>
         </div>
 
@@ -335,6 +348,10 @@ export default function MobileProductView() {
               </button>
             )}
           </div>
+
+          <p className="text-[10px] text-center text-gray-600 mt-2">
+            Responds within 2 hours · 9AM–9PM AST, 7 days
+          </p>
 
           {/* Row 2 — secondary actions */}
           <div className="flex gap-2 mt-3">

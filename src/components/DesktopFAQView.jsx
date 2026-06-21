@@ -101,7 +101,7 @@ const faqCategories = [
     questions: [
       {
         q: 'How can I contact customer support?',
-        a: 'Our concierge team is available via WhatsApp, by phone, or through our Contact page. We respond to all enquiries within 2 hours during business hours (9 AM – 9 PM AST, 7 days a week).',
+        a: 'Our concierge team is available via WhatsApp, by phone, or through our Contact page. We respond to all enquiries within 2 hours during business hours (9 AM – 8 PM, 7 days a week).',
       },
       {
         q: 'Do you offer watch consultations?',

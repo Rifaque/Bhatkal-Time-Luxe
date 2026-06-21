@@ -22,7 +22,6 @@ export default function DesktopBrandDetailView() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quickViewId, setQuickViewId] = useState(null);
-  const [hoveredCardId, setHoveredCardId] = useState(null);
   
   const router = useRouter();
 
@@ -169,8 +168,6 @@ export default function DesktopBrandDetailView() {
             {products.map((product) => (
               <div
                 key={product._id}
-                onMouseEnter={() => setHoveredCardId(product._id)}
-                onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#171717] border border-white/5 hover:border-white/10 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
               >
                 {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
@@ -189,7 +186,7 @@ export default function DesktopBrandDetailView() {
                     className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
-                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -229,7 +226,7 @@ export default function DesktopBrandDetailView() {
                       className="font-semibold text-xs py-1.5 px-3.5 rounded-lg"
                       aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
-                      {product.inStock ? '+ Add' : 'OOS'}
+                      {product.inStock ? '+ Add' : 'Sold Out'}
                     </Button>
                   </div>
                 </div>

@@ -1,9 +1,10 @@
 'use client';
 
 // ─── Atom ────────────────────────────────────────────────────────────────────
-// Renders a single shimmer rectangle. Pass Tailwind width/height/radius overrides.
-export function Sk({ className = '' }) {
-  return <div className={`sk ${className}`} />;
+// Renders a single shimmer rectangle. Pass Tailwind width/height/radius overrides,
+// or an inline `style` for dynamic dimensions (e.g. percentage widths).
+export function Sk({ className = '', style }) {
+  return <div className={`sk ${className}`} style={style} />;
 }
 
 // ─── Product card skeleton ────────────────────────────────────────────────────

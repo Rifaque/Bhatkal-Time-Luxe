@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
@@ -11,7 +11,9 @@ import CurrencyPicker from './CurrencyPicker';
 
 export default function DesktopNavbar() {
   const [cartCount, setCartCount] = useState(0);
+  const [badgePop, setBadgePop] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const prevCountRef = useRef(0);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -23,6 +25,11 @@ export default function DesktopNavbar() {
         if (res.ok) {
           const data = await res.json();
           const count = data.items ? data.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+          if (count > prevCountRef.current) {
+            setBadgePop(true);
+            setTimeout(() => setBadgePop(false), 400);
+          }
+          prevCountRef.current = count;
           setCartCount(count);
         }
       } catch (err) {
@@ -112,9 +119,10 @@ export default function DesktopNavbar() {
                   <Link
                     key={link.name}
                     href={link.href}
-                    className="text-sm font-medium tracking-wide transition-colors duration-200 hover:text-[#D1B23E] text-gray-400"
+                    className="relative text-sm font-medium tracking-wide transition-colors duration-200 hover:text-[#D1B23E] text-gray-400 group"
                   >
                     {link.name}
+                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-[#D1B23E] rounded-full origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
                   </Link>
                 );
               })}
@@ -148,7 +156,7 @@ export default function DesktopNavbar() {
               >
                 <ShoppingCart size={19} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#D1B23E] text-[9px] font-bold text-black ring-2 ring-[#0a0a0a]">
+                  <span className={`absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#D1B23E] text-[9px] font-bold text-black ring-2 ring-[#0a0a0a] ${badgePop ? 'cart-badge-pop' : ''}`}>
                     {cartCount}
                   </span>
                 )}
@@ -160,7 +168,7 @@ export default function DesktopNavbar() {
             >
               <ShoppingCart size={19} />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#D1B23E] text-[9px] font-bold text-black ring-2 ring-[#0a0a0a]">
+                <span className={`absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#D1B23E] text-[9px] font-bold text-black ring-2 ring-[#0a0a0a] ${badgePop ? 'cart-badge-pop' : ''}`}>
                   {cartCount}
                 </span>
               )}

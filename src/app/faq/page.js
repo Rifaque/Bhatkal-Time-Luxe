@@ -1,11 +1,33 @@
-'use client';
+import FAQPageClient from './FAQPageClient';
+import { faqs } from '@/lib/faq-data';
 
-import useIsDesktop from '@/hooks/useIsDesktop';
-import DesktopFAQView from '@/components/DesktopFAQView';
-import MobileFAQView from './MobileFAQView';
+export const metadata = {
+  title: 'FAQ',
+  description:
+    'Frequently asked questions about Bhatkal Time Luxe — shipping, returns, authenticity, and payment methods.',
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer,
+    },
+  })),
+};
 
 export default function FAQPage() {
-  const isDesktop = useIsDesktop();
-  if (isDesktop === null) return null;
-  return isDesktop ? <DesktopFAQView /> : <MobileFAQView />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <FAQPageClient />
+    </>
+  );
 }

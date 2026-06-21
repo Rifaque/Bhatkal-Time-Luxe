@@ -9,6 +9,7 @@ import { useWishlistProducts } from '@/hooks/useWishlistProducts';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useToast } from '@/context/ToastContext';
 import { getImageUrl } from '@/lib/image';
+import { Sk } from '@/components/ui/skeleton';
 
 function WishlistCard({ product, onAddToCart, onWhatsapp, onRemove }) {
   const { formatPrice } = useCurrency();
@@ -60,7 +61,7 @@ function WishlistCard({ product, onAddToCart, onWhatsapp, onRemove }) {
             className="flex-1 flex items-center justify-center gap-1 bg-[#D1B23E] hover:bg-[#c1a22e] text-black text-[9px] font-bold py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <ShoppingCart size={9} />
-            {product.inStock ? 'Add' : 'OOS'}
+            {product.inStock ? 'Add' : 'Sold Out'}
           </button>
           {product.inStock && (
             <button
@@ -123,11 +124,11 @@ export default function WishlistSavedSection({ title = 'Saved Timepieces', class
           {[1, 2, 3].map((i) => (
             <div key={i} className="shrink-0 w-40">
               <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
-                <div className="bg-[#222] animate-pulse" style={{ aspectRatio: '1/1' }} />
+                <Sk className="w-full !rounded-none" style={{ aspectRatio: '1/1' }} />
                 <div className="px-2.5 py-2 space-y-1.5">
-                  <div className="h-2 bg-[#222] animate-pulse rounded w-1/2" />
-                  <div className="h-2.5 bg-[#222] animate-pulse rounded w-3/4" />
-                  <div className="h-3 bg-[#222] animate-pulse rounded w-1/3" />
+                  <Sk className="h-2 w-1/2" />
+                  <Sk className="h-2.5 w-3/4" />
+                  <Sk className="h-3 w-1/3" />
                 </div>
               </div>
             </div>

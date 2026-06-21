@@ -230,3 +230,115 @@ nav {
   animation: sk-shimmer 1.5s ease-in-out infinite;
   border-radius: 0.75rem;
 }
+
+/* Scroll-reveal — chapters fade-up as they enter the viewport.
+   `.reveal-in` is added by an IntersectionObserver once the element is in view. */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* WhatsApp FAB attention pulse — 3 subtle gold rings, 3s initial delay */
+@keyframes fab-ring-pulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45); }
+  50%       { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 8px rgba(209, 178, 62, 0.12); }
+}
+.fab-pulse {
+  animation: fab-ring-pulse 2s ease-in-out 3s 3;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fab-pulse { animation: none; }
+}
+
+/* ─── Phase 5.4: View Transitions (progressive enhancement) ─────────────── */
+/* Works for browser back/forward + browsers that support Navigation API.     */
+/* Degrades silently in all unsupported browsers.                             */
+@view-transition {
+  navigation: auto;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(18px) scale(0.984); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes pageExit {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+::view-transition-new(root) {
+  animation: pageEnter 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+::view-transition-old(root) {
+  animation: pageExit 180ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(*),
+  ::view-transition-old(*) { animation-duration: 0.001ms !important; }
+}
+
+/* ─── Phase 5.5: Overlay Motion ─────────────────────────────────────────── */
+@keyframes modalEnter {
+  from { transform: scale(0.96) translateY(8px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes modalExit {
+  from { transform: none; opacity: 1; }
+  to   { transform: scale(0.96) translateY(4px); opacity: 0; }
+}
+.modal-enter { animation: modalEnter 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.modal-exit  { animation: modalExit  190ms ease-in both; }
+
+/* Share modal — bottom sheet on mobile, centered dialog on md+ */
+@keyframes sheetEnter {
+  from { transform: translateY(100%); }
+  to   { transform: none; }
+}
+@keyframes sheetExit {
+  from { transform: none; }
+  to   { transform: translateY(100%); }
+}
+.share-modal-enter { animation: sheetEnter 340ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.share-modal-exit  { animation: sheetExit  220ms ease-in both; }
+@media (min-width: 768px) {
+  .share-modal-enter { animation: modalEnter 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .share-modal-exit  { animation: modalExit  190ms ease-in both; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter, .modal-exit,
+  .share-modal-enter, .share-modal-exit { animation: none; }
+}
+
+/* ─── Phase 5.6: Conversion Microinteractions ───────────────────────────── */
+@keyframes heartPop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.45); }
+  65%  { transform: scale(0.88); }
+  100% { transform: scale(1); }
+}
+.heart-pop { animation: heartPop 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+@keyframes cartBadgePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.5); }
+  70%  { transform: scale(0.85); }
+  100% { transform: scale(1); }
+}
+.cart-badge-pop { animation: cartBadgePop 0.38s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  .heart-pop, .cart-badge-pop { animation: none; }
+}

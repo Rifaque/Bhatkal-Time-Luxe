@@ -28,7 +28,6 @@ export default function DesktopHomeView() {
   const [bestSelling, setBestSelling] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quickViewId, setQuickViewId] = useState(null);
-  const [hoveredCardId, setHoveredCardId] = useState(null);
   
   const catalogRef = useRef(null);
   const router = useRouter();
@@ -64,6 +63,12 @@ export default function DesktopHomeView() {
     return allProducts.filter((p) => idSet.has(String(p._id))).slice(0, 8);
   }, [wishlistIds, wishlistCount, allProducts]);
 
+  const newArrivals = useMemo(() => {
+    return [...allProducts]
+      .sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0))
+      .slice(0, 8);
+  }, [allProducts]);
+
   const heroWatch = useMemo(() => {
     if (allProducts.length === 0) return null;
     return allProducts.find(p => p.brand?.name?.toLowerCase().includes('rolex')) || allProducts[0];
@@ -88,7 +93,7 @@ export default function DesktopHomeView() {
   };
 
   const getBrandStory = (brandName) => {
-    const key = brandName.toLowerCase();
+    const key = (brandName || '').toLowerCase();
     return brandStories[key] || `A curated collection of distinguished watchmaking references from the House of ${brandName}, built on precision engineering, design, and structural durability.`;
   };
 
@@ -110,26 +115,54 @@ export default function DesktopHomeView() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Scroll-reveal: fade chapters up as they enter the viewport (one-shot per section)
+  useEffect(() => {
+    if (loading) return;
+    const els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      els.forEach((el) => el.classList.add('reveal-in'));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-in');
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [loading]);
+
   if (loading) {
     return (
       <div className="bg-[#1e1e1e] text-white min-h-screen font-sans antialiased flex flex-col">
         <DesktopNavbar />
-        {/* Hero placeholder */}
-        <div className="min-h-[55vh] flex items-center border-b border-white/5 bg-gradient-to-b from-[#222] to-[#1e1e1e]">
-          <div className="mx-auto max-w-7xl px-6 w-full grid grid-cols-12 gap-12 items-center py-16">
-            <div className="col-span-5 space-y-5">
-              <Sk className="h-2.5 w-24" />
-              <Sk className="h-12 w-full" />
-              <Sk className="h-12 w-4/5" />
-              <Sk className="h-3.5 w-full" />
-              <Sk className="h-3.5 w-3/4" />
-              <div className="flex gap-4 pt-3">
-                <Sk className="h-13 w-44 !rounded-2xl" />
-                <Sk className="h-13 w-40 !rounded-2xl" />
+        {/* Hero placeholder — mirrors the 95vh immersive hero to prevent layout shift */}
+        <div className="relative overflow-hidden min-h-[95vh] flex items-center border-b border-white/5 bg-gradient-to-b from-[#222222] to-[#1e1e1e]">
+          <div className="absolute inset-0 bg-ambient-glow opacity-50" />
+          <div className="relative mx-auto max-w-7xl px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center py-16">
+            <div className="lg:col-span-7 space-y-8">
+              <Sk className="h-2.5 w-44" />
+              <div className="space-y-4">
+                <Sk className="h-14 lg:h-16 w-full" />
+                <Sk className="h-14 lg:h-16 w-3/4" />
+              </div>
+              <div className="space-y-2.5">
+                <Sk className="h-4 w-full max-w-xl" />
+                <Sk className="h-4 w-2/3 max-w-xl" />
+              </div>
+              <div className="flex gap-6 pt-2">
+                <Sk className="h-14 w-52 !rounded-full" />
+                <Sk className="h-14 w-44 !rounded-full" />
               </div>
             </div>
-            <div className="col-span-7">
-              <Sk className="aspect-[4/3] w-full !rounded-3xl" />
+            <div className="lg:col-span-5 flex justify-center">
+              <Sk className="w-full max-w-md h-[450px] !rounded-[36px]" />
             </div>
           </div>
         </div>
@@ -213,6 +246,7 @@ export default function DesktopHomeView() {
                     <img
                       src={getImageUrl(heroWatch.images?.[0] || heroWatch.image)}
                       alt={heroWatch.name}
+                      fetchPriority="high"
                       className="max-h-full object-contain mx-auto drop-shadow-[0_20px_35px_rgba(0,0,0,0.15)]"
                     />
                   </div>
@@ -233,7 +267,7 @@ export default function DesktopHomeView() {
       </section>
 
       {/* Chapter 2: Luxury Watch Houses (Brand Showcase) */}
-      <section className="py-28 bg-[#141414] border-b border-white/5">
+      <section className="reveal py-28 bg-[#141414] border-b border-white/5">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-2xl mx-auto mb-20 space-y-2">
             <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
@@ -244,7 +278,7 @@ export default function DesktopHomeView() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {topCategories.slice(0, 3).map((item) => (
+            {topCategories.filter((item) => item.brand).slice(0, 3).map((item) => (
               <div
                 key={item._id}
                 onClick={() => router.push(`/brands/${item.brand._id}`)}
@@ -258,6 +292,7 @@ export default function DesktopHomeView() {
                         src={getImageUrl(item.brand.logo, 'brand')}
                         alt={item.brand.name}
                         className="max-h-full object-contain"
+                        loading="lazy"
                         onError={(e) => (e.target.src = '/assets/images/fallback-brand.png')}
                       />
                     </div>
@@ -283,7 +318,7 @@ export default function DesktopHomeView() {
       </section>
 
       {/* Chapter 3: Featured Collection ("Curated Spotlight") */}
-      <section className="py-28 bg-[#1e1e1e]">
+      {featuredProducts.length > 0 && <section className="reveal py-28 bg-[#1e1e1e]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex justify-between items-end mb-20">
             <div className="text-left space-y-2">
@@ -305,8 +340,6 @@ export default function DesktopHomeView() {
             {featuredProducts.map((product) => (
               <div
                 key={product._id}
-                onMouseEnter={() => setHoveredCardId(product._id)}
-                onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#151515] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
                 {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
@@ -323,11 +356,12 @@ export default function DesktopHomeView() {
                   <img
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
-                    className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                    className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
                   {/* Hover Quick View Overlay */}
-                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -368,7 +402,7 @@ export default function DesktopHomeView() {
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
                       aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
-                      {product.inStock ? '+ Add' : 'OOS'}
+                      {product.inStock ? 'Add to Cart' : 'Enquire'}
                     </Button>
                   </div>
                 </div>
@@ -376,11 +410,11 @@ export default function DesktopHomeView() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Your Saved Collection — shown when wishlist >= 4 items */}
       {wishlistProducts.length >= 4 && (
-        <section className="py-20 bg-[#181818] border-t border-white/5">
+        <section className="reveal py-20 bg-[#181818] border-t border-white/5">
           <div className="mx-auto max-w-7xl px-6">
             <div className="flex justify-between items-end mb-12">
               <div className="text-left space-y-2">
@@ -394,8 +428,6 @@ export default function DesktopHomeView() {
               {wishlistProducts.map((product) => (
                 <div
                   key={product._id}
-                  onMouseEnter={() => setHoveredCardId(product._id)}
-                  onMouseLeave={() => setHoveredCardId(null)}
                   className="shrink-0 w-56 relative group bg-[#151515] border border-white/5 rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:border-[#D1B23E]/15"
                 >
                   <div
@@ -405,10 +437,10 @@ export default function DesktopHomeView() {
                     <img
                       src={getImageUrl(product.images?.[0] || product.image)}
                       alt={product.name}
-                      className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                      className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                     />
-                    <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -438,7 +470,7 @@ export default function DesktopHomeView() {
                         disabled={!product.inStock}
                         className="font-semibold text-[9px] py-1 px-3 rounded-lg"
                       >
-                        {product.inStock ? '+ Add' : 'OOS'}
+                        {product.inStock ? 'Add to Cart' : 'Enquire'}
                       </Button>
                     </div>
                   </div>
@@ -450,7 +482,7 @@ export default function DesktopHomeView() {
       )}
 
       {/* Transition Chapter: Trust Section */}
-      <section className="py-20 bg-[#121212] border-t border-b border-white/5">
+      <section className="reveal py-20 bg-[#121212] border-t border-b border-white/5">
         <div className="mx-auto max-w-7xl px-6 grid grid-cols-1 md:grid-cols-3 gap-10">
           <div className="flex flex-col items-center text-center space-y-4 p-8 bg-white/5 border border-white/5 rounded-3xl">
             <div className="p-4 bg-[#D1B23E]/10 rounded-full text-[#D1B23E]">
@@ -468,7 +500,7 @@ export default function DesktopHomeView() {
             </div>
             <h3 className="text-lg font-bold font-serif text-white">Insured Free Transit</h3>
             <p className="text-sm text-gray-400 font-serif leading-relaxed">
-              We provide free secure shipping channels throughout India, keeping every luxury shipment covered via full insurance policies.
+              We provide free secure shipping across Kuwait and the GCC region, keeping every luxury shipment fully covered with comprehensive insurance.
             </p>
           </div>
 
@@ -486,7 +518,7 @@ export default function DesktopHomeView() {
 
       {/* Chapter 4: Executive Collection (Editorial Showcase) */}
       {executiveWatch && (
-        <section className="relative overflow-hidden min-h-[750px] flex items-center bg-[#171717] border-b border-white/5 py-0">
+        <section className="reveal relative overflow-hidden min-h-[750px] flex items-center bg-[#171717] border-b border-white/5 py-0">
           <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 rounded-full bg-[#D1B23E]/5 blur-[90px] pointer-events-none" />
           <div className="mx-auto max-w-7xl px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left text editorial */}
@@ -524,6 +556,7 @@ export default function DesktopHomeView() {
                     src={getImageUrl(executiveWatch.images?.[0] || executiveWatch.image)}
                     alt={executiveWatch.name}
                     className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                   />
                 </div>
                 <div className="mt-5 flex justify-between items-center text-xs">
@@ -540,7 +573,7 @@ export default function DesktopHomeView() {
       )}
 
       {/* Chapter 5: Best Sellers Section */}
-      <section className="py-28 bg-[#1a1a1a] border-b border-white/5">
+      {bestSellingProducts.length > 0 && <section className="reveal py-28 bg-[#1a1a1a] border-b border-white/5">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-2xl mx-auto mb-20 space-y-2">
             <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
@@ -554,8 +587,6 @@ export default function DesktopHomeView() {
             {bestSellingProducts.map((product) => (
               <div
                 key={product._id}
-                onMouseEnter={() => setHoveredCardId(product._id)}
-                onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#141414] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
                 {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
@@ -571,10 +602,11 @@ export default function DesktopHomeView() {
                   <img
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
-                    className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                    className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
-                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -614,7 +646,7 @@ export default function DesktopHomeView() {
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
                       aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
-                      {product.inStock ? '+ Add' : 'OOS'}
+                      {product.inStock ? 'Add to Cart' : 'Enquire'}
                     </Button>
                   </div>
                 </div>
@@ -622,11 +654,11 @@ export default function DesktopHomeView() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Chapter 6: Sport Collection (Editorial Showcase) */}
       {sportWatch && (
-        <section className="relative overflow-hidden min-h-[750px] flex items-center bg-[#141414] border-b border-white/5 py-0">
+        <section className="reveal relative overflow-hidden min-h-[750px] flex items-center bg-[#141414] border-b border-white/5 py-0">
           <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 rounded-full bg-[#D1B23E]/5 blur-[90px] pointer-events-none" />
           <div className="mx-auto max-w-7xl px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left watch visual */}
@@ -640,6 +672,7 @@ export default function DesktopHomeView() {
                     src={getImageUrl(sportWatch.images?.[0] || sportWatch.image)}
                     alt={sportWatch.name}
                     className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                   />
                 </div>
                 <div className="mt-5 flex justify-between items-center text-xs">
@@ -680,7 +713,7 @@ export default function DesktopHomeView() {
       )}
 
       {/* Chapter 7: New Arrivals Section */}
-      <section ref={catalogRef} className="py-28 bg-[#1e1e1e]">
+      <section ref={catalogRef} className="reveal py-28 bg-[#1e1e1e]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center max-w-2xl mx-auto mb-20 space-y-2">
             <span className="text-xs uppercase tracking-[0.2em] text-[#D1B23E] font-bold block luxury-text-spacing">
@@ -691,11 +724,9 @@ export default function DesktopHomeView() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {allProducts.slice(0, 8).map((product) => (
+            {newArrivals.map((product) => (
               <div
                 key={product._id}
-                onMouseEnter={() => setHoveredCardId(product._id)}
-                onMouseLeave={() => setHoveredCardId(null)}
                 className="relative group bg-[#151515] border border-white/5 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
               >
                 {(product.originalPrice ?? product.originalPriceKwd ?? 0) > (product.salePrice ?? product.priceKwd ?? 0) && (
@@ -711,10 +742,11 @@ export default function DesktopHomeView() {
                   <img
                     src={getImageUrl(product.images?.[0] || product.image)}
                     alt={product.name}
-                    className="max-h-full object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+                    className="max-h-full object-contain mx-auto transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
                     onError={(e) => (e.target.src = '/assets/images/fallback-image.webp')}
                   />
-                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 ${hoveredCardId === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto`}>
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -754,7 +786,7 @@ export default function DesktopHomeView() {
                       className="font-semibold text-[10px] py-1 px-3.5 rounded-lg"
                       aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} is out of stock`}
                     >
-                      {product.inStock ? '+ Add' : 'OOS'}
+                      {product.inStock ? 'Add to Cart' : 'Enquire'}
                     </Button>
                   </div>
                 </div>
@@ -765,7 +797,7 @@ export default function DesktopHomeView() {
       </section>
 
       {/* Concierge Support */}
-      <section className="pt-32 pb-40 bg-gradient-to-b from-[#121212] via-[#0e0e0e] to-[#080808] border-t border-white/5 relative">
+      <section className="reveal pt-32 pb-40 bg-gradient-to-b from-[#121212] via-[#0e0e0e] to-[#080808] border-t border-white/5 relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#D1B23E]/5 blur-[120px]" />
         </div>

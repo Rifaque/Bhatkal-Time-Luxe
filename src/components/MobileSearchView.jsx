@@ -7,6 +7,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import MobileLayout from '@/components/MobileLayout';
 import MobileProductCard from '@/components/MobileProductCard';
+import { ProductCardSk } from '@/components/ui/skeleton';
 import { useCurrency } from '@/context/CurrencyContext';
 
 const PRICE_MIN = 1;
@@ -23,13 +24,7 @@ function GridSkeleton() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 px-4 lg:px-0">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden animate-pulse">
-          <div className="bg-[#222]" style={{ aspectRatio: '1/1' }} />
-          <div className="px-3 py-2.5 space-y-1.5">
-            <div className="h-2.5 bg-[#222] rounded w-3/4" />
-            <div className="h-3 bg-[#222] rounded w-1/2" />
-          </div>
-        </div>
+        <ProductCardSk key={i} />
       ))}
     </div>
   );

@@ -41,6 +41,32 @@ export function buildImgixUrl(cloudinaryUrl, preset = 'default') {
   return `https://${IMGIX_DOMAIN}/${path}?${qs}`;
 }
 
+// ─── Width-aware URL builder ───────────────────────────────────────────────────
+
+// Returns an Imgix URL with an explicit pixel width. Falls back to the default
+// preset if Imgix is not configured or the src is not from this Cloudinary account.
+export function getImageUrlWithWidth(src, width, fallbackType = 'product') {
+  if (!src) {
+    return fallbackType === 'brand'
+      ? '/assets/images/fallback-brand.png'
+      : '/assets/images/fallback-image.webp';
+  }
+  if (IMGIX_DOMAIN && src.startsWith(CLOUDINARY_BASE)) {
+    const path = src.slice(CLOUDINARY_BASE.length);
+    return `https://${IMGIX_DOMAIN}/${path}?auto=format,compress&w=${width}`;
+  }
+  return src;
+}
+
+// Build a srcset string for responsive delivery via Imgix.
+// Returns '' when Imgix is not configured or src is not a Cloudinary URL.
+export function getImageSrcSet(src, widths = [300, 600, 900], fallbackType = 'product') {
+  if (!src || !IMGIX_DOMAIN || !src.startsWith(CLOUDINARY_BASE)) return '';
+  return widths
+    .map((w) => `${getImageUrlWithWidth(src, w, fallbackType)} ${w}w`)
+    .join(', ');
+}
+
 // ─── Primary image URL resolver ───────────────────────────────────────────────
 
 export function getImageUrl(src, fallbackType = 'product', preset = 'default') {
